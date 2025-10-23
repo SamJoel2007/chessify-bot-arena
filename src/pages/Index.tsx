@@ -6,6 +6,7 @@ import { GameBoard } from "@/components/GameBoard";
 import { BotSelection } from "@/components/BotSelection";
 import { CommunityChat } from "@/components/CommunityChat";
 import { ShopModal } from "@/components/ShopModal";
+import tournamentImage from "@/assets/tournament-hero.jpg";
 
 const Index = () => {
   const [coins, setCoins] = useState(1000);
@@ -90,6 +91,48 @@ const Index = () => {
             </p>
           </div>
           <BotSelection coins={coins} setCoins={setCoins} />
+        </section>
+
+        {/* Tournament Section */}
+        <section id="tournament" className="mb-16">
+          <Card className="overflow-hidden bg-gradient-card border-border/50">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div className="p-8 md:p-12">
+                <div className="flex items-center gap-2 mb-4">
+                  <Trophy className="w-8 h-8 text-gold" />
+                  <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    Tournaments
+                  </h2>
+                </div>
+                <p className="text-muted-foreground text-lg mb-6">
+                  Compete in exciting chess tournaments and climb the leaderboard! Join weekly competitions, 
+                  win exclusive prizes, and prove your skills against the best players from around the world. 
+                  Whether you're a beginner or a grandmaster, there's a tournament for everyone.
+                </p>
+                <div className="flex gap-4 mb-4">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-primary">250+</p>
+                    <p className="text-sm text-muted-foreground">Active Tournaments</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-gold">$10K</p>
+                    <p className="text-sm text-muted-foreground">Prize Pool</p>
+                  </div>
+                </div>
+                <Button size="lg" className="gap-2 shadow-glow">
+                  <Trophy className="w-5 h-5" />
+                  Register Now
+                </Button>
+              </div>
+              <div className="h-full min-h-[400px]">
+                <img 
+                  src={tournamentImage} 
+                  alt="Chess Tournament" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </Card>
         </section>
 
         {/* Community Section */}
