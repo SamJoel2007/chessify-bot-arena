@@ -1,8 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Lock, Zap, Ghost, Sparkles, Swords } from "lucide-react";
+import { Lock } from "lucide-react";
 import { toast } from "sonner";
+import botBeginner from "@/assets/bot-beginner.jpg";
+import botIntermediate from "@/assets/bot-intermediate.jpg";
+import botAdvanced from "@/assets/bot-advanced.jpg";
+import botGrandmaster from "@/assets/bot-grandmaster.jpg";
+import botHalloween from "@/assets/bot-halloween.jpg";
+import botAnime from "@/assets/bot-anime.jpg";
 
 interface BotSelectionProps {
   coins: number;
@@ -15,8 +21,7 @@ const bots = [
     name: "Chess Novice",
     category: "Beginner",
     rating: 800,
-    icon: Bot,
-    color: "text-green-400",
+    image: botBeginner,
     owned: true,
     price: 0,
   },
@@ -25,8 +30,7 @@ const bots = [
     name: "Strategic Mind",
     category: "Intermediate",
     rating: 1400,
-    icon: Zap,
-    color: "text-blue-400",
+    image: botIntermediate,
     owned: true,
     price: 0,
   },
@@ -35,8 +39,7 @@ const bots = [
     name: "Grand Master AI",
     category: "Advanced",
     rating: 2200,
-    icon: Sparkles,
-    color: "text-purple-400",
+    image: botGrandmaster,
     owned: false,
     price: 500,
   },
@@ -45,8 +48,7 @@ const bots = [
     name: "Spooky Knight",
     category: "Halloween",
     rating: 1600,
-    icon: Ghost,
-    color: "text-orange-400",
+    image: botHalloween,
     owned: false,
     price: 300,
   },
@@ -55,8 +57,7 @@ const bots = [
     name: "Samurai Master",
     category: "Anime",
     rating: 1800,
-    icon: Swords,
-    color: "text-red-400",
+    image: botAnime,
     owned: false,
     price: 400,
   },
@@ -81,16 +82,17 @@ export const BotSelection = ({ coins, setCoins }: BotSelectionProps) => {
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {bots.map((bot) => {
-          const Icon = bot.icon;
           return (
             <Card
               key={bot.id}
               className="p-6 bg-gradient-card border-border/50 hover:border-primary/50 transition-all hover:shadow-glow"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 rounded-lg bg-muted/30 ${bot.color}`}>
-                  <Icon className="w-8 h-8" />
-                </div>
+                <img 
+                  src={bot.image} 
+                  alt={bot.name}
+                  className="w-20 h-20 rounded-full object-cover border-2 border-primary/30"
+                />
                 <Badge variant="outline">{bot.category}</Badge>
               </div>
 
