@@ -71,10 +71,11 @@ export const GameBoard = () => {
             key={square}
             onClick={() => handleSquareClick(square)}
             className={`
-              aspect-square flex items-center justify-center text-4xl transition-colors
-              ${isLight ? "bg-slate-200" : "bg-slate-600"}
+              aspect-square flex items-center justify-center text-5xl font-bold transition-colors
+              ${isLight ? "bg-slate-200" : "bg-slate-700"}
               ${isSelected ? "ring-4 ring-primary" : ""}
               hover:opacity-80
+              ${piece?.color === 'w' ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : 'text-gray-900 drop-shadow-[0_2px_4px_rgba(255,255,255,0.3)]'}
             `}
           >
             {piece && getPieceSymbol(piece.type, piece.color)}
