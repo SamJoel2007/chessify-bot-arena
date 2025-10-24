@@ -68,6 +68,12 @@ const Index = () => {
               <Coins className="w-5 h-5 text-gold" />
               <span className="font-bold text-gold">{coins}</span>
             </Button>
+            <Button variant="outline">
+              Sign In
+            </Button>
+            <Button variant="default">
+              Sign Up
+            </Button>
             <div className="w-10 h-10 rounded-full bg-gradient-primary" />
           </div>
         </div>
