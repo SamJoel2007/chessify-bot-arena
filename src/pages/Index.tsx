@@ -1,16 +1,40 @@
-import { useState } from "react";
-import { Crown, Coins, Trophy, Users, Zap, Shield } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Crown, Coins, Trophy, Users, Zap, Shield, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { GameBoard } from "@/components/GameBoard";
 import { BotSelection } from "@/components/BotSelection";
 import { CommunityChat } from "@/components/CommunityChat";
 import { ShopModal } from "@/components/ShopModal";
+import { RecentPosts } from "@/components/RecentPosts";
+import { AdminPostCreator } from "@/components/AdminPostCreator";
 import tournamentImage from "@/assets/tournament-hero.jpg";
+import { toast } from "sonner";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [coins, setCoins] = useState(1000);
   const [isShopOpen, setIsShopOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out successfully");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,6 +76,12 @@ const Index = () => {
               </Button>
               <Button
                 variant="ghost"
+                onClick={() => document.getElementById('posts')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Posts
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() => document.getElementById('community')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Community
@@ -68,12 +98,20 @@ const Index = () => {
               <Coins className="w-5 h-5 text-gold" />
               <span className="font-bold text-gold">{coins}</span>
             </Button>
-            <Button variant="outline">
-              Sign In
-            </Button>
-            <Button variant="default">
-              Sign Up
-            </Button>
+            {user ? (
+              <Button variant="outline" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => navigate("/auth")}>
+                  Sign In
+                </Button>
+                <Button variant="default" onClick={() => navigate("/auth")}>
+                  Sign Up
+                </Button>
+              </>
+            )}
             <div className="w-10 h-10 rounded-full bg-gradient-primary" />
           </div>
         </div>
@@ -174,6 +212,23 @@ const Index = () => {
               </div>
             </div>
           </Card>
+        </section>
+
+        {/* Recent Posts Section */}
+        <section id="posts" className="mb-16">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Megaphone className="w-8 h-8 text-primary" />
+              <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Recent Posts
+              </h2>
+            </div>
+            <p className="text-muted-foreground text-lg mb-6">
+              Stay updated with the latest events, tournaments, and community highlights
+            </p>
+          </div>
+          <AdminPostCreator />
+          <RecentPosts />
         </section>
 
         {/* Community Section */}
