@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Crown } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -62,6 +63,21 @@ const Auth = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast.error(error.message || "Failed to sign in with Google");
     }
   };
 
@@ -152,6 +168,25 @@ const Auth = () => {
                   {loading ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
+              
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2"
+                onClick={handleGoogleSignIn}
+              >
+                <FcGoogle className="w-5 h-5" />
+                Sign in with Google
+              </Button>
             </TabsContent>
 
             <TabsContent value="signup">
@@ -180,6 +215,31 @@ const Auth = () => {
                   {loading ? "Creating account..." : "Sign Up"}
                 </Button>
               </form>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2"
+                onClick={handleGoogleSignIn}
+              >
+                <FcGoogle className="w-5 h-5" />
+                Sign up with Google
+              </Button>
+
+              <div className="text-center mt-4">
+                <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Forgot Password?
+                </a>
+              </div>
             </TabsContent>
           </Tabs>
         </Card>
