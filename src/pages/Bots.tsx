@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import botBeginner from "@/assets/bot-beginner.jpg";
+import botIntermediate from "@/assets/bot-intermediate.jpg";
+import botAdvanced from "@/assets/bot-advanced.jpg";
+import botGrandmaster from "@/assets/bot-grandmaster.jpg";
+import botAnime from "@/assets/bot-anime.jpg";
 
 interface Bot {
   id: string;
@@ -18,6 +23,7 @@ const botCategories = {
   beginner: {
     icon: Star,
     color: "text-green-500",
+    image: botBeginner,
     bots: [
       { id: "b1", name: "Pawn Pusher", rating: 400, description: "Just learning the basics", difficulty: "Beginner" },
       { id: "b2", name: "Castle Keeper", rating: 450, description: "Loves castling early", difficulty: "Beginner" },
@@ -34,6 +40,7 @@ const botCategories = {
   intermediate: {
     icon: Zap,
     color: "text-blue-500",
+    image: botIntermediate,
     bots: [
       { id: "i1", name: "Tactical Tim", rating: 1000, description: "Spots basic tactics", difficulty: "Intermediate" },
       { id: "i2", name: "Strategic Sam", rating: 1100, description: "Plans ahead", difficulty: "Intermediate" },
@@ -50,6 +57,7 @@ const botCategories = {
   advanced: {
     icon: Trophy,
     color: "text-purple-500",
+    image: botAdvanced,
     bots: [
       { id: "a1", name: "Magnus Mini", rating: 1800, description: "Inspired by the World Champion", difficulty: "Advanced" },
       { id: "a2", name: "Calculation King", rating: 1850, description: "Calculates deeply", difficulty: "Advanced" },
@@ -66,6 +74,7 @@ const botCategories = {
   expert: {
     icon: Crown,
     color: "text-yellow-500",
+    image: botAdvanced,
     bots: [
       { id: "e1", name: "Expert Eva", rating: 2300, description: "Tournament veteran", difficulty: "Expert" },
       { id: "e2", name: "Crushing Chris", rating: 2350, description: "Crushes opponents", difficulty: "Expert" },
@@ -82,6 +91,7 @@ const botCategories = {
   master: {
     icon: Sparkles,
     color: "text-gold",
+    image: botGrandmaster,
     bots: [
       { id: "m1", name: "Master Mind", rating: 2800, description: "International Master level", difficulty: "Master" },
       { id: "m2", name: "Alpha Chess", rating: 2850, description: "Superhuman play", difficulty: "Master" },
@@ -98,6 +108,7 @@ const botCategories = {
   grandmaster: {
     icon: Crown,
     color: "text-gold",
+    image: botGrandmaster,
     bots: [
       { id: "g1", name: "Stockfish Lite", rating: 3300, description: "Engine-based GM", difficulty: "Grandmaster" },
       { id: "g2", name: "Komodo King", rating: 3350, description: "Positional perfection", difficulty: "Grandmaster" },
@@ -114,6 +125,7 @@ const botCategories = {
   anime: {
     icon: Sparkles,
     color: "text-secondary",
+    image: botAnime,
     bots: [
       { id: "an1", name: "Hikaru No Go", rating: 2000, description: "Strategic anime spirit", difficulty: "Anime" },
       { id: "an2", name: "Code Geass", rating: 2100, description: "Strategic mastermind", difficulty: "Anime" },
@@ -189,7 +201,7 @@ const Bots = () => {
             <TabsTrigger value="anime">Anime</TabsTrigger>
           </TabsList>
 
-          {Object.entries(botCategories).map(([category, { icon: Icon, color, bots }]) => (
+          {Object.entries(botCategories).map(([category, { icon: Icon, color, image, bots }]) => (
             <TabsContent key={category} value={category}>
               <div className="mb-6 flex items-center gap-3">
                 <Icon className={`w-8 h-8 ${color}`} />
@@ -200,8 +212,15 @@ const Bots = () => {
                 {bots.map((bot) => (
                   <Card
                     key={bot.id}
-                    className="bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow"
+                    className="bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow overflow-hidden"
                   >
+                    <div className="aspect-square w-full overflow-hidden">
+                      <img
+                        src={image}
+                        alt={bot.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>
