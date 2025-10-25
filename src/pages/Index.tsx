@@ -58,7 +58,7 @@ const Index = () => {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => document.getElementById('bots')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => navigate('/bots')}
               >
                 Bots
               </Button>
