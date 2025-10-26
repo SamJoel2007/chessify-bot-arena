@@ -157,8 +157,8 @@ const Bots = () => {
   const [activeCategory, setActiveCategory] = useState("beginner");
 
   const handlePlayBot = (bot: Bot) => {
-    // Navigate back to home and trigger bot selection
-    navigate("/", { state: { selectedBot: bot } });
+    // Navigate to game page with selected bot
+    navigate("/game", { state: { selectedBot: bot } });
   };
 
   return (
