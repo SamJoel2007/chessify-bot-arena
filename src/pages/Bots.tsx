@@ -10,6 +10,16 @@ import botIntermediate from "@/assets/bot-intermediate.jpg";
 import botAdvanced from "@/assets/bot-advanced.jpg";
 import botGrandmaster from "@/assets/bot-grandmaster.jpg";
 import botAnime from "@/assets/bot-anime.jpg";
+import beginnerPawnPusher from "@/assets/bots/beginner-01-pawn-pusher.jpg";
+import beginnerCastleKeeper from "@/assets/bots/beginner-02-castle-keeper.jpg";
+import beginnerKnightNovice from "@/assets/bots/beginner-03-knight-novice.jpg";
+import beginnerBishopBuddy from "@/assets/bots/beginner-04-bishop-buddy.jpg";
+import beginnerRookRookie from "@/assets/bots/beginner-05-rook-rookie.jpg";
+import beginnerQueensGuard from "@/assets/bots/beginner-06-queens-guard.jpg";
+import beginnerKingsShadow from "@/assets/bots/beginner-07-kings-shadow.jpg";
+import beginnerCheckChaser from "@/assets/bots/beginner-08-check-chaser.jpg";
+import beginnerCenterControl from "@/assets/bots/beginner-09-center-control.jpg";
+import beginnerOpeningExplorer from "@/assets/bots/beginner-10-opening-explorer.jpg";
 
 interface Bot {
   id: string;
@@ -17,6 +27,7 @@ interface Bot {
   rating: number;
   description: string;
   difficulty: string;
+  image?: string;
 }
 
 const botCategories = {
@@ -25,16 +36,16 @@ const botCategories = {
     color: "text-green-500",
     image: botBeginner,
     bots: [
-      { id: "b1", name: "Pawn Pusher", rating: 400, description: "Just learning the basics", difficulty: "Beginner" },
-      { id: "b2", name: "Castle Keeper", rating: 450, description: "Loves castling early", difficulty: "Beginner" },
-      { id: "b3", name: "Knight Novice", rating: 500, description: "Enjoys knight moves", difficulty: "Beginner" },
-      { id: "b4", name: "Bishop Buddy", rating: 550, description: "Diagonal specialist", difficulty: "Beginner" },
-      { id: "b5", name: "Rook Rookie", rating: 600, description: "Learning rook endgames", difficulty: "Beginner" },
-      { id: "b6", name: "Queen's Guard", rating: 650, description: "Protective player", difficulty: "Beginner" },
-      { id: "b7", name: "King's Shadow", rating: 700, description: "Defensive minded", difficulty: "Beginner" },
-      { id: "b8", name: "Check Chaser", rating: 750, description: "Loves giving checks", difficulty: "Beginner" },
-      { id: "b9", name: "Center Control", rating: 800, description: "Controls the center", difficulty: "Beginner" },
-      { id: "b10", name: "Opening Explorer", rating: 850, description: "Learning openings", difficulty: "Beginner" },
+      { id: "b1", name: "Pawn Pusher", rating: 400, description: "Just learning the basics", difficulty: "Beginner", image: beginnerPawnPusher },
+      { id: "b2", name: "Castle Keeper", rating: 450, description: "Loves castling early", difficulty: "Beginner", image: beginnerCastleKeeper },
+      { id: "b3", name: "Knight Novice", rating: 500, description: "Enjoys knight moves", difficulty: "Beginner", image: beginnerKnightNovice },
+      { id: "b4", name: "Bishop Buddy", rating: 550, description: "Diagonal specialist", difficulty: "Beginner", image: beginnerBishopBuddy },
+      { id: "b5", name: "Rook Rookie", rating: 600, description: "Learning rook endgames", difficulty: "Beginner", image: beginnerRookRookie },
+      { id: "b6", name: "Queen's Guard", rating: 650, description: "Protective player", difficulty: "Beginner", image: beginnerQueensGuard },
+      { id: "b7", name: "King's Shadow", rating: 700, description: "Defensive minded", difficulty: "Beginner", image: beginnerKingsShadow },
+      { id: "b8", name: "Check Chaser", rating: 750, description: "Loves giving checks", difficulty: "Beginner", image: beginnerCheckChaser },
+      { id: "b9", name: "Center Control", rating: 800, description: "Controls the center", difficulty: "Beginner", image: beginnerCenterControl },
+      { id: "b10", name: "Opening Explorer", rating: 850, description: "Learning openings", difficulty: "Beginner", image: beginnerOpeningExplorer },
     ],
   },
   intermediate: {
@@ -216,7 +227,7 @@ const Bots = () => {
                   >
                     <div className="aspect-square w-full overflow-hidden">
                       <img
-                        src={image}
+                        src={bot.image || image}
                         alt={bot.name}
                         className="w-full h-full object-cover"
                       />
