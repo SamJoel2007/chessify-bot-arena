@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Crown, Coins, Trophy, Users, Zap, Shield, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,11 @@ import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [coins, setCoins] = useState(1000);
   const [isShopOpen, setIsShopOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [selectedBot, setSelectedBot] = useState<any>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -30,6 +32,13 @@ const Index = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.selectedBot) {
+      setSelectedBot(location.state.selectedBot);
+      document.getElementById('play')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [location]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -156,7 +165,7 @@ const Index = () => {
       <main className="container mx-auto px-4 py-12">
         {/* Game Board Section */}
         <section id="play" className="mb-16">
-          <GameBoard />
+          <GameBoard selectedBot={selectedBot} onBotChange={setSelectedBot} />
         </section>
 
         {/* Bots Section */}

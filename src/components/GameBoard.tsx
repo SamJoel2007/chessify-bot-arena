@@ -1,14 +1,106 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Chess, Square } from "chess.js";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Users, Bot } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
-export const GameBoard = () => {
+interface GameBoardProps {
+  selectedBot?: any;
+  onBotChange?: (bot: any) => void;
+}
+
+export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
   const [game, setGame] = useState(new Chess());
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
+  const [gameMode, setGameMode] = useState<"friend" | "bot" | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
+
+  useEffect(() => {
+    if (selectedBot) {
+      setGameMode("bot");
+      resetGame();
+    }
+  }, [selectedBot]);
+
+  const makeBotMove = () => {
+    if (game.isGameOver()) return;
+
+    setIsThinking(true);
+    setTimeout(() => {
+      const moves = game.moves({ verbose: true });
+      if (moves.length === 0) return;
+
+      // Calculate difficulty based on bot rating
+      const rating = selectedBot?.rating || 1000;
+      let move;
+
+      if (rating < 600) {
+        // Very weak: random moves
+        move = moves[Math.floor(Math.random() * moves.length)];
+      } else if (rating < 1200) {
+        // Beginner: mostly random, sometimes captures
+        const captures = moves.filter(m => m.flags.includes('c'));
+        if (captures.length > 0 && Math.random() > 0.5) {
+          move = captures[Math.floor(Math.random() * captures.length)];
+        } else {
+          move = moves[Math.floor(Math.random() * moves.length)];
+        }
+      } else if (rating < 1800) {
+        // Intermediate: prefers captures and checks
+        const captures = moves.filter(m => m.flags.includes('c'));
+        const checks = moves.filter(m => {
+          const testGame = new Chess(game.fen());
+          testGame.move(m);
+          return testGame.isCheck();
+        });
+        
+        if (checks.length > 0 && Math.random() > 0.3) {
+          move = checks[Math.floor(Math.random() * checks.length)];
+        } else if (captures.length > 0 && Math.random() > 0.4) {
+          move = captures[Math.floor(Math.random() * captures.length)];
+        } else {
+          move = moves[Math.floor(Math.random() * moves.length)];
+        }
+      } else {
+        // Advanced: always looks for best tactical moves
+        const captures = moves.filter(m => m.flags.includes('c'));
+        const checks = moves.filter(m => {
+          const testGame = new Chess(game.fen());
+          testGame.move(m);
+          return testGame.isCheck();
+        });
+        
+        if (checks.length > 0) {
+          move = checks[Math.floor(Math.random() * checks.length)];
+        } else if (captures.length > 0) {
+          move = captures[Math.floor(Math.random() * captures.length)];
+        } else {
+          // Prefer center control
+          const centerMoves = moves.filter(m => 
+            ['e4', 'e5', 'd4', 'd5', 'c4', 'c5', 'f4', 'f5'].includes(m.to)
+          );
+          move = centerMoves.length > 0 
+            ? centerMoves[Math.floor(Math.random() * centerMoves.length)]
+            : moves[Math.floor(Math.random() * moves.length)];
+        }
+      }
+
+      const gameCopy = new Chess(game.fen());
+      gameCopy.move(move);
+      setGame(gameCopy);
+      setMoveHistory(prev => [...prev, move.san]);
+      setIsThinking(false);
+
+      if (gameCopy.isCheckmate()) {
+        toast.error("Checkmate! You lost!");
+      } else if (gameCopy.isCheck()) {
+        toast("Check!");
+      }
+    }, 500);
+  };
 
   const makeMove = (from: Square, to: Square) => {
     try {
@@ -25,9 +117,12 @@ export const GameBoard = () => {
       setMoveHistory([...moveHistory, move.san]);
       
       if (gameCopy.isCheckmate()) {
-        toast.success("Checkmate!");
+        toast.success("Checkmate! You won!");
       } else if (gameCopy.isCheck()) {
         toast("Check!");
+      } else if (gameMode === "bot" && !gameCopy.isGameOver()) {
+        // Bot's turn
+        makeBotMove();
       }
 
       return true;
@@ -37,12 +132,17 @@ export const GameBoard = () => {
   };
 
   const handleSquareClick = (square: Square) => {
+    if (isThinking) return;
+    
+    // In bot mode, only allow white pieces
+    if (gameMode === "bot" && game.turn() === "b") return;
+
     if (selectedSquare) {
       makeMove(selectedSquare, square);
       setSelectedSquare(null);
     } else {
       const piece = game.get(square);
-      if (piece) {
+      if (piece && (gameMode !== "bot" || piece.color === "w")) {
         setSelectedSquare(square);
       }
     }
@@ -52,7 +152,19 @@ export const GameBoard = () => {
     setGame(new Chess());
     setMoveHistory([]);
     setSelectedSquare(null);
+    setIsThinking(false);
     toast("Game reset!");
+  };
+
+  const startBotGame = () => {
+    setGameMode("bot");
+    resetGame();
+  };
+
+  const startFriendGame = () => {
+    setGameMode("friend");
+    if (onBotChange) onBotChange(null);
+    resetGame();
   };
 
   const renderBoard = () => {
@@ -100,7 +212,19 @@ export const GameBoard = () => {
       {/* Chess Board */}
       <Card className="p-6 bg-gradient-card border-border/50">
         <div className="mb-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Game Board</h2>
+          <div>
+            <h2 className="text-2xl font-bold">Game Board</h2>
+            {selectedBot && (
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-sm text-muted-foreground">Playing against:</span>
+                <span className="font-semibold">{selectedBot.name}</span>
+                <Badge variant="outline">{selectedBot.rating} ELO</Badge>
+              </div>
+            )}
+            {isThinking && (
+              <p className="text-sm text-muted-foreground mt-1">Bot is thinking...</p>
+            )}
+          </div>
           <Button variant="outline" size="sm" onClick={resetGame}>
             <RotateCcw className="w-4 h-4 mr-2" />
             Reset
@@ -121,15 +245,19 @@ export const GameBoard = () => {
         <Card className="p-6 bg-gradient-card border-border/50">
           <h3 className="text-xl font-bold mb-4">Game Mode</h3>
           <div className="space-y-3">
-            <Button className="w-full gap-2" variant="default">
+            <Button 
+              className="w-full gap-2" 
+              variant={gameMode === "friend" ? "default" : "outline"}
+              onClick={startFriendGame}
+            >
               <Users className="w-5 h-5" />
               Play vs Friend
             </Button>
-            <Button className="w-full gap-2" variant="outline">
-              <Users className="w-5 h-5" />
-              Play vs Random
-            </Button>
-            <Button className="w-full gap-2" variant="outline">
+            <Button 
+              className="w-full gap-2" 
+              variant={gameMode === "bot" ? "default" : "outline"}
+              onClick={startBotGame}
+            >
               <Bot className="w-5 h-5" />
               Play vs Bot
             </Button>
