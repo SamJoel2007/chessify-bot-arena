@@ -21,7 +21,12 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
   useEffect(() => {
     if (selectedBot) {
       setGameMode("bot");
-      resetGame();
+      // Reset game state when bot is selected
+      const newGame = new Chess();
+      setGame(newGame);
+      setMoveHistory([]);
+      setSelectedSquare(null);
+      setIsThinking(false);
     }
   }, [selectedBot]);
 

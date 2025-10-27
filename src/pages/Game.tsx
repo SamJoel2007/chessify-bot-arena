@@ -13,7 +13,7 @@ const Game = () => {
     if (location.state?.selectedBot) {
       setSelectedBot(location.state.selectedBot);
     }
-  }, [location]);
+  }, [location.state]);
 
   return (
     <div className="min-h-screen bg-background">
