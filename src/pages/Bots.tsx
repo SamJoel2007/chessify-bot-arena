@@ -262,6 +262,52 @@ const Bots = () => {
           ))}
         </Tabs>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-card/30 py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Crown className="w-6 h-6 text-primary" />
+                <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  Chessify
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Your ultimate online chess platform for players of all levels
+              </p>
+            </div>
+            <div>
+              <h3 className="font-bold mb-3">Play</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="/#play" className="hover:text-primary transition-colors">Quick Match</a></li>
+                <li><a href="/bots" className="hover:text-primary transition-colors">Play vs Bot</a></li>
+                <li><a href="/#play" className="hover:text-primary transition-colors">Play vs Friend</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold mb-3">Community</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="/#community" className="hover:text-primary transition-colors">Chat Room</a></li>
+                <li><a href="/#community" className="hover:text-primary transition-colors">Forums</a></li>
+                <li><a href="/#tournament" className="hover:text-primary transition-colors">Tournaments</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold mb-3">Resources</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">Learn Chess</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Strategy Guide</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">FAQ</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
+            <p>© 2025 Chessify. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
