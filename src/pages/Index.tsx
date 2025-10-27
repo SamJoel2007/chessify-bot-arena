@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { GameBoard } from "@/components/GameBoard";
 import { BotSelection } from "@/components/BotSelection";
 import { CommunityChat } from "@/components/CommunityChat";
-import { ShopModal } from "@/components/ShopModal";
+
 import { RecentPosts } from "@/components/RecentPosts";
 import { AdminPostCreator } from "@/components/AdminPostCreator";
 import tournamentImage from "@/assets/tournament-hero.jpg";
@@ -16,7 +16,6 @@ import { toast } from "sonner";
 const Index = () => {
   const navigate = useNavigate();
   const [coins, setCoins] = useState(1000);
-  const [isShopOpen, setIsShopOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -70,12 +69,6 @@ const Index = () => {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => setIsShopOpen(true)}
-              >
-                Shop
-              </Button>
-              <Button
-                variant="ghost"
                 onClick={() => document.getElementById('posts')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Posts
@@ -93,7 +86,7 @@ const Index = () => {
             <Button
               variant="outline"
               className="gap-2"
-              onClick={() => setIsShopOpen(true)}
+              onClick={() => navigate('/purchase-coins')}
             >
               <Coins className="w-5 h-5 text-gold" />
               <span className="font-bold text-gold">{coins}</span>
@@ -291,12 +284,6 @@ const Index = () => {
         </div>
       </footer>
 
-      <ShopModal 
-        isOpen={isShopOpen} 
-        onClose={() => setIsShopOpen(false)}
-        coins={coins}
-        setCoins={setCoins}
-      />
     </div>
   );
 };
