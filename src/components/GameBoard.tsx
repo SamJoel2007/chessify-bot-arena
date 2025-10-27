@@ -187,7 +187,7 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
               ${isLight ? "bg-[#EEEED2]" : "bg-[#769656]"}
               ${isSelected ? "ring-4 ring-primary" : ""}
               hover:opacity-80
-              ${piece?.color === 'w' ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : 'text-gray-900 drop-shadow-[0_2px_4px_rgba(255,255,255,0.3)]'}
+              ${piece?.color === 'w' ? 'text-[#F0D9B5] drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]' : 'text-[#1a1a1a] drop-shadow-[0_3px_6px_rgba(255,255,255,0.4)] [text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]'}
             `}
           >
             {piece && getPieceSymbol(piece.type, piece.color)}
