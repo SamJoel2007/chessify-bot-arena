@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Crown, Coins, Trophy, Users, Zap, Shield, Megaphone } from "lucide-react";
+import { Crown, Coins, Trophy, Users, Zap, Shield, Megaphone, Puzzle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { GameBoard } from "@/components/GameBoard";
@@ -11,6 +11,10 @@ import { CommunityChat } from "@/components/CommunityChat";
 import { RecentPosts } from "@/components/RecentPosts";
 import { AdminPostCreator } from "@/components/AdminPostCreator";
 import tournamentImage from "@/assets/tournament-hero.jpg";
+import puzzleBeginner from "@/assets/puzzles/puzzle-beginner.jpg";
+import puzzleIntermediate from "@/assets/puzzles/puzzle-intermediate.jpg";
+import puzzleAdvanced from "@/assets/puzzles/puzzle-advanced.jpg";
+import puzzleExpert from "@/assets/puzzles/puzzle-expert.jpg";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -66,6 +70,12 @@ const Index = () => {
                 onClick={() => document.getElementById('tournament')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Tournament
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => document.getElementById('puzzles')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Puzzles
               </Button>
               <Button
                 variant="ghost"
@@ -222,6 +232,134 @@ const Index = () => {
           </div>
           <AdminPostCreator />
           <RecentPosts />
+        </section>
+
+        {/* Puzzles Section */}
+        <section id="puzzles" className="mb-16">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Puzzle className="w-8 h-8 text-primary" />
+              <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Puzzles
+              </h2>
+            </div>
+            <p className="text-muted-foreground text-lg">
+              Sharpen your tactical skills with chess puzzles from beginner to expert level
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="overflow-hidden bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow">
+              <div className="aspect-square w-full overflow-hidden">
+                <img
+                  src={puzzleBeginner}
+                  alt="Beginner Puzzle"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xl font-bold">Mate in 1</h3>
+                  <Shield className="w-5 h-5 text-green-500" />
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Find the winning move in this beginner puzzle
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-500/20 text-green-500">
+                    Beginner
+                  </span>
+                  <span className="text-xs text-muted-foreground">Rating: 800</span>
+                </div>
+                <Button className="w-full">
+                  Play Now
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="overflow-hidden bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow">
+              <div className="aspect-square w-full overflow-hidden">
+                <img
+                  src={puzzleIntermediate}
+                  alt="Intermediate Puzzle"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xl font-bold">Mate in 2</h3>
+                  <Shield className="w-5 h-5 text-blue-500" />
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Calculate the winning sequence in this tactical puzzle
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-500/20 text-blue-500">
+                    Intermediate
+                  </span>
+                  <span className="text-xs text-muted-foreground">Rating: 1400</span>
+                </div>
+                <Button className="w-full">
+                  Play Now
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="overflow-hidden bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow">
+              <div className="aspect-square w-full overflow-hidden">
+                <img
+                  src={puzzleAdvanced}
+                  alt="Advanced Puzzle"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xl font-bold">Mate in 3</h3>
+                  <Shield className="w-5 h-5 text-purple-500" />
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Master this complex combination to achieve checkmate
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-500/20 text-purple-500">
+                    Advanced
+                  </span>
+                  <span className="text-xs text-muted-foreground">Rating: 2000</span>
+                </div>
+                <Button className="w-full">
+                  Play Now
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="overflow-hidden bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow">
+              <div className="aspect-square w-full overflow-hidden">
+                <img
+                  src={puzzleExpert}
+                  alt="Expert Puzzle"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xl font-bold">Brilliant Sacrifice</h3>
+                  <Shield className="w-5 h-5 text-gold" />
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Only the best can spot this brilliant winning move
+                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gold/20 text-gold">
+                    Expert
+                  </span>
+                  <span className="text-xs text-muted-foreground">Rating: 2500</span>
+                </div>
+                <Button className="w-full">
+                  Play Now
+                </Button>
+              </div>
+            </Card>
+          </div>
         </section>
 
         {/* Community Section */}
