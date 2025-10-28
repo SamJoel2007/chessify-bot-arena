@@ -125,6 +125,9 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
         toast.success("Checkmate! You won!");
       } else if (gameCopy.isCheck()) {
         toast("Check!");
+        if (gameMode === "bot") {
+          makeBotMove(gameCopy);
+        }
       } else if (gameMode === "bot" && !gameCopy.isGameOver()) {
         // Bot's turn
         makeBotMove(gameCopy);
