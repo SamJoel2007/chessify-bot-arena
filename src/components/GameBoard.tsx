@@ -30,12 +30,12 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
     }
   }, [selectedBot]);
 
-  const makeBotMove = () => {
-    if (game.isGameOver()) return;
+  const makeBotMove = (currentGame: Chess) => {
+    if (currentGame.isGameOver()) return;
 
     setIsThinking(true);
     setTimeout(() => {
-      const moves = game.moves({ verbose: true });
+      const moves = currentGame.moves({ verbose: true });
       if (moves.length === 0) return;
 
       // Calculate difficulty based on bot rating
@@ -57,7 +57,7 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
         // Intermediate: prefers captures and checks
         const captures = moves.filter(m => m.flags.includes('c'));
         const checks = moves.filter(m => {
-          const testGame = new Chess(game.fen());
+          const testGame = new Chess(currentGame.fen());
           testGame.move(m);
           return testGame.isCheck();
         });
@@ -73,7 +73,7 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
         // Advanced: always looks for best tactical moves
         const captures = moves.filter(m => m.flags.includes('c'));
         const checks = moves.filter(m => {
-          const testGame = new Chess(game.fen());
+          const testGame = new Chess(currentGame.fen());
           testGame.move(m);
           return testGame.isCheck();
         });
@@ -93,7 +93,7 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
         }
       }
 
-      const gameCopy = new Chess(game.fen());
+      const gameCopy = new Chess(currentGame.fen());
       gameCopy.move(move);
       setGame(gameCopy);
       setMoveHistory(prev => [...prev, move.san]);
@@ -127,7 +127,7 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
         toast("Check!");
       } else if (gameMode === "bot" && !gameCopy.isGameOver()) {
         // Bot's turn
-        makeBotMove();
+        makeBotMove(gameCopy);
       }
 
       return true;
