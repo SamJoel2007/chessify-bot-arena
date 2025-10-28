@@ -30,6 +30,16 @@ import intermediateGambitGary from "@/assets/bots/intermediate-07-gambit-gary.jp
 import intermediateCounterCarl from "@/assets/bots/intermediate-08-counter-carl.jpg";
 import intermediatePatternPaul from "@/assets/bots/intermediate-09-pattern-paul.jpg";
 import intermediateTempoTerry from "@/assets/bots/intermediate-10-tempo-terry.jpg";
+import animeHikaru from "@/assets/bots/anime-01-hikaru.jpg";
+import animeCodeGeass from "@/assets/bots/anime-02-code-geass.jpg";
+import animeLightYagami from "@/assets/bots/anime-03-light-yagami.jpg";
+import animeLDetective from "@/assets/bots/anime-04-l-detective.jpg";
+import animeSenku from "@/assets/bots/anime-05-senku.jpg";
+import animeLelouch from "@/assets/bots/anime-06-lelouch.jpg";
+import animeEdward from "@/assets/bots/anime-07-edward.jpg";
+import animeShikamaru from "@/assets/bots/anime-08-shikamaru.jpg";
+import animeSaitama from "@/assets/bots/anime-09-saitama.jpg";
+import animeGoku from "@/assets/bots/anime-10-goku.jpg";
 
 interface Bot {
   id: string;
@@ -148,16 +158,16 @@ const botCategories = {
     color: "text-secondary",
     image: botAnime,
     bots: [
-      { id: "an1", name: "Hikaru No Go", rating: 2000, description: "Strategic anime spirit", difficulty: "Anime" },
-      { id: "an2", name: "Code Geass", rating: 2100, description: "Strategic mastermind", difficulty: "Anime" },
-      { id: "an3", name: "Light Yagami", rating: 2200, description: "Mind games master", difficulty: "Anime" },
-      { id: "an4", name: "L Detective", rating: 2300, description: "Analytical genius", difficulty: "Anime" },
-      { id: "an5", name: "Senku Stone", rating: 2400, description: "Scientific approach", difficulty: "Anime" },
-      { id: "an6", name: "Lelouch Bot", rating: 2500, description: "Zero strategy", difficulty: "Anime" },
-      { id: "an7", name: "Edward Elric", rating: 2600, description: "Alchemist tactician", difficulty: "Anime" },
-      { id: "an8", name: "Shikamaru AI", rating: 2700, description: "200 IQ plays", difficulty: "Anime" },
-      { id: "an9", name: "Saitama Chess", rating: 2800, description: "One move victory", difficulty: "Anime" },
-      { id: "an10", name: "Goku Ultra", rating: 2900, description: "Ultra instinct moves", difficulty: "Anime" },
+      { id: "an1", name: "Hikaru No Go", rating: 2000, description: "Strategic anime spirit", difficulty: "Anime", image: animeHikaru },
+      { id: "an2", name: "Code Geass", rating: 2100, description: "Strategic mastermind", difficulty: "Anime", image: animeCodeGeass },
+      { id: "an3", name: "Light Yagami", rating: 2200, description: "Mind games master", difficulty: "Anime", image: animeLightYagami },
+      { id: "an4", name: "L Detective", rating: 2300, description: "Analytical genius", difficulty: "Anime", image: animeLDetective },
+      { id: "an5", name: "Senku Stone", rating: 2400, description: "Scientific approach", difficulty: "Anime", image: animeSenku },
+      { id: "an6", name: "Lelouch Bot", rating: 2500, description: "Zero strategy", difficulty: "Anime", image: animeLelouch },
+      { id: "an7", name: "Edward Elric", rating: 2600, description: "Alchemist tactician", difficulty: "Anime", image: animeEdward },
+      { id: "an8", name: "Shikamaru AI", rating: 2700, description: "200 IQ plays", difficulty: "Anime", image: animeShikamaru },
+      { id: "an9", name: "Saitama Chess", rating: 2800, description: "One move victory", difficulty: "Anime", image: animeSaitama },
+      { id: "an10", name: "Goku Ultra", rating: 2900, description: "Ultra instinct moves", difficulty: "Anime", image: animeGoku },
     ],
   },
 };
