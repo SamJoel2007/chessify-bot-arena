@@ -20,6 +20,16 @@ import beginnerKingsShadow from "@/assets/bots/beginner-07-kings-shadow.jpg";
 import beginnerCheckChaser from "@/assets/bots/beginner-08-check-chaser.jpg";
 import beginnerCenterControl from "@/assets/bots/beginner-09-center-control.jpg";
 import beginnerOpeningExplorer from "@/assets/bots/beginner-10-opening-explorer.jpg";
+import intermediateTacticalTim from "@/assets/bots/intermediate-01-tactical-tim.jpg";
+import intermediateStrategicSam from "@/assets/bots/intermediate-02-strategic-sam.jpg";
+import intermediateEndgameEddie from "@/assets/bots/intermediate-03-endgame-eddie.jpg";
+import intermediatePositionalPete from "@/assets/bots/intermediate-04-positional-pete.jpg";
+import intermediateAttackAndy from "@/assets/bots/intermediate-05-attack-andy.jpg";
+import intermediateDefenseDan from "@/assets/bots/intermediate-06-defense-dan.jpg";
+import intermediateGambitGary from "@/assets/bots/intermediate-07-gambit-gary.jpg";
+import intermediateCounterCarl from "@/assets/bots/intermediate-08-counter-carl.jpg";
+import intermediatePatternPaul from "@/assets/bots/intermediate-09-pattern-paul.jpg";
+import intermediateTempoTerry from "@/assets/bots/intermediate-10-tempo-terry.jpg";
 
 interface Bot {
   id: string;
@@ -53,16 +63,16 @@ const botCategories = {
     color: "text-blue-500",
     image: botIntermediate,
     bots: [
-      { id: "i1", name: "Tactical Tim", rating: 1000, description: "Spots basic tactics", difficulty: "Intermediate" },
-      { id: "i2", name: "Strategic Sam", rating: 1100, description: "Plans ahead", difficulty: "Intermediate" },
-      { id: "i3", name: "Endgame Eddie", rating: 1200, description: "Strong finisher", difficulty: "Intermediate" },
-      { id: "i4", name: "Positional Pete", rating: 1300, description: "Loves good positions", difficulty: "Intermediate" },
-      { id: "i5", name: "Attack Andy", rating: 1400, description: "Aggressive player", difficulty: "Intermediate" },
-      { id: "i6", name: "Defense Dan", rating: 1450, description: "Solid defender", difficulty: "Intermediate" },
-      { id: "i7", name: "Gambit Gary", rating: 1500, description: "Loves gambits", difficulty: "Intermediate" },
-      { id: "i8", name: "Counter Carl", rating: 1550, description: "Counter-attack expert", difficulty: "Intermediate" },
-      { id: "i9", name: "Pattern Paul", rating: 1600, description: "Recognizes patterns", difficulty: "Intermediate" },
-      { id: "i10", name: "Tempo Terry", rating: 1650, description: "Never wastes time", difficulty: "Intermediate" },
+      { id: "i1", name: "Tactical Tim", rating: 1000, description: "Spots basic tactics", difficulty: "Intermediate", image: intermediateTacticalTim },
+      { id: "i2", name: "Strategic Sam", rating: 1100, description: "Plans ahead", difficulty: "Intermediate", image: intermediateStrategicSam },
+      { id: "i3", name: "Endgame Eddie", rating: 1200, description: "Strong finisher", difficulty: "Intermediate", image: intermediateEndgameEddie },
+      { id: "i4", name: "Positional Pete", rating: 1300, description: "Loves good positions", difficulty: "Intermediate", image: intermediatePositionalPete },
+      { id: "i5", name: "Attack Andy", rating: 1400, description: "Aggressive player", difficulty: "Intermediate", image: intermediateAttackAndy },
+      { id: "i6", name: "Defense Dan", rating: 1450, description: "Solid defender", difficulty: "Intermediate", image: intermediateDefenseDan },
+      { id: "i7", name: "Gambit Gary", rating: 1500, description: "Loves gambits", difficulty: "Intermediate", image: intermediateGambitGary },
+      { id: "i8", name: "Counter Carl", rating: 1550, description: "Counter-attack expert", difficulty: "Intermediate", image: intermediateCounterCarl },
+      { id: "i9", name: "Pattern Paul", rating: 1600, description: "Recognizes patterns", difficulty: "Intermediate", image: intermediatePatternPaul },
+      { id: "i10", name: "Tempo Terry", rating: 1650, description: "Never wastes time", difficulty: "Intermediate", image: intermediateTempoTerry },
     ],
   },
   advanced: {
