@@ -22,12 +22,19 @@ const BOTS = [
 ];
 
 serve(async (req) => {
+  console.log('=== Chat bot response function invoked ===');
+  
   if (req.method === 'OPTIONS') {
+    console.log('OPTIONS request received');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { message, username } = await req.json();
+    console.log('Parsing request body...');
+    const body = await req.json();
+    console.log('Request body:', body);
+    
+    const { message, username } = body;
     
     if (!message || !username) {
       return new Response(
@@ -56,11 +63,15 @@ serve(async (req) => {
     console.log(`Selected bot: ${selectedBot.name} to respond to: "${message}"`);
 
     // Generate bot response using Lovable AI
+    console.log('Fetching LOVABLE_API_KEY...');
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY not found in environment');
       throw new Error('LOVABLE_API_KEY not configured');
     }
+    console.log('LOVABLE_API_KEY found');
 
+    console.log('Calling Lovable AI Gateway...');
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -84,22 +95,33 @@ serve(async (req) => {
       }),
     });
 
+    console.log('AI response status:', aiResponse.status);
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
       console.error('AI Gateway error:', aiResponse.status, errorText);
       throw new Error(`AI Gateway error: ${aiResponse.status}`);
     }
 
+    console.log('Parsing AI response...');
     const aiData = await aiResponse.json();
     const botMessage = aiData.choices[0].message.content;
 
     console.log(`Bot ${selectedBot.name} generated response: "${botMessage}"`);
 
     // Insert bot message into chat
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    console.log('Getting Supabase credentials...');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase credentials');
+      throw new Error('Supabase credentials not configured');
+    }
+    
+    console.log('Creating Supabase client...');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    console.log('Inserting bot message into database...');
     const { data, error } = await supabase
       .from('chat_messages')
       .insert({
