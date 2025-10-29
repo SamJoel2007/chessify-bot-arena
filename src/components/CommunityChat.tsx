@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,8 @@ export const CommunityChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeUsers, setActiveUsers] = useState<number>(0);
+  const channelRef = useRef<any>(null);
 
   useEffect(() => {
     // Check authentication
@@ -73,9 +75,17 @@ export const CommunityChat = () => {
 
     loadMessages();
 
-    // Subscribe to new messages
-    const channel = supabase
-      .channel("chat_messages")
+    // Set up presence tracking and message subscription
+    const channel = supabase.channel("community-chat");
+
+    // Track presence
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        const userCount = Object.keys(state).length;
+        setActiveUsers(userCount);
+        console.log(`Active users: ${userCount}`);
+      })
       .on(
         "postgres_changes",
         {
@@ -87,10 +97,23 @@ export const CommunityChat = () => {
           setMessages((prev) => [...prev, payload.new as Message]);
         }
       )
-      .subscribe();
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await channel.track({
+            user_id: currentUser.id,
+            email: currentUser.email,
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
+
+    channelRef.current = channel;
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        channelRef.current.untrack();
+        supabase.removeChannel(channelRef.current);
+      }
     };
   }, [currentUser]);
 
@@ -114,14 +137,19 @@ export const CommunityChat = () => {
 
     setMessage("");
 
-    // Trigger bot response
-    try {
-      await supabase.functions.invoke('chat-bot-response', {
-        body: { message: messageText, username: username }
-      });
-    } catch (error) {
-      console.error("Error triggering bot response:", error);
-      // Don't show error to user, bots are optional
+    // Trigger bot response only if user is alone
+    if (activeUsers === 1) {
+      try {
+        await supabase.functions.invoke('chat-bot-response', {
+          body: { 
+            message: messageText, 
+            username: username,
+            activeUserCount: activeUsers 
+          }
+        });
+      } catch (error) {
+        console.error("Error triggering bot response:", error);
+      }
     }
   };
 
@@ -143,7 +171,10 @@ export const CommunityChat = () => {
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <h2 className="text-3xl font-bold mb-2">Community Chat</h2>
-        <p className="text-muted-foreground">Connect with chess players worldwide</p>
+        <p className="text-muted-foreground">
+          Connect with chess players worldwide • {activeUsers} {activeUsers === 1 ? 'user' : 'users'} online
+          {activeUsers === 1 && ' (Bots will keep you company!)'}
+        </p>
       </div>
 
       <Card className="bg-gradient-card border-border/50 overflow-hidden">

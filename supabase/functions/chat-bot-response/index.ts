@@ -9,37 +9,79 @@ const corsHeaders = {
 const BOTS = [
   {
     name: 'Hinata',
-    personality: 'You are Hinata, a friendly and encouraging female chess enthusiast. You are kind, supportive, and always try to motivate others. You use a warm, gentle tone and occasionally use emojis like 😊 or ✨. Keep responses concise (1-2 sentences).'
+    responses: {
+      greeting: ['Hey there! 😊 Ready for some chess?', 'Hi! Nice to see you here! ✨', 'Hello! Want to talk about chess strategies?'],
+      help: ['I can help you with opening strategies! What would you like to know?', 'Need some chess tips? I\'m here to help! 😊'],
+      chess: ['Chess is such a beautiful game! What\'s your favorite opening?', 'I love discussing chess tactics! ✨'],
+      default: ['That\'s interesting! Tell me more 😊', 'I see! Keep practicing and you\'ll improve! ✨', 'Great point! What do you think about trying different strategies?']
+    }
   },
   {
     name: 'Alya',
-    personality: 'You are Alya, a witty and clever female chess player. You are playful, sometimes sarcastic, but always in a friendly way. You enjoy chess banter and strategy discussions. Keep responses concise (1-2 sentences).'
+    responses: {
+      greeting: ['Well, well, look who showed up! 😏', 'Hey! Ready to lose at chess? Just kidding! 😄', 'Yo! What\'s your chess rating?'],
+      help: ['Let me guess, you need help with endgames? 😏', 'Stuck on a move? Happens to everyone!'],
+      chess: ['Ah, a fellow chess nerd! My kind of person 😄', 'Chess talk? Now we\'re talking!'],
+      default: ['Hmm, interesting take 🤔', 'Bold move! I like it 😏', 'Not bad, not bad at all!']
+    }
   },
   {
     name: 'Sam',
-    personality: 'You are Sam, a laid-back and analytical male chess player. You are chill, strategic, and like to share chess insights casually. You keep things simple and straightforward. Keep responses concise (1-2 sentences).'
+    responses: {
+      greeting: ['Hey, what\'s up?', 'Yo! How\'s your chess game going?', 'Hey there, chess player!'],
+      help: ['Sure, what do you need help with?', 'I can share some tips if you want.'],
+      chess: ['Chess is pretty cool. What do you usually play?', 'Nice, always good to see chess enthusiasts.'],
+      default: ['Yeah, I feel you.', 'Makes sense.', 'That\'s a good point.']
+    }
   }
 ];
 
-serve(async (req) => {
-  console.log('=== Chat bot response function invoked ===');
+function getBotResponse(botName: string, message: string): string {
+  const bot = BOTS.find(b => b.name === botName);
+  if (!bot) return "Hey there!";
   
+  const lowerMsg = message.toLowerCase();
+  
+  // Check for greetings
+  if (lowerMsg.match(/\b(hi|hello|hey|sup|yo|greetings)\b/)) {
+    return bot.responses.greeting[Math.floor(Math.random() * bot.responses.greeting.length)];
+  }
+  
+  // Check for help requests
+  if (lowerMsg.match(/\b(help|advice|tip|guide|how)\b/)) {
+    return bot.responses.help[Math.floor(Math.random() * bot.responses.help.length)];
+  }
+  
+  // Check for chess-related keywords
+  if (lowerMsg.match(/\b(chess|move|game|strategy|tactic|opening|endgame|checkmate|piece)\b/)) {
+    return bot.responses.chess[Math.floor(Math.random() * bot.responses.chess.length)];
+  }
+  
+  // Default response
+  return bot.responses.default[Math.floor(Math.random() * bot.responses.default.length)];
+}
+
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    console.log('OPTIONS request received');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('Parsing request body...');
-    const body = await req.json();
-    console.log('Request body:', body);
-    
-    const { message, username } = body;
+    const { message, username, activeUserCount } = await req.json();
     
     if (!message || !username) {
       return new Response(
         JSON.stringify({ error: 'Message and username are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Only respond if there's only 1 user in the chat
+    if (activeUserCount !== 1) {
+      console.log(`Skipping bot response - ${activeUserCount} users active`);
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, reason: 'Multiple users present' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -60,72 +102,25 @@ serve(async (req) => {
       selectedBot = BOTS[Math.floor(Math.random() * BOTS.length)];
     }
 
-    console.log(`Selected bot: ${selectedBot.name} to respond to: "${message}"`);
+    console.log(`Bot ${selectedBot.name} responding to: "${message}"`);
 
-    // Generate bot response using Lovable AI
-    console.log('Fetching LOVABLE_API_KEY...');
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY not found in environment');
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
-    console.log('LOVABLE_API_KEY found');
-
-    console.log('Calling Lovable AI Gateway...');
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { 
-            role: 'system', 
-            content: selectedBot.personality
-          },
-          { 
-            role: 'user', 
-            content: `${username} said: "${message}". Respond naturally as ${selectedBot.name} in a chess community chat.`
-          }
-        ],
-        temperature: 0.8,
-        max_tokens: 100
-      }),
-    });
-
-    console.log('AI response status:', aiResponse.status);
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('AI Gateway error:', aiResponse.status, errorText);
-      throw new Error(`AI Gateway error: ${aiResponse.status}`);
-    }
-
-    console.log('Parsing AI response...');
-    const aiData = await aiResponse.json();
-    const botMessage = aiData.choices[0].message.content;
-
-    console.log(`Bot ${selectedBot.name} generated response: "${botMessage}"`);
+    // Generate bot response using keyword matching
+    const botMessage = getBotResponse(selectedBot.name, message);
 
     // Insert bot message into chat
-    console.log('Getting Supabase credentials...');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase credentials');
       throw new Error('Supabase credentials not configured');
     }
     
-    console.log('Creating Supabase client...');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Inserting bot message into database...');
     const { data, error } = await supabase
       .from('chat_messages')
       .insert({
-        user_id: '00000000-0000-0000-0000-000000000000', // Bot user ID
+        user_id: '00000000-0000-0000-0000-000000000000',
         username: selectedBot.name,
         message: botMessage
       })
@@ -137,7 +132,7 @@ serve(async (req) => {
       throw error;
     }
 
-    console.log('Bot message inserted successfully:', data);
+    console.log(`Bot message inserted: "${botMessage}"`);
 
     return new Response(
       JSON.stringify({ success: true, bot: selectedBot.name, message: botMessage }),
