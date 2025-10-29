@@ -97,10 +97,13 @@ export const CommunityChat = () => {
   const handleSend = async () => {
     if (!message.trim() || !currentUser) return;
 
+    const messageText = message.trim();
+    const username = currentUser.email.split("@")[0];
+
     const { error } = await supabase.from("chat_messages").insert({
       user_id: currentUser.id,
-      username: currentUser.email.split("@")[0],
-      message: message.trim(),
+      username: username,
+      message: messageText,
     });
 
     if (error) {
@@ -110,6 +113,16 @@ export const CommunityChat = () => {
     }
 
     setMessage("");
+
+    // Trigger bot response
+    try {
+      await supabase.functions.invoke('chat-bot-response', {
+        body: { message: messageText, username: username }
+      });
+    } catch (error) {
+      console.error("Error triggering bot response:", error);
+      // Don't show error to user, bots are optional
+    }
   };
 
   if (loading) {
