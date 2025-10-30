@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Crown, Coins, Trophy, Users, Zap, Shield, Megaphone, Puzzle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { GameBoard } from "@/components/GameBoard";
 import { BotSelection } from "@/components/BotSelection";
 import { CommunityChat } from "@/components/CommunityChat";
-
+import { AvatarSelector } from "@/components/AvatarSelector";
 import { RecentPosts } from "@/components/RecentPosts";
 import { AdminPostCreator } from "@/components/AdminPostCreator";
 import tournamentImage from "@/assets/tournament-hero.jpg";
@@ -21,18 +22,39 @@ const Index = () => {
   const navigate = useNavigate();
   const [coins, setCoins] = useState(1000);
   const [user, setUser] = useState<any>(null);
+  const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
+  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("coins, current_avatar")
+      .eq("id", userId)
+      .single();
+
+    if (data) {
+      setCoins(data.coins || 1000);
+      setCurrentAvatar(data.current_avatar);
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -115,7 +137,14 @@ const Index = () => {
                 </Button>
               </>
             )}
-            <div className="w-10 h-10 rounded-full bg-gradient-primary" />
+            <Avatar 
+              className="cursor-pointer hover:ring-2 hover:ring-primary transition-all" 
+              onClick={() => user && setShowAvatarSelector(true)}
+            >
+              <AvatarFallback className="bg-gradient-primary text-3xl">
+                {currentAvatar === "1" ? "👑" : currentAvatar === "2" ? "⚔️" : currentAvatar === "3" ? "♛" : "👤"}
+              </AvatarFallback>
+            </Avatar>
           </div>
         </div>
       </header>
@@ -154,6 +183,14 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Avatar Selector Modal */}
+      <AvatarSelector
+        isOpen={showAvatarSelector}
+        onClose={() => setShowAvatarSelector(false)}
+        currentAvatar={currentAvatar}
+        onAvatarChange={(avatarId) => setCurrentAvatar(avatarId)}
+      />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">

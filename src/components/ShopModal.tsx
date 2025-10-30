@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bot, User, Palette, Coins } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ShopModalProps {
   isOpen: boolean;
@@ -36,13 +37,28 @@ const shopItems = {
 };
 
 export const ShopModal = ({ isOpen, onClose, coins, setCoins }: ShopModalProps) => {
-  const handlePurchase = (item: any, category: string) => {
-    if (coins >= item.price) {
-      setCoins(coins - item.price);
-      toast.success(`Purchased ${item.name}!`);
-    } else {
-      toast.error("Not enough coins!");
+  const handlePurchase = async (item: any, category: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("Please sign in to make purchases");
+      return;
     }
+
+    const { data, error } = await supabase.rpc('handle_purchase', {
+      p_item_type: category,
+      p_item_id: item.id.toString(),
+      p_item_name: item.name,
+      p_item_data: { icon: item.icon, color: item.color },
+      p_price: item.price
+    }) as { data: { success: boolean; error?: string; coins?: number } | null; error: any };
+
+    if (error || !data?.success) {
+      toast.error((data as any)?.error || "Purchase failed");
+      return;
+    }
+
+    setCoins((data as any).coins);
+    toast.success(`Purchased ${item.name}!`);
   };
 
   return (

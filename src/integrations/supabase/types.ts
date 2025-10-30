@@ -131,27 +131,71 @@ export type Database = {
       }
       profiles: {
         Row: {
+          coins: number
           created_at: string
+          current_avatar: string | null
           email: string | null
           id: string
           updated_at: string
           username: string | null
         }
         Insert: {
+          coins?: number
           created_at?: string
+          current_avatar?: string | null
           email?: string | null
           id: string
           updated_at?: string
           username?: string | null
         }
         Update: {
+          coins?: number
           created_at?: string
+          current_avatar?: string | null
           email?: string | null
           id?: string
           updated_at?: string
           username?: string | null
         }
         Relationships: []
+      }
+      user_purchases: {
+        Row: {
+          id: string
+          item_data: Json | null
+          item_id: string
+          item_name: string
+          item_type: string
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          item_data?: Json | null
+          item_id: string
+          item_name: string
+          item_type: string
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          item_data?: Json | null
+          item_id?: string
+          item_name?: string
+          item_type?: string
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -179,6 +223,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      handle_purchase: {
+        Args: {
+          p_item_data: Json
+          p_item_id: string
+          p_item_name: string
+          p_item_type: string
+          p_price: number
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
