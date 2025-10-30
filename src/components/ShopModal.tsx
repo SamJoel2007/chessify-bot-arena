@@ -65,9 +65,12 @@ const shopItems = {
     { id: "12", name: "Royal Scepter", price: 520, icon: "🔱", rarity: "epic" as Rarity },
   ] as ShopAvatar[],
   themes: [
-    { id: "theme-1", name: "Midnight Blue", price: 300, color: "from-blue-900 to-blue-600" },
-    { id: "theme-2", name: "Royal Purple", price: 350, color: "from-purple-900 to-purple-600" },
-    { id: "theme-3", name: "Emerald Dream", price: 300, color: "from-emerald-900 to-emerald-600" },
+    { id: "theme-1", name: "Wood Classic", price: 250, color: "from-amber-800 to-amber-600" },
+    { id: "theme-2", name: "Crystal Ice", price: 300, color: "from-cyan-200 to-blue-300" },
+    { id: "theme-3", name: "High Contrast", price: 200, color: "from-gray-900 to-gray-100" },
+    { id: "theme-4", name: "Spooky Night", price: 350, color: "from-orange-600 to-purple-700" },
+    { id: "theme-5", name: "Royal Purple", price: 300, color: "from-purple-900 to-purple-500" },
+    { id: "theme-6", name: "Wizarding World", price: 400, color: "from-red-900 to-amber-600" },
   ],
 };
 
