@@ -19,6 +19,24 @@ interface ShopModalProps {
   onCoinsUpdate: () => void;
 }
 
+type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
+
+interface ShopAvatar {
+  id: string;
+  name: string;
+  price: number;
+  icon: string;
+  rarity: Rarity;
+}
+
+const rarityColors = {
+  common: "from-gray-500 to-gray-600",
+  uncommon: "from-green-500 to-green-600",
+  rare: "from-blue-500 to-blue-600",
+  epic: "from-purple-500 to-purple-600",
+  legendary: "from-amber-500 to-amber-600",
+};
+
 const shopItems = {
   bots: [
     { id: "bot-1", name: "Dragon Knight", price: 600, icon: "🐉" },
@@ -26,10 +44,26 @@ const shopItems = {
     { id: "bot-3", name: "Wizard Master", price: 700, icon: "🧙‍♂️" },
   ],
   avatars: [
-    { id: "1", name: "Cool King", price: 200, icon: "👑" },
-    { id: "2", name: "Knight Helmet", price: 150, icon: "⚔️" },
-    { id: "3", name: "Chess Crown", price: 250, icon: "♛" },
-  ],
+    // Common
+    { id: "1", name: "Knight Helmet", price: 100, icon: "⚔️", rarity: "common" as Rarity },
+    { id: "2", name: "Chess Pawn", price: 120, icon: "♟️", rarity: "common" as Rarity },
+    { id: "3", name: "Shield Bearer", price: 110, icon: "🛡️", rarity: "common" as Rarity },
+    
+    // Uncommon
+    { id: "4", name: "Cool King", price: 200, icon: "👑", rarity: "uncommon" as Rarity },
+    { id: "5", name: "Chess Crown", price: 220, icon: "♛", rarity: "uncommon" as Rarity },
+    { id: "6", name: "Battle Axe", price: 210, icon: "🪓", rarity: "uncommon" as Rarity },
+    
+    // Rare
+    { id: "7", name: "Fire Phoenix", price: 350, icon: "🔥", rarity: "rare" as Rarity },
+    { id: "8", name: "Ice Crystal", price: 330, icon: "❄️", rarity: "rare" as Rarity },
+    { id: "9", name: "Lightning Bolt", price: 340, icon: "⚡", rarity: "rare" as Rarity },
+    
+    // Epic
+    { id: "10", name: "Dragon Soul", price: 500, icon: "🐲", rarity: "epic" as Rarity },
+    { id: "11", name: "Magic Wand", price: 480, icon: "🪄", rarity: "epic" as Rarity },
+    { id: "12", name: "Royal Scepter", price: 520, icon: "🔱", rarity: "epic" as Rarity },
+  ] as ShopAvatar[],
   themes: [
     { id: "theme-1", name: "Midnight Blue", price: 300, color: "from-blue-900 to-blue-600" },
     { id: "theme-2", name: "Royal Purple", price: 350, color: "from-purple-900 to-purple-600" },
@@ -158,37 +192,62 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
           </TabsContent>
 
           <TabsContent value="avatars" className="mt-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              {shopItems.avatars.map((avatar) => {
-                const isPurchased = purchasedItems.has(avatar.id);
-                return (
-                  <Card key={avatar.id} className="p-4 bg-card/50 relative">
-                    {isPurchased && (
-                      <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
-                        <Check className="w-4 h-4 text-primary-foreground" />
-                      </div>
-                    )}
-                    <div className="text-5xl mb-3 text-center">{avatar.icon}</div>
-                    <h3 className="font-bold text-center mb-2">{avatar.name}</h3>
-                    <Button
-                      className="w-full gap-2"
-                      variant="outline"
-                      onClick={() => handlePurchase(avatar, "avatar")}
-                      disabled={isPurchased || loading}
-                    >
-                      {isPurchased ? (
-                        "Owned"
-                      ) : (
-                        <>
-                          <Coins className="w-4 h-4 text-gold" />
-                          {avatar.price}
-                        </>
-                      )}
-                    </Button>
-                  </Card>
-                );
-              })}
-            </div>
+            {["common", "uncommon", "rare", "epic", "legendary"].map((rarity) => {
+              const avatarsInRarity = shopItems.avatars.filter(a => a.rarity === rarity);
+              if (avatarsInRarity.length === 0) return null;
+              
+              return (
+                <div key={rarity} className="mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className={`h-1 w-12 rounded-full bg-gradient-to-r ${rarityColors[rarity as Rarity]}`} />
+                    <h3 className="text-lg font-bold capitalize">{rarity}</h3>
+                  </div>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {avatarsInRarity.map((avatar) => {
+                      const isPurchased = purchasedItems.has(avatar.id);
+                      return (
+                        <Card 
+                          key={avatar.id} 
+                          className="p-4 bg-card/50 relative border-2 transition-all hover:scale-105"
+                          style={{
+                            borderImage: `linear-gradient(135deg, var(--tw-gradient-stops)) 1`,
+                            borderImageSlice: 1,
+                          }}
+                        >
+                          {isPurchased && (
+                            <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
+                              <Check className="w-4 h-4 text-primary-foreground" />
+                            </div>
+                          )}
+                          <div 
+                            className={`absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-full bg-gradient-to-r ${rarityColors[avatar.rarity]} text-white`}
+                          >
+                            {avatar.rarity.toUpperCase()}
+                          </div>
+                          <div className="text-5xl mb-3 text-center mt-6">{avatar.icon}</div>
+                          <h3 className="font-bold text-center mb-2">{avatar.name}</h3>
+                          <Button
+                            className="w-full gap-2"
+                            variant="outline"
+                            onClick={() => handlePurchase(avatar, "avatar")}
+                            disabled={isPurchased || loading}
+                          >
+                            {isPurchased ? (
+                              "Owned"
+                            ) : (
+                              <>
+                                <Coins className="w-4 h-4 text-gold" />
+                                {avatar.price}
+                              </>
+                            )}
+                          </Button>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </TabsContent>
 
           <TabsContent value="themes" className="mt-6">
