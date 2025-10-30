@@ -104,7 +104,7 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
       } else if (gameCopy.isCheck()) {
         toast("Check!");
       }
-    }, 500);
+    }, 2000);
   };
 
   const makeMove = (from: Square, to: Square) => {
