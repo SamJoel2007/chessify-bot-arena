@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Chess, Square } from "chess.js";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Users, Bot } from "lucide-react";
+import { RotateCcw, Users, Bot, Flag, Handshake } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GameBoardProps {
   selectedBot?: any;
@@ -161,7 +162,54 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
     setMoveHistory([]);
     setSelectedSquare(null);
     setIsThinking(false);
-    toast("Game reset!");
+    toast("Game resigned!");
+  };
+
+  const handleDraw = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please log in to request a draw");
+        return;
+      }
+
+      // Check current coins
+      const { data: profile, error: fetchError } = await supabase
+        .from("profiles")
+        .select("coins")
+        .eq("id", user.id)
+        .single();
+
+      if (fetchError) {
+        toast.error("Failed to check coins");
+        return;
+      }
+
+      if (!profile || profile.coins < 20) {
+        toast.error("Not enough coins! You need 20 coins to request a draw.");
+        return;
+      }
+
+      // Deduct coins
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ coins: profile.coins - 20 })
+        .eq("id", user.id);
+
+      if (updateError) {
+        toast.error("Failed to process draw");
+        return;
+      }
+
+      // End game as draw
+      setGame(new Chess());
+      setMoveHistory([]);
+      setSelectedSquare(null);
+      setIsThinking(false);
+      toast.success("Draw accepted! 20 coins deducted.");
+    } catch (error) {
+      toast.error("An error occurred");
+    }
   };
 
   const startBotGame = () => {
@@ -233,10 +281,16 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
               <p className="text-sm text-muted-foreground mt-1">Bot is thinking...</p>
             )}
           </div>
-          <Button variant="outline" size="sm" onClick={resetGame}>
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Reset
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleDraw}>
+              <Handshake className="w-4 h-4 mr-2" />
+              Draw (20 coins)
+            </Button>
+            <Button variant="outline" size="sm" onClick={resetGame}>
+              <Flag className="w-4 h-4 mr-2" />
+              Resign
+            </Button>
+          </div>
         </div>
         <div className="max-w-[600px] mx-auto">
           <div 
