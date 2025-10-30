@@ -12,7 +12,7 @@ import botAnime from "@/assets/bot-anime.jpg";
 
 interface BotSelectionProps {
   coins: number;
-  setCoins: (coins: number) => void;
+  onCoinsUpdate: () => void;
 }
 
 const bots = [
@@ -63,10 +63,10 @@ const bots = [
   },
 ];
 
-export const BotSelection = ({ coins, setCoins }: BotSelectionProps) => {
+export const BotSelection = ({ coins, onCoinsUpdate }: BotSelectionProps) => {
   const handlePurchase = (bot: typeof bots[0]) => {
     if (coins >= bot.price) {
-      setCoins(coins - bot.price);
+      onCoinsUpdate();
       toast.success(`Purchased ${bot.name}!`);
     } else {
       toast.error("Not enough coins!");

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Crown, Coins, Trophy, Users, Zap, Shield, Megaphone, Puzzle } from "lucide-react";
+import { Crown, Coins, Trophy, Users, Zap, Shield, Megaphone, Puzzle, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -9,6 +9,7 @@ import { GameBoard } from "@/components/GameBoard";
 import { BotSelection } from "@/components/BotSelection";
 import { CommunityChat } from "@/components/CommunityChat";
 import { AvatarSelector } from "@/components/AvatarSelector";
+import { ShopModal } from "@/components/ShopModal";
 import { RecentPosts } from "@/components/RecentPosts";
 import { AdminPostCreator } from "@/components/AdminPostCreator";
 import tournamentImage from "@/assets/tournament-hero.jpg";
@@ -24,6 +25,7 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+  const [showShop, setShowShop] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -118,6 +120,14 @@ const Index = () => {
             <Button
               variant="outline"
               className="gap-2"
+              onClick={() => user ? setShowShop(true) : navigate('/auth')}
+            >
+              <Store className="w-5 h-5 text-primary" />
+              Shop
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2"
               onClick={() => navigate('/purchase-coins')}
             >
               <Coins className="w-5 h-5 text-gold" />
@@ -192,6 +202,14 @@ const Index = () => {
         onAvatarChange={(avatarId) => setCurrentAvatar(avatarId)}
       />
 
+      {/* Shop Modal */}
+      <ShopModal
+        isOpen={showShop}
+        onClose={() => setShowShop(false)}
+        coins={coins}
+        onCoinsUpdate={() => user && fetchUserProfile(user.id)}
+      />
+
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
         {/* Game Board Section */}
@@ -209,7 +227,7 @@ const Index = () => {
               Test your skills against AI opponents of varying difficulty levels
             </p>
           </div>
-          <BotSelection coins={coins} setCoins={setCoins} />
+          <BotSelection coins={coins} onCoinsUpdate={() => user && fetchUserProfile(user.id)} />
         </section>
 
         {/* Tournament Section */}
