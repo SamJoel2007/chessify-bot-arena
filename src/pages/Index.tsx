@@ -336,7 +336,7 @@ const Index = () => {
                   </span>
                   <span className="text-xs text-muted-foreground">Rating: 800</span>
                 </div>
-                <Button className="w-full">
+                <Button className="w-full" onClick={() => navigate('/puzzles')}>
                   Play Now
                 </Button>
               </div>
@@ -364,7 +364,7 @@ const Index = () => {
                   </span>
                   <span className="text-xs text-muted-foreground">Rating: 1400</span>
                 </div>
-                <Button className="w-full">
+                <Button className="w-full" onClick={() => navigate('/puzzles')}>
                   Play Now
                 </Button>
               </div>
@@ -392,7 +392,7 @@ const Index = () => {
                   </span>
                   <span className="text-xs text-muted-foreground">Rating: 2000</span>
                 </div>
-                <Button className="w-full">
+                <Button className="w-full" onClick={() => navigate('/puzzles')}>
                   Play Now
                 </Button>
               </div>
@@ -420,7 +420,7 @@ const Index = () => {
                   </span>
                   <span className="text-xs text-muted-foreground">Rating: 2500</span>
                 </div>
-                <Button className="w-full">
+                <Button className="w-full" onClick={() => navigate('/puzzles')}>
                   Play Now
                 </Button>
               </div>

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Chess, Square } from "chess.js";
-import { Chessboard } from "react-chessboard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Users, Bot, Flag, Handshake, Trophy, X } from "lucide-react";
@@ -160,16 +159,16 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
     moves.forEach((move) => {
       newSquares[move.to] = {
         background: game.get(move.to as Square)
-          ? "radial-gradient(circle, rgba(255,0,0,.8) 85%, transparent 85%)"
-          : "radial-gradient(circle, rgba(76,175,80,.8) 25%, transparent 25%)",
+          ? "rgba(239, 68, 68, 0.6)"
+          : "rgba(34, 197, 94, 0.6)",
       };
     });
-    newSquares[square] = { background: "rgba(255, 255, 0, 0.4)" };
+    newSquares[square] = { background: "rgba(234, 179, 8, 0.5)" };
     setOptionSquares(newSquares);
     return true;
   };
 
-  const onSquareClick = (square: Square) => {
+  const handleSquareClick = (square: Square) => {
     if (isThinking) return;
     
     // In bot mode, only allow white pieces
@@ -285,16 +284,59 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
     resetGame();
   };
 
-  const onPieceDrop = ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string }) => {
-    if (isThinking) return false;
-    if (gameMode === "bot" && game.turn() === "b") return false;
+  const renderBoard = () => {
+    const board = game.board();
+    const squares = [];
 
-    const move = makeMove(sourceSquare as Square, targetSquare as Square);
-    return move;
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        const square = `${String.fromCharCode(97 + j)}${8 - i}` as Square;
+        const piece = board[i][j];
+        const isLight = (i + j) % 2 === 0;
+        const isSelected = moveFrom === square;
+        const hasLegalMove = optionSquares[square];
+
+        squares.push(
+          <button
+            key={square}
+            onClick={() => handleSquareClick(square)}
+            className={`
+              aspect-square flex items-center justify-center text-5xl font-bold 
+              transition-all duration-300 ease-in-out relative
+              ${isLight ? "bg-[#EEEED2]" : "bg-[#769656]"}
+              ${isSelected ? "ring-4 ring-primary ring-inset" : ""}
+              hover:brightness-95
+              ${piece?.color === 'w' ? 'text-[#F0D9B5] drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]' : 'text-[#1a1a1a] drop-shadow-[0_3px_6px_rgba(255,255,255,0.4)] [text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]'}
+            `}
+            style={{
+              backgroundColor: hasLegalMove ? hasLegalMove.background : undefined,
+            }}
+          >
+            {piece && (
+              <span className="animate-scale-in">
+                {getPieceSymbol(piece.type, piece.color)}
+              </span>
+            )}
+            {hasLegalMove && !piece && (
+              <span className="absolute w-3 h-3 rounded-full bg-green-500/80 animate-pulse" />
+            )}
+            {hasLegalMove && piece && moveFrom !== square && (
+              <span className="absolute inset-0 ring-4 ring-red-500/60 ring-inset rounded animate-pulse" />
+            )}
+          </button>
+        );
+      }
+    }
+
+    return squares;
   };
 
-  const onSquareClickHandler = ({ square }: { square: string }) => {
-    onSquareClick(square as Square);
+  const getPieceSymbol = (type: string, color: string) => {
+    const pieces: Record<string, Record<string, string>> = {
+      w: { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕", k: "♔" },
+      b: { p: "♟", n: "♞", b: "♝", r: "♜", q: "♛", k: "♚" },
+    };
+    return pieces[color][type];
   };
 
   return (
@@ -327,23 +369,11 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
           </div>
         </div>
         <div className="max-w-[600px] mx-auto">
-          <div className="rounded-lg overflow-hidden shadow-glow">
-            <Chessboard
-              options={{
-                position: game.fen(),
-                onPieceDrop: onPieceDrop,
-                onSquareClick: onSquareClickHandler,
-                squareStyles: optionSquares,
-                boardOrientation: "white",
-                animationDurationInMs: 300,
-                canDragPiece: ({ piece }: any) => {
-                  if (isThinking) return false;
-                  if (gameMode === "bot" && game.turn() === "b") return false;
-                  if (gameMode === "bot") return piece.pieceType[0] === "w";
-                  return true;
-                },
-              }}
-            />
+          <div 
+            className="grid grid-cols-8 border-4 border-border rounded-lg overflow-hidden shadow-glow"
+            style={{ aspectRatio: "1/1" }}
+          >
+            {renderBoard()}
           </div>
         </div>
       </Card>

@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Bots from "./pages/Bots";
 import Game from "./pages/Game";
+import Puzzles from "./pages/Puzzles";
+import PuzzleGame from "./pages/PuzzleGame";
 import PurchaseCoins from "./pages/PurchaseCoins";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -26,6 +28,8 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/bots" element={<Bots />} />
           <Route path="/game" element={<Game />} />
+          <Route path="/puzzles" element={<Puzzles />} />
+          <Route path="/puzzle-game" element={<PuzzleGame />} />
           <Route path="/purchase-coins" element={<PurchaseCoins />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

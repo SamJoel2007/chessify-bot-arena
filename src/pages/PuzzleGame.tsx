@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Chess, Square } from "chess.js";
-import { Chessboard } from "react-chessboard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Crown, Trophy, X, RotateCcw } from "lucide-react";
@@ -98,7 +97,7 @@ const PuzzleGame = () => {
     }
   };
 
-  const onSquareClick = (square: Square) => {
+  const handleSquareClick = (square: Square) => {
     // If no square is selected, select this square
     if (!moveFrom) {
       const piece = game.get(square);
@@ -133,13 +132,60 @@ const PuzzleGame = () => {
     }
   };
 
-  const onPieceDrop = ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string }) => {
-    const move = makeMove(sourceSquare as Square, targetSquare as Square);
-    return move;
+  const renderBoard = () => {
+    const board = game.board();
+    const squares = [];
+
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        const square = `${String.fromCharCode(97 + j)}${8 - i}` as Square;
+        const piece = board[i][j];
+        const isLight = (i + j) % 2 === 0;
+        const isSelected = moveFrom === square;
+        const hasLegalMove = optionSquares[square];
+
+        squares.push(
+          <button
+            key={square}
+            onClick={() => handleSquareClick(square)}
+            disabled={puzzleSolved}
+            className={`
+              aspect-square flex items-center justify-center text-5xl font-bold 
+              transition-all duration-300 ease-in-out relative
+              ${isLight ? "bg-[#EEEED2]" : "bg-[#769656]"}
+              ${isSelected ? "ring-4 ring-primary ring-inset" : ""}
+              ${!puzzleSolved ? "hover:brightness-95" : "cursor-not-allowed"}
+              ${piece?.color === 'w' ? 'text-[#F0D9B5] drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]' : 'text-[#1a1a1a] drop-shadow-[0_3px_6px_rgba(255,255,255,0.4)] [text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]'}
+            `}
+            style={{
+              backgroundColor: hasLegalMove ? hasLegalMove.background : undefined,
+            }}
+          >
+            {piece && (
+              <span className="animate-scale-in">
+                {getPieceSymbol(piece.type, piece.color)}
+              </span>
+            )}
+            {hasLegalMove && !piece && (
+              <span className="absolute w-3 h-3 rounded-full bg-green-500/80 animate-pulse" />
+            )}
+            {hasLegalMove && piece && moveFrom !== square && (
+              <span className="absolute inset-0 ring-4 ring-red-500/60 ring-inset rounded animate-pulse" />
+            )}
+          </button>
+        );
+      }
+    }
+
+    return squares;
   };
 
-  const onSquareClickHandler = ({ square }: { square: string }) => {
-    onSquareClick(square as Square);
+  const getPieceSymbol = (type: string, color: string) => {
+    const pieces: Record<string, Record<string, string>> = {
+      w: { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕", k: "♔" },
+      b: { p: "♟", n: "♞", b: "♝", r: "♜", q: "♛", k: "♚" },
+    };
+    return pieces[color][type];
   };
 
   const resetPuzzle = () => {
@@ -203,18 +249,11 @@ const PuzzleGame = () => {
               </Button>
             </div>
             <div className="max-w-[600px] mx-auto">
-              <div className="rounded-lg overflow-hidden shadow-glow">
-                <Chessboard
-                  options={{
-                    position: game.fen(),
-                    onPieceDrop: onPieceDrop,
-                    onSquareClick: onSquareClickHandler,
-                    squareStyles: optionSquares,
-                    boardOrientation: "white",
-                    animationDurationInMs: 300,
-                    canDragPiece: () => !puzzleSolved,
-                  }}
-                />
+              <div 
+                className="grid grid-cols-8 border-4 border-border rounded-lg overflow-hidden shadow-glow"
+                style={{ aspectRatio: "1/1" }}
+              >
+                {renderBoard()}
               </div>
             </div>
           </Card>
