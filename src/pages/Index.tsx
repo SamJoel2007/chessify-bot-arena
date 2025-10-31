@@ -336,7 +336,22 @@ const Index = () => {
                   </span>
                   <span className="text-xs text-muted-foreground">Rating: 800</span>
                 </div>
-                <Button className="w-full" onClick={() => navigate('/puzzles')}>
+                <Button 
+                  className="w-full" 
+                  onClick={() => navigate('/puzzle-game', { 
+                    state: { 
+                      puzzle: {
+                        id: "p1",
+                        name: "Mate in 1",
+                        description: "Find the winning move in this beginner puzzle",
+                        rating: 800,
+                        difficulty: "beginner",
+                        fen: "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 1",
+                        solution: ["Qxf7#"],
+                      }
+                    }
+                  })}
+                >
                   Play Now
                 </Button>
               </div>
