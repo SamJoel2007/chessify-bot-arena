@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Chess, Square } from "chess.js";
+import { Chessboard } from "react-chessboard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Users, Bot, Flag, Handshake } from "lucide-react";
+import { RotateCcw, Users, Bot, Flag, Handshake, Trophy, X } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,11 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [gameMode, setGameMode] = useState<"friend" | "bot" | null>(null);
   const [isThinking, setIsThinking] = useState(false);
+  const [moveFrom, setMoveFrom] = useState<Square | null>(null);
+  const [moveTo, setMoveTo] = useState<Square | null>(null);
+  const [optionSquares, setOptionSquares] = useState<Record<string, { background: string }>>({});
+  const [showGameEndModal, setShowGameEndModal] = useState(false);
+  const [gameResult, setGameResult] = useState<"win" | "lose" | null>(null);
 
   useEffect(() => {
     if (selectedBot) {
@@ -101,7 +107,8 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
       setIsThinking(false);
 
       if (gameCopy.isCheckmate()) {
-        toast.error("Checkmate! You lost!");
+        setGameResult("lose");
+        setShowGameEndModal(true);
       } else if (gameCopy.isCheck()) {
         toast("Check!");
       }
@@ -121,9 +128,11 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
 
       setGame(gameCopy);
       setMoveHistory([...moveHistory, move.san]);
+      setOptionSquares({});
       
       if (gameCopy.isCheckmate()) {
-        toast.success("Checkmate! You won!");
+        setGameResult("win");
+        setShowGameEndModal(true);
       } else if (gameCopy.isCheck()) {
         toast("Check!");
         if (gameMode === "bot") {
@@ -140,19 +149,64 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
     }
   };
 
-  const handleSquareClick = (square: Square) => {
+  const getMoveOptions = (square: Square) => {
+    const moves = game.moves({ square, verbose: true });
+    if (moves.length === 0) {
+      setOptionSquares({});
+      return false;
+    }
+
+    const newSquares: Record<string, { background: string }> = {};
+    moves.forEach((move) => {
+      newSquares[move.to] = {
+        background: game.get(move.to as Square)
+          ? "radial-gradient(circle, rgba(255,0,0,.8) 85%, transparent 85%)"
+          : "radial-gradient(circle, rgba(76,175,80,.8) 25%, transparent 25%)",
+      };
+    });
+    newSquares[square] = { background: "rgba(255, 255, 0, 0.4)" };
+    setOptionSquares(newSquares);
+    return true;
+  };
+
+  const onSquareClick = (square: Square) => {
     if (isThinking) return;
     
     // In bot mode, only allow white pieces
     if (gameMode === "bot" && game.turn() === "b") return;
 
-    if (selectedSquare) {
-      makeMove(selectedSquare, square);
-      setSelectedSquare(null);
-    } else {
+    // If no square is selected, select this square
+    if (!moveFrom) {
       const piece = game.get(square);
       if (piece && (gameMode !== "bot" || piece.color === "w")) {
-        setSelectedSquare(square);
+        const hasMoves = getMoveOptions(square);
+        if (hasMoves) setMoveFrom(square);
+      }
+      return;
+    }
+
+    // If clicking the same square, deselect
+    if (moveFrom === square) {
+      setMoveFrom(null);
+      setOptionSquares({});
+      return;
+    }
+
+    // Try to make the move
+    const moveSuccess = makeMove(moveFrom, square);
+    if (moveSuccess) {
+      setMoveFrom(null);
+      setMoveTo(square);
+      setTimeout(() => setMoveTo(null), 300);
+    } else {
+      // If move failed, try selecting the new square
+      const piece = game.get(square);
+      if (piece && (gameMode !== "bot" || piece.color === "w")) {
+        const hasMoves = getMoveOptions(square);
+        if (hasMoves) setMoveFrom(square);
+      } else {
+        setMoveFrom(null);
+        setOptionSquares({});
       }
     }
   };
@@ -161,7 +215,12 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
     setGame(new Chess());
     setMoveHistory([]);
     setSelectedSquare(null);
+    setMoveFrom(null);
+    setMoveTo(null);
+    setOptionSquares({});
     setIsThinking(false);
+    setShowGameEndModal(false);
+    setGameResult(null);
     toast("Game resigned!");
   };
 
@@ -205,6 +264,9 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
       setGame(new Chess());
       setMoveHistory([]);
       setSelectedSquare(null);
+      setMoveFrom(null);
+      setMoveTo(null);
+      setOptionSquares({});
       setIsThinking(false);
       toast.success("Draw accepted! 20 coins deducted.");
     } catch (error) {
@@ -223,44 +285,16 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
     resetGame();
   };
 
-  const renderBoard = () => {
-    const board = game.board();
-    const squares = [];
+  const onPieceDrop = ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string }) => {
+    if (isThinking) return false;
+    if (gameMode === "bot" && game.turn() === "b") return false;
 
-    for (let i = 0; i < 8; i++) {
-      for (let j = 0; j < 8; j++) {
-        const square = `${String.fromCharCode(97 + j)}${8 - i}` as Square;
-        const piece = board[i][j];
-        const isLight = (i + j) % 2 === 0;
-        const isSelected = selectedSquare === square;
-
-        squares.push(
-          <button
-            key={square}
-            onClick={() => handleSquareClick(square)}
-            className={`
-              aspect-square flex items-center justify-center text-5xl font-bold transition-colors
-              ${isLight ? "bg-[#EEEED2]" : "bg-[#769656]"}
-              ${isSelected ? "ring-4 ring-primary" : ""}
-              hover:opacity-80
-              ${piece?.color === 'w' ? 'text-[#F0D9B5] drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]' : 'text-[#1a1a1a] drop-shadow-[0_3px_6px_rgba(255,255,255,0.4)] [text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]'}
-            `}
-          >
-            {piece && getPieceSymbol(piece.type, piece.color)}
-          </button>
-        );
-      }
-    }
-
-    return squares;
+    const move = makeMove(sourceSquare as Square, targetSquare as Square);
+    return move;
   };
 
-  const getPieceSymbol = (type: string, color: string) => {
-    const pieces: Record<string, Record<string, string>> = {
-      w: { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕", k: "♔" },
-      b: { p: "♟", n: "♞", b: "♝", r: "♜", q: "♛", k: "♚" },
-    };
-    return pieces[color][type];
+  const onSquareClickHandler = ({ square }: { square: string }) => {
+    onSquareClick(square as Square);
   };
 
   return (
@@ -293,14 +327,71 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
           </div>
         </div>
         <div className="max-w-[600px] mx-auto">
-          <div 
-            className="grid grid-cols-8 border-4 border-border rounded-lg overflow-hidden shadow-glow"
-            style={{ aspectRatio: "1/1" }}
-          >
-            {renderBoard()}
+          <div className="rounded-lg overflow-hidden shadow-glow">
+            <Chessboard
+              options={{
+                position: game.fen(),
+                onPieceDrop: onPieceDrop,
+                onSquareClick: onSquareClickHandler,
+                squareStyles: optionSquares,
+                boardOrientation: "white",
+                animationDurationInMs: 300,
+                canDragPiece: ({ piece }: any) => {
+                  if (isThinking) return false;
+                  if (gameMode === "bot" && game.turn() === "b") return false;
+                  if (gameMode === "bot") return piece.pieceType[0] === "w";
+                  return true;
+                },
+              }}
+            />
           </div>
         </div>
       </Card>
+
+      {/* Game End Modal */}
+      {showGameEndModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
+          <Card className="p-8 max-w-md w-full mx-4 bg-gradient-card border-border/50 animate-scale-in">
+            <div className="text-center">
+              <div className="mb-6 animate-pulse">
+                {gameResult === "win" ? (
+                  <Trophy className="w-24 h-24 mx-auto text-gold drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]" />
+                ) : (
+                  <X className="w-24 h-24 mx-auto text-destructive drop-shadow-[0_0_20px_rgba(239,68,68,0.6)]" />
+                )}
+              </div>
+              <h2 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+                {gameResult === "win" ? "Victory!" : "Defeat!"}
+              </h2>
+              <p className="text-muted-foreground mb-6">
+                {gameResult === "win" 
+                  ? "Congratulations! You've won the game!" 
+                  : "Better luck next time!"}
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  className="flex-1"
+                  variant="outline"
+                  onClick={() => {
+                    setShowGameEndModal(false);
+                    setGameResult(null);
+                  }}
+                >
+                  Close
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    resetGame();
+                  }}
+                >
+                  Play Again
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Game Info & Actions */}
       <div className="space-y-4">

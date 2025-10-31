@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import botBeginner from "@/assets/bot-beginner.jpg";
 import botIntermediate from "@/assets/bot-intermediate.jpg";
 import botAdvanced from "@/assets/bot-advanced.jpg";
@@ -64,6 +65,8 @@ const bots = [
 ];
 
 export const BotSelection = ({ coins, onCoinsUpdate }: BotSelectionProps) => {
+  const navigate = useNavigate();
+  
   const handlePurchase = (bot: typeof bots[0]) => {
     if (coins >= bot.price) {
       onCoinsUpdate();
@@ -71,6 +74,10 @@ export const BotSelection = ({ coins, onCoinsUpdate }: BotSelectionProps) => {
     } else {
       toast.error("Not enough coins!");
     }
+  };
+
+  const handlePlayNow = (bot: typeof bots[0]) => {
+    navigate('/game', { state: { selectedBot: bot } });
   };
 
   return (
@@ -102,7 +109,9 @@ export const BotSelection = ({ coins, onCoinsUpdate }: BotSelectionProps) => {
               </p>
 
               {bot.owned ? (
-                <Button className="w-full">Play Now</Button>
+                <Button className="w-full" onClick={() => handlePlayNow(bot)}>
+                  Play Now
+                </Button>
               ) : (
                 <Button
                   className="w-full gap-2"
