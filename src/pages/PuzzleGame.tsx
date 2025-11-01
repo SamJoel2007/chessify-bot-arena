@@ -46,24 +46,24 @@ const PuzzleGame = () => {
     return true;
   };
 
-  const makeOpponentMove = () => {
-    if (!puzzle || currentMoveIndex >= puzzle.solution.length) {
+  const makeOpponentMove = (nextMoveIndex: number) => {
+    if (!puzzle || nextMoveIndex >= puzzle.solution.length) {
       return;
     }
 
     setTimeout(() => {
       const gameCopy = new Chess(game.fen());
-      const opponentMove = puzzle.solution[currentMoveIndex];
+      const opponentMove = puzzle.solution[nextMoveIndex];
       
       try {
         const move = gameCopy.move(opponentMove);
         if (move) {
           setGame(gameCopy);
           setMoveHistory(prev => [...prev, move.san]);
-          setCurrentMoveIndex(prev => prev + 1);
+          setCurrentMoveIndex(nextMoveIndex + 1);
           
           // Check if puzzle is complete after opponent's move
-          if (currentMoveIndex + 1 >= puzzle.solution.length) {
+          if (nextMoveIndex + 1 >= puzzle.solution.length) {
             setPuzzleSolved(true);
             setShowGameEndModal(true);
             toast.success("Puzzle solved! Well done!");
@@ -84,10 +84,11 @@ const PuzzleGame = () => {
     
     // Check if the move matches the expected move (considering different notation formats)
     if (move === expectedMove || move.includes(expectedMove.replace(/[+#]/g, ""))) {
-      setCurrentMoveIndex(currentMoveIndex + 1);
+      const nextMoveIndex = currentMoveIndex + 1;
+      setCurrentMoveIndex(nextMoveIndex);
       setMoveHistory([...moveHistory, move]);
 
-      if (currentMoveIndex + 1 >= puzzle.solution.length) {
+      if (nextMoveIndex >= puzzle.solution.length) {
         // Puzzle solved!
         setPuzzleSolved(true);
         setShowGameEndModal(true);
@@ -96,7 +97,7 @@ const PuzzleGame = () => {
       } else {
         toast.success("Correct move!");
         // Make opponent move after player's correct move
-        makeOpponentMove();
+        makeOpponentMove(nextMoveIndex);
         return true;
       }
     } else {
