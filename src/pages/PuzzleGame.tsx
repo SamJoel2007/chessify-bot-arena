@@ -46,19 +46,18 @@ const PuzzleGame = () => {
     return true;
   };
 
-  const makeOpponentMove = (nextMoveIndex: number) => {
+  const makeOpponentMove = (nextMoveIndex: number, currentGameState: Chess) => {
     if (!puzzle || nextMoveIndex >= puzzle.solution.length) {
       return;
     }
 
     setTimeout(() => {
-      const gameCopy = new Chess(game.fen());
       const opponentMove = puzzle.solution[nextMoveIndex];
       
       try {
-        const move = gameCopy.move(opponentMove);
+        const move = currentGameState.move(opponentMove);
         if (move) {
-          setGame(gameCopy);
+          setGame(new Chess(currentGameState.fen()));
           setMoveHistory(prev => [...prev, move.san]);
           setCurrentMoveIndex(nextMoveIndex + 1);
           
@@ -75,7 +74,7 @@ const PuzzleGame = () => {
     }, 500);
   };
 
-  const checkSolution = (move: string) => {
+  const checkSolution = (move: string, currentGameState: Chess) => {
     if (!puzzle || currentMoveIndex >= puzzle.solution.length) {
       return false;
     }
@@ -97,7 +96,7 @@ const PuzzleGame = () => {
       } else {
         toast.success("Correct move!");
         // Make opponent move after player's correct move
-        makeOpponentMove(nextMoveIndex);
+        makeOpponentMove(nextMoveIndex, currentGameState);
         return true;
       }
     } else {
@@ -117,7 +116,7 @@ const PuzzleGame = () => {
 
       if (move === null) return false;
 
-      const isCorrect = checkSolution(move.san);
+      const isCorrect = checkSolution(move.san, gameCopy);
       
       if (isCorrect) {
         setGame(gameCopy);
