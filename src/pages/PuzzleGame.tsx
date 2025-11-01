@@ -46,6 +46,35 @@ const PuzzleGame = () => {
     return true;
   };
 
+  const makeOpponentMove = () => {
+    if (!puzzle || currentMoveIndex >= puzzle.solution.length) {
+      return;
+    }
+
+    setTimeout(() => {
+      const gameCopy = new Chess(game.fen());
+      const opponentMove = puzzle.solution[currentMoveIndex];
+      
+      try {
+        const move = gameCopy.move(opponentMove);
+        if (move) {
+          setGame(gameCopy);
+          setMoveHistory(prev => [...prev, move.san]);
+          setCurrentMoveIndex(prev => prev + 1);
+          
+          // Check if puzzle is complete after opponent's move
+          if (currentMoveIndex + 1 >= puzzle.solution.length) {
+            setPuzzleSolved(true);
+            setShowGameEndModal(true);
+            toast.success("Puzzle solved! Well done!");
+          }
+        }
+      } catch (error) {
+        console.error("Error making opponent move:", error);
+      }
+    }, 500);
+  };
+
   const checkSolution = (move: string) => {
     if (!puzzle || currentMoveIndex >= puzzle.solution.length) {
       return false;
@@ -65,7 +94,9 @@ const PuzzleGame = () => {
         toast.success("Puzzle solved! Well done!");
         return true;
       } else {
-        toast.success("Correct move! Keep going!");
+        toast.success("Correct move!");
+        // Make opponent move after player's correct move
+        makeOpponentMove();
         return true;
       }
     } else {

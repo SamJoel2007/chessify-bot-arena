@@ -38,7 +38,7 @@ const puzzles: Puzzle[] = [
     difficulty: "intermediate",
     image: puzzleIntermediate,
     fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1",
-    solution: ["Bxf7+", "Kxf7", "Ng5+"],
+    solution: ["Bxf7+", "Kxf7", "Ng5+", "Ke8", "Qh5#"],
   },
   {
     id: "p3",
@@ -48,7 +48,7 @@ const puzzles: Puzzle[] = [
     difficulty: "advanced",
     image: puzzleAdvanced,
     fen: "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N5/PPP2PPP/R1BQ1BNR w kq - 0 1",
-    solution: ["Qd5", "Qf4", "Qxe5+"],
+    solution: ["Qd5", "Qf4", "Qxe5+", "Qxe5", "Nxe5"],
   },
   {
     id: "p4",
@@ -58,7 +58,7 @@ const puzzles: Puzzle[] = [
     difficulty: "expert",
     image: puzzleExpert,
     fen: "r2qk2r/ppp2ppp/2n1bn2/2bpp3/4P3/2PP1N2/PP1N1PPP/R1BQKB1R w KQkq - 0 1",
-    solution: ["Nxe5", "Nxe5", "Bxf7+"],
+    solution: ["Nxe5", "Nxe5", "Bxf7+", "Kxf7", "Qh5+"],
   },
 ];
 
