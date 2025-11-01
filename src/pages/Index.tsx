@@ -18,6 +18,7 @@ import puzzleIntermediate from "@/assets/puzzles/puzzle-intermediate.jpg";
 import puzzleAdvanced from "@/assets/puzzles/puzzle-advanced.jpg";
 import puzzleExpert from "@/assets/puzzles/puzzle-expert.jpg";
 import { toast } from "sonner";
+import { getAvatarIcon } from "@/lib/avatarUtils";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -152,18 +153,7 @@ const Index = () => {
               onClick={() => user && setShowAvatarSelector(true)}
             >
               <AvatarFallback className="bg-gradient-primary text-3xl">
-                {currentAvatar === "1" ? "⚔️" : 
-                 currentAvatar === "2" ? "♟️" : 
-                 currentAvatar === "3" ? "🛡️" : 
-                 currentAvatar === "4" ? "👑" : 
-                 currentAvatar === "5" ? "♛" : 
-                 currentAvatar === "6" ? "🪓" : 
-                 currentAvatar === "7" ? "🔥" : 
-                 currentAvatar === "8" ? "❄️" : 
-                 currentAvatar === "9" ? "⚡" : 
-                 currentAvatar === "10" ? "🐲" : 
-                 currentAvatar === "11" ? "🪄" : 
-                 currentAvatar === "12" ? "🔱" : "👤"}
+                {getAvatarIcon(currentAvatar)}
               </AvatarFallback>
             </Avatar>
           </div>

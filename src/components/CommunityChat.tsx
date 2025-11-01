@@ -4,9 +4,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getAvatarIcon } from "@/lib/avatarUtils";
 
 interface Message {
   id: string;
@@ -23,6 +25,7 @@ export const CommunityChat = () => {
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeUsers, setActiveUsers] = useState<number>(0);
+  const [userAvatars, setUserAvatars] = useState<Record<string, string>>({});
   const channelRef = useRef<any>(null);
 
   useEffect(() => {
@@ -74,6 +77,23 @@ export const CommunityChat = () => {
     };
 
     loadMessages();
+
+    // Fetch user avatars
+    const fetchUserAvatars = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, current_avatar");
+      
+      if (data) {
+        const avatarMap: Record<string, string> = {};
+        data.forEach(profile => {
+          avatarMap[profile.id] = profile.current_avatar || "default";
+        });
+        setUserAvatars(avatarMap);
+      }
+    };
+
+    fetchUserAvatars();
 
     // Set up presence tracking and message subscription
     const channel = supabase.channel("community-chat");
@@ -185,7 +205,7 @@ export const CommunityChat = () => {
             ) : (
               messages.map((msg) => {
                 const isCurrentUser = msg.user_id === currentUser?.id;
-                const avatarColor = isCurrentUser ? "bg-accent" : "bg-primary";
+                const userAvatar = userAvatars[msg.user_id] || "default";
                 const timestamp = new Date(msg.created_at).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -193,7 +213,11 @@ export const CommunityChat = () => {
 
                 return (
                   <div key={msg.id} className="flex gap-3 group">
-                    <div className={`w-10 h-10 rounded-full ${avatarColor} flex-shrink-0`} />
+                    <Avatar className="w-10 h-10 flex-shrink-0">
+                      <AvatarFallback className={isCurrentUser ? "bg-accent" : "bg-primary"}>
+                        <span className="text-2xl">{getAvatarIcon(userAvatar)}</span>
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-2 mb-1">
                         <span className="font-semibold text-sm">
