@@ -4,12 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import botBeginner from "@/assets/bot-beginner.jpg";
-import botIntermediate from "@/assets/bot-intermediate.jpg";
-import botAdvanced from "@/assets/bot-advanced.jpg";
-import botGrandmaster from "@/assets/bot-grandmaster.jpg";
-import botHalloween from "@/assets/bot-halloween.jpg";
-import botAnime from "@/assets/bot-anime.jpg";
+import beginnerCenterControl from "@/assets/bots/beginner-09-center-control.jpg";
+import intermediateStrategicSam from "@/assets/bots/intermediate-02-strategic-sam.jpg";
+import intermediateGambitGary from "@/assets/bots/intermediate-07-gambit-gary.jpg";
+import animeLight from "@/assets/bots/anime-03-light-yagami.jpg";
+import animeLelouch from "@/assets/bots/anime-06-lelouch.jpg";
 
 interface BotSelectionProps {
   coins: number;
@@ -19,48 +18,48 @@ interface BotSelectionProps {
 const bots = [
   {
     id: 1,
-    name: "Chess Novice",
+    name: "Ava",
     category: "Beginner",
     rating: 800,
-    image: botBeginner,
+    image: beginnerCenterControl,
     owned: true,
     price: 0,
   },
   {
     id: 2,
-    name: "Strategic Mind",
+    name: "Samuel",
     category: "Intermediate",
-    rating: 1400,
-    image: botIntermediate,
+    rating: 1100,
+    image: intermediateStrategicSam,
     owned: true,
     price: 0,
   },
   {
     id: 3,
-    name: "Grand Master AI",
-    category: "Advanced",
-    rating: 2200,
-    image: botGrandmaster,
-    owned: false,
-    price: 500,
-  },
-  {
-    id: 4,
-    name: "Spooky Knight",
-    category: "Halloween",
-    rating: 1600,
-    image: botHalloween,
+    name: "Gary",
+    category: "Intermediate",
+    rating: 1500,
+    image: intermediateGambitGary,
     owned: false,
     price: 300,
   },
   {
-    id: 5,
-    name: "Samurai Master",
+    id: 4,
+    name: "Light",
     category: "Anime",
-    rating: 1800,
-    image: botAnime,
+    rating: 2200,
+    image: animeLight,
     owned: false,
-    price: 400,
+    price: 500,
+  },
+  {
+    id: 5,
+    name: "Suzaku",
+    category: "Anime",
+    rating: 2500,
+    image: animeLelouch,
+    owned: false,
+    price: 700,
   },
 ];
 
