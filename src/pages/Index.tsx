@@ -12,6 +12,7 @@ import { AvatarSelector } from "@/components/AvatarSelector";
 import { ShopModal } from "@/components/ShopModal";
 import { RecentPosts } from "@/components/RecentPosts";
 import { AdminPostCreator } from "@/components/AdminPostCreator";
+import { OnlineMatchmaking } from "@/components/OnlineMatchmaking";
 import tournamentImage from "@/assets/tournament-hero.jpg";
 import puzzleBeginner from "@/assets/puzzles/puzzle-beginner.jpg";
 import puzzleIntermediate from "@/assets/puzzles/puzzle-intermediate.jpg";
@@ -89,6 +90,12 @@ const Index = () => {
                 onClick={() => navigate('/bots')}
               >
                 Bots
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => document.getElementById('online')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Online
               </Button>
               <Button
                 variant="ghost"
@@ -230,6 +237,27 @@ const Index = () => {
           </div>
           <BotSelection coins={coins} onCoinsUpdate={() => user && fetchUserProfile(user.id)} />
         </section>
+
+        {/* Online Matchmaking Section */}
+        {user && (
+          <section id="online" className="mb-16">
+            <div className="text-center mb-8">
+              <h2 className="text-4xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
+                Play Online
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                Get matched with real players for competitive 10-minute games
+              </p>
+            </div>
+            <div className="max-w-md mx-auto">
+              <OnlineMatchmaking 
+                userId={user.id} 
+                username={user.email?.split('@')[0] || "Player"} 
+                currentAvatar={currentAvatar || undefined}
+              />
+            </div>
+          </section>
+        )}
 
         {/* Tournament Section */}
         <section id="tournament" className="mb-16">
