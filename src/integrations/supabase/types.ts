@@ -38,6 +38,128 @@ export type Database = {
         }
         Relationships: []
       }
+      game_moves: {
+        Row: {
+          created_at: string
+          fen_after: string
+          game_id: string
+          id: string
+          move_number: number
+          move_san: string
+          player_id: string
+          time_taken: number
+        }
+        Insert: {
+          created_at?: string
+          fen_after: string
+          game_id: string
+          id?: string
+          move_number: number
+          move_san: string
+          player_id: string
+          time_taken: number
+        }
+        Update: {
+          created_at?: string
+          fen_after?: string
+          game_id?: string
+          id?: string
+          move_number?: number
+          move_san?: string
+          player_id?: string
+          time_taken?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_moves_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          black_avatar: string | null
+          black_player_id: string
+          black_time_remaining: number
+          black_username: string
+          created_at: string
+          current_fen: string
+          current_turn: string
+          id: string
+          status: string
+          updated_at: string
+          white_avatar: string | null
+          white_player_id: string
+          white_time_remaining: number
+          white_username: string
+          winner_id: string | null
+        }
+        Insert: {
+          black_avatar?: string | null
+          black_player_id: string
+          black_time_remaining?: number
+          black_username: string
+          created_at?: string
+          current_fen?: string
+          current_turn?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          white_avatar?: string | null
+          white_player_id: string
+          white_time_remaining?: number
+          white_username: string
+          winner_id?: string | null
+        }
+        Update: {
+          black_avatar?: string | null
+          black_player_id?: string
+          black_time_remaining?: number
+          black_username?: string
+          created_at?: string
+          current_fen?: string
+          current_turn?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          white_avatar?: string | null
+          white_player_id?: string
+          white_time_remaining?: number
+          white_username?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
+      match_queue: {
+        Row: {
+          created_at: string
+          current_avatar: string | null
+          expires_at: string
+          id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          current_avatar?: string | null
+          expires_at?: string
+          id?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          current_avatar?: string | null
+          expires_at?: string
+          id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string
@@ -223,6 +345,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_queue_entries: { Args: never; Returns: undefined }
       handle_purchase: {
         Args: {
           p_item_data: Json
