@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Chess, Square } from "chess.js";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Users, Bot, Flag, Handshake, Trophy, X } from "lucide-react";
+import { RotateCcw, Users, Bot, Flag, Handshake, Trophy, X, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +14,7 @@ interface GameBoardProps {
 }
 
 export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
+  const navigate = useNavigate();
   const [game, setGame] = useState(new Chess());
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
@@ -428,6 +430,24 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
         <Card className="p-6 bg-gradient-card border-border/50">
           <h3 className="text-xl font-bold mb-4">Game Mode</h3>
           <div className="space-y-3">
+            <Button 
+              className="w-full gap-2 shadow-glow" 
+              onClick={async () => {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                  toast.error("Please sign in to play online");
+                  navigate("/auth");
+                  return;
+                }
+                navigate("/");
+                setTimeout(() => {
+                  document.getElementById('online')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+            >
+              <Zap className="w-5 h-5" />
+              Find Opponent
+            </Button>
             <Button 
               className="w-full gap-2" 
               variant={gameMode === "friend" ? "default" : "outline"}

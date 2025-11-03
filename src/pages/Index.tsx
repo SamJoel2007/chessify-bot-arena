@@ -239,16 +239,16 @@ const Index = () => {
         </section>
 
         {/* Online Matchmaking Section */}
-        {user && (
-          <section id="online" className="mb-16">
-            <div className="text-center mb-8">
-              <h2 className="text-4xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
-                Play Online
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                Get matched with real players for competitive 10-minute games
-              </p>
-            </div>
+        <section id="online" className="mb-16">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
+              Play Online
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Get matched with real players for competitive 10-minute games
+            </p>
+          </div>
+          {user ? (
             <div className="max-w-md mx-auto">
               <OnlineMatchmaking 
                 userId={user.id} 
@@ -256,8 +256,13 @@ const Index = () => {
                 currentAvatar={currentAvatar || undefined}
               />
             </div>
-          </section>
-        )}
+          ) : (
+            <div className="text-center">
+              <p className="text-muted-foreground mb-4">Sign in to play online matches</p>
+              <Button onClick={() => navigate('/auth')}>Sign In</Button>
+            </div>
+          )}
+        </section>
 
         {/* Tournament Section */}
         <section id="tournament" className="mb-16">
