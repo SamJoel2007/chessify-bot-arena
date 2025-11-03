@@ -101,7 +101,7 @@ const Index = () => {
                 variant="ghost"
                 onClick={() => document.getElementById('tournament')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Tournament
+                Events
               </Button>
               <Button
                 variant="ghost"
@@ -250,7 +250,7 @@ const Index = () => {
                 <div className="flex items-center gap-2 mb-4">
                   <Trophy className="w-8 h-8 text-gold" />
                   <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                    Tournaments
+                    Winter ARC Chess
                   </h2>
                 </div>
                 <p className="text-muted-foreground text-lg mb-6">
