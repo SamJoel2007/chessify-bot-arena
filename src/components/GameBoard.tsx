@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Users, Bot, Flag, Handshake, Trophy, X, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { OnlineMatchmaking } from "@/components/OnlineMatchmaking";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,11 +13,15 @@ import { supabase } from "@/integrations/supabase/client";
 interface GameBoardProps {
   selectedBot?: any;
   onBotChange?: (bot: any) => void;
+  userId?: string;
+  username?: string;
+  currentAvatar?: string;
 }
 
-export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
+export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentAvatar }: GameBoardProps) => {
   const navigate = useNavigate();
   const [game, setGame] = useState(new Chess());
+  const [showMatchmaking, setShowMatchmaking] = useState(false);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [gameMode, setGameMode] = useState<"friend" | "bot" | null>(null);
@@ -439,10 +445,7 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
                   navigate("/auth");
                   return;
                 }
-                navigate("/");
-                setTimeout(() => {
-                  document.getElementById('online')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
+                setShowMatchmaking(true);
               }}
             >
               <Zap className="w-5 h-5" />
@@ -466,6 +469,22 @@ export const GameBoard = ({ selectedBot, onBotChange }: GameBoardProps) => {
             </Button>
           </div>
         </Card>
+
+        {/* Matchmaking Dialog */}
+        <Dialog open={showMatchmaking} onOpenChange={setShowMatchmaking}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Find Online Match</DialogTitle>
+            </DialogHeader>
+            {userId && username && (
+              <OnlineMatchmaking 
+                userId={userId} 
+                username={username} 
+                currentAvatar={currentAvatar}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
         <Card className="p-6 bg-gradient-card border-border/50 max-h-[400px] overflow-hidden">
           <h3 className="text-xl font-bold mb-4">Move History</h3>

@@ -222,7 +222,11 @@ const Index = () => {
       <main className="container mx-auto px-4 py-12">
         {/* Game Board Section */}
         <section id="play" className="mb-16">
-          <GameBoard />
+          <GameBoard 
+            userId={user?.id}
+            username={user?.email?.split('@')[0]}
+            currentAvatar={currentAvatar || undefined}
+          />
         </section>
 
         {/* Bots Section */}
@@ -236,32 +240,6 @@ const Index = () => {
             </p>
           </div>
           <BotSelection coins={coins} onCoinsUpdate={() => user && fetchUserProfile(user.id)} />
-        </section>
-
-        {/* Online Matchmaking Section */}
-        <section id="online" className="mb-16">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
-              Play Online
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Get matched with real players for competitive 10-minute games
-            </p>
-          </div>
-          {user ? (
-            <div className="max-w-md mx-auto">
-              <OnlineMatchmaking 
-                userId={user.id} 
-                username={user.email?.split('@')[0] || "Player"} 
-                currentAvatar={currentAvatar || undefined}
-              />
-            </div>
-          ) : (
-            <div className="text-center">
-              <p className="text-muted-foreground mb-4">Sign in to play online matches</p>
-              <Button onClick={() => navigate('/auth')}>Sign In</Button>
-            </div>
-          )}
         </section>
 
         {/* Tournament Section */}
