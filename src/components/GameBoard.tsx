@@ -56,54 +56,83 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       const rating = selectedBot?.rating || 1000;
       let move;
 
-      if (rating < 600) {
-        // Very weak: random moves
-        move = moves[Math.floor(Math.random() * moves.length)];
-      } else if (rating < 1200) {
-        // Beginner: mostly random, sometimes captures
-        const captures = moves.filter(m => m.flags.includes('c'));
-        if (captures.length > 0 && Math.random() > 0.5) {
+      // Get move categories
+      const captures = moves.filter(m => m.flags.includes('c'));
+      const checks = moves.filter(m => {
+        const testGame = new Chess(currentGame.fen());
+        testGame.move(m);
+        return testGame.isCheck();
+      });
+      const centerMoves = moves.filter(m => 
+        ['e4', 'e5', 'd4', 'd5', 'c4', 'c5', 'f4', 'f5'].includes(m.to)
+      );
+
+      if (rating < 450) {
+        // 400-450: Very weak (80% random, 20% captures)
+        if (captures.length > 0 && Math.random() > 0.8) {
           move = captures[Math.floor(Math.random() * captures.length)];
         } else {
           move = moves[Math.floor(Math.random() * moves.length)];
         }
-      } else if (rating < 1800) {
-        // Intermediate: prefers captures and checks
-        const captures = moves.filter(m => m.flags.includes('c'));
-        const checks = moves.filter(m => {
-          const testGame = new Chess(currentGame.fen());
-          testGame.move(m);
-          return testGame.isCheck();
-        });
-        
-        if (checks.length > 0 && Math.random() > 0.3) {
+      } else if (rating < 550) {
+        // 450-550: Weak (60% random, 40% captures)
+        if (captures.length > 0 && Math.random() > 0.6) {
+          move = captures[Math.floor(Math.random() * captures.length)];
+        } else {
+          move = moves[Math.floor(Math.random() * moves.length)];
+        }
+      } else if (rating < 650) {
+        // 550-650: Learning (50% captures, 30% checks, 20% random)
+        if (checks.length > 0 && Math.random() > 0.7) {
+          move = checks[Math.floor(Math.random() * checks.length)];
+        } else if (captures.length > 0 && Math.random() > 0.5) {
+          move = captures[Math.floor(Math.random() * captures.length)];
+        } else {
+          move = moves[Math.floor(Math.random() * moves.length)];
+        }
+      } else if (rating < 900) {
+        // 650-900: Developing (60% captures, 30% checks, 10% center)
+        if (checks.length > 0 && Math.random() > 0.7) {
           move = checks[Math.floor(Math.random() * checks.length)];
         } else if (captures.length > 0 && Math.random() > 0.4) {
           move = captures[Math.floor(Math.random() * captures.length)];
+        } else if (centerMoves.length > 0 && Math.random() > 0.9) {
+          move = centerMoves[Math.floor(Math.random() * centerMoves.length)];
+        } else {
+          move = moves[Math.floor(Math.random() * moves.length)];
+        }
+      } else if (rating < 1400) {
+        // 900-1400: Intermediate (70% checks, 20% captures, 10% center)
+        if (checks.length > 0 && Math.random() > 0.3) {
+          move = checks[Math.floor(Math.random() * checks.length)];
+        } else if (captures.length > 0 && Math.random() > 0.8) {
+          move = captures[Math.floor(Math.random() * captures.length)];
+        } else if (centerMoves.length > 0 && Math.random() > 0.9) {
+          move = centerMoves[Math.floor(Math.random() * centerMoves.length)];
+        } else {
+          move = moves[Math.floor(Math.random() * moves.length)];
+        }
+      } else if (rating < 1900) {
+        // 1400-1900: Advanced (80% checks, 15% captures, 5% center)
+        if (checks.length > 0 && Math.random() > 0.2) {
+          move = checks[Math.floor(Math.random() * checks.length)];
+        } else if (captures.length > 0 && Math.random() > 0.85) {
+          move = captures[Math.floor(Math.random() * captures.length)];
+        } else if (centerMoves.length > 0 && Math.random() > 0.95) {
+          move = centerMoves[Math.floor(Math.random() * centerMoves.length)];
         } else {
           move = moves[Math.floor(Math.random() * moves.length)];
         }
       } else {
-        // Advanced: always looks for best tactical moves
-        const captures = moves.filter(m => m.flags.includes('c'));
-        const checks = moves.filter(m => {
-          const testGame = new Chess(currentGame.fen());
-          testGame.move(m);
-          return testGame.isCheck();
-        });
-        
-        if (checks.length > 0) {
+        // 1900+: Expert/Master (90% checks, 10% captures, prioritize center)
+        if (checks.length > 0 && Math.random() > 0.1) {
           move = checks[Math.floor(Math.random() * checks.length)];
-        } else if (captures.length > 0) {
+        } else if (captures.length > 0 && Math.random() > 0.9) {
           move = captures[Math.floor(Math.random() * captures.length)];
+        } else if (centerMoves.length > 0) {
+          move = centerMoves[Math.floor(Math.random() * centerMoves.length)];
         } else {
-          // Prefer center control
-          const centerMoves = moves.filter(m => 
-            ['e4', 'e5', 'd4', 'd5', 'c4', 'c5', 'f4', 'f5'].includes(m.to)
-          );
-          move = centerMoves.length > 0 
-            ? centerMoves[Math.floor(Math.random() * centerMoves.length)]
-            : moves[Math.floor(Math.random() * moves.length)];
+          move = moves[Math.floor(Math.random() * moves.length)];
         }
       }
 
