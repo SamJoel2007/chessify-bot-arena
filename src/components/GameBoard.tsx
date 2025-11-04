@@ -28,9 +28,11 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   const [isThinking, setIsThinking] = useState(false);
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [moveTo, setMoveTo] = useState<Square | null>(null);
-  const [optionSquares, setOptionSquares] = useState<Record<string, { background: string }>>({});
+  const [optionSquares, setOptionSquares] = useState<Record<string, { background: string; isCapture?: boolean }>>({});
   const [showGameEndModal, setShowGameEndModal] = useState(false);
   const [gameResult, setGameResult] = useState<"win" | "lose" | null>(null);
+  const [capturedSquare, setCapturedSquare] = useState<Square | null>(null);
+  const [draggedPiece, setDraggedPiece] = useState<{ square: Square; element: HTMLElement } | null>(null);
 
   useEffect(() => {
     if (selectedBot) {
@@ -385,6 +387,14 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   const makeMove = (from: Square, to: Square) => {
     try {
       const gameCopy = new Chess(game.fen());
+      
+      // Check if this is a capture
+      const targetPiece = game.get(to);
+      if (targetPiece) {
+        setCapturedSquare(to);
+        setTimeout(() => setCapturedSquare(null), 600);
+      }
+      
       const move = gameCopy.move({
         from,
         to,
@@ -393,22 +403,25 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
 
       if (move === null) return false;
 
-      setGame(gameCopy);
-      setMoveHistory([...moveHistory, move.san]);
-      setOptionSquares({});
-      
-      if (gameCopy.isCheckmate()) {
-        setGameResult("win");
-        setShowGameEndModal(true);
-      } else if (gameCopy.isCheck()) {
-        toast("Check!");
-        if (gameMode === "bot") {
+      // Delay the state update to allow animation
+      setTimeout(() => {
+        setGame(gameCopy);
+        setMoveHistory([...moveHistory, move.san]);
+        setOptionSquares({});
+        
+        if (gameCopy.isCheckmate()) {
+          setGameResult("win");
+          setShowGameEndModal(true);
+        } else if (gameCopy.isCheck()) {
+          toast("Check!");
+          if (gameMode === "bot") {
+            makeBotMove(gameCopy);
+          }
+        } else if (gameMode === "bot" && !gameCopy.isGameOver()) {
+          // Bot's turn
           makeBotMove(gameCopy);
         }
-      } else if (gameMode === "bot" && !gameCopy.isGameOver()) {
-        // Bot's turn
-        makeBotMove(gameCopy);
-      }
+      }, 500);
 
       return true;
     } catch (error) {
@@ -423,17 +436,52 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       return false;
     }
 
-    const newSquares: Record<string, { background: string }> = {};
+    const newSquares: Record<string, { background: string; isCapture?: boolean }> = {};
     moves.forEach((move) => {
+      const isCapture = game.get(move.to as Square);
       newSquares[move.to] = {
-        background: game.get(move.to as Square)
-          ? "rgba(239, 68, 68, 0.6)"
-          : "rgba(34, 197, 94, 0.6)",
+        background: isCapture ? "rgba(239, 68, 68, 0.3)" : "transparent",
+        isCapture: !!isCapture,
       };
     });
-    newSquares[square] = { background: "rgba(234, 179, 8, 0.5)" };
+    newSquares[square] = { background: "rgba(234, 179, 8, 0.3)" };
     setOptionSquares(newSquares);
     return true;
+  };
+
+  const handleDragStart = (square: Square, e: React.DragEvent<HTMLButtonElement>) => {
+    if (isThinking) return;
+    if (gameMode === "bot" && game.turn() === "b") return;
+
+    const piece = game.get(square);
+    if (piece && (gameMode !== "bot" || piece.color === "w")) {
+      const hasMoves = getMoveOptions(square);
+      if (hasMoves) {
+        setMoveFrom(square);
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", square);
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (square: Square, e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (!moveFrom) return;
+
+    const moveSuccess = makeMove(moveFrom, square);
+    if (moveSuccess) {
+      setMoveFrom(null);
+      setMoveTo(square);
+      setTimeout(() => setMoveTo(null), 600);
+    } else {
+      setMoveFrom(null);
+      setOptionSquares({});
+    }
   };
 
   const handleSquareClick = (square: Square) => {
@@ -464,7 +512,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     if (moveSuccess) {
       setMoveFrom(null);
       setMoveTo(square);
-      setTimeout(() => setMoveTo(null), 300);
+      setTimeout(() => setMoveTo(null), 600);
     } else {
       // If move failed, try selecting the new square
       const piece = game.get(square);
@@ -566,32 +614,41 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         const isSelected = moveFrom === square;
         const hasLegalMove = optionSquares[square];
 
+        const isCaptured = capturedSquare === square;
+        
         squares.push(
           <button
             key={square}
+            draggable={!!piece && (gameMode !== "bot" || piece.color === "w")}
+            onDragStart={(e) => handleDragStart(square, e)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(square, e)}
             onClick={() => handleSquareClick(square)}
             className={`
               aspect-square flex items-center justify-center text-5xl font-bold 
-              transition-all duration-300 ease-in-out relative
+              transition-all duration-500 ease-in-out relative cursor-pointer
               ${isLight ? "bg-[#EEEED2]" : "bg-[#769656]"}
               ${isSelected ? "ring-4 ring-primary ring-inset" : ""}
+              ${hasLegalMove?.isCapture ? "bg-red-500/30" : ""}
               hover:brightness-95
               ${piece?.color === 'w' ? 'text-[#F0D9B5] drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]' : 'text-[#1a1a1a] drop-shadow-[0_3px_6px_rgba(255,255,255,0.4)] [text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]'}
             `}
-            style={{
-              backgroundColor: hasLegalMove ? hasLegalMove.background : undefined,
-            }}
           >
-            {piece && (
-              <span className="animate-scale-in">
+            {piece && !isCaptured && (
+              <span className="animate-piece-move">
                 {getPieceSymbol(piece.type, piece.color)}
               </span>
             )}
-            {hasLegalMove && !piece && (
-              <span className="absolute w-3 h-3 rounded-full bg-green-500/80 animate-pulse" />
+            {piece && isCaptured && (
+              <span className="animate-piece-breakdown">
+                {getPieceSymbol(piece.type, piece.color)}
+              </span>
             )}
-            {hasLegalMove && piece && moveFrom !== square && (
-              <span className="absolute inset-0 ring-4 ring-red-500/60 ring-inset rounded animate-pulse" />
+            {hasLegalMove && !piece && !hasLegalMove.isCapture && (
+              <div className="absolute w-8 h-8 rounded-full bg-black/40 border-2 border-black/60 animate-pulse" />
+            )}
+            {hasLegalMove && piece && moveFrom !== square && hasLegalMove.isCapture && (
+              <div className="absolute inset-0 bg-red-500/40 animate-pulse" />
             )}
           </button>
         );
