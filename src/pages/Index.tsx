@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Crown, Coins, Trophy, Users, Zap, Shield, Megaphone, Puzzle, Store } from "lucide-react";
+import { Crown, Coins, Trophy, Users, Zap, Shield, Megaphone, Puzzle, Store, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -93,10 +93,17 @@ const Index = () => {
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <div 
-              className="flex items-center gap-2 cursor-pointer"
-              onMouseEnter={() => user && setShowSidebar(true)}
-            >
+            <div className="flex items-center gap-2">
+              {user && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSidebar(!showSidebar)}
+                  className="mr-2"
+                >
+                  <Menu className="w-6 h-6" />
+                </Button>
+              )}
               <Crown className="w-8 h-8 text-primary" />
               <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 Chessify
