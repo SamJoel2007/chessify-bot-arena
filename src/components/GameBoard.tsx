@@ -44,7 +44,32 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     }
   }, [selectedBot]);
 
-  // Helper function to evaluate move quality
+  // Helper function to detect hanging pieces
+  const detectHangingPieces = (testGame: Chess, color: 'w' | 'b'): { square: string; piece: string; value: number }[] => {
+    const pieceValues: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+    const hanging: { square: string; piece: string; value: number }[] = [];
+    const board = testGame.board();
+    
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        const square = `${String.fromCharCode(97 + j)}${8 - i}` as Square;
+        const piece = board[i][j];
+        
+        if (piece && piece.color === color) {
+          const attackers = testGame.attackers(square, color === 'w' ? 'b' : 'w');
+          const defenders = testGame.attackers(square, color);
+          
+          if (attackers.length > 0 && defenders.length === 0) {
+            hanging.push({ square, piece: piece.type, value: pieceValues[piece.type] });
+          }
+        }
+      }
+    }
+    
+    return hanging;
+  };
+
+  // Helper function to evaluate move quality with 2-ply look-ahead for intermediate+
   const evaluateMove = (move: any, currentGame: Chess, rating: number): number => {
     const testGame = new Chess(currentGame.fen());
     testGame.move(move);
@@ -59,85 +84,149 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       return 10000;
     }
     
-    // Capture value - higher priority for good trades
+    // Check for immediate mate-in-one threats
+    if (testGame.isCheck()) {
+      score += 30;
+      // Check if we're getting checkmated next move
+      const opponentMoves = testGame.moves({ verbose: true });
+      const hasEscape = opponentMoves.length > 0;
+      if (!hasEscape) {
+        return 10000; // We deliver checkmate
+      }
+    }
+    
+    // Capture value - with exchange calculation
     if (move.captured) {
       const captureValue = pieceValues[move.captured];
       const movingValue = pieceValues[move.piece];
-      score += captureValue * 20;
+      score += captureValue * 25;
       
-      // Good trade bonus (capturing higher value)
-      if (captureValue > movingValue) {
-        score += (captureValue - movingValue) * 15;
+      // Calculate if this is a good trade
+      const attackersOnSquare = testGame.attackers(move.to as Square, currentGame.turn() === 'w' ? 'b' : 'w');
+      const defendersOnSquare = testGame.attackers(move.to as Square, currentGame.turn());
+      
+      if (attackersOnSquare.length > 0) {
+        // They can recapture - calculate the exchange
+        const exchangeLoss = movingValue - captureValue;
+        if (exchangeLoss > 0) {
+          score -= exchangeLoss * 20; // Bad trade
+        } else {
+          score += Math.abs(exchangeLoss) * 15; // Good trade
+        }
+      } else {
+        // Free capture
+        score += captureValue * 10;
       }
     }
     
-    // Check is valuable
-    if (testGame.isCheck()) {
-      score += 25;
+    // 2-ply look-ahead for intermediate+ bots
+    if (rating >= 1000) {
+      // Check if our piece becomes hanging after this move
+      const hanging = detectHangingPieces(testGame, currentGame.turn());
+      if (hanging.length > 0) {
+        // Heavily penalize hanging pieces
+        hanging.forEach(h => {
+          score -= h.value * 40;
+        });
+      }
+      
+      // Look for opponent's hanging pieces we can capture
+      const opponentHanging = detectHangingPieces(testGame, currentGame.turn() === 'w' ? 'b' : 'w');
+      opponentHanging.forEach(h => {
+        score += h.value * 15;
+      });
+      
+      // Simulate opponent's best response (minimax)
+      const opponentMoves = testGame.moves({ verbose: true });
+      if (opponentMoves.length > 0) {
+        let bestOpponentScore = -Infinity;
+        opponentMoves.slice(0, 10).forEach(oppMove => {
+          const oppTestGame = new Chess(testGame.fen());
+          oppTestGame.move(oppMove);
+          let oppScore = 0;
+          
+          if (oppMove.captured) {
+            oppScore += pieceValues[oppMove.captured] * 20;
+          }
+          if (oppTestGame.isCheck()) {
+            oppScore += 25;
+          }
+          
+          const newHanging = detectHangingPieces(oppTestGame, currentGame.turn());
+          oppScore += newHanging.reduce((sum, h) => sum + h.value * 30, 0);
+          
+          bestOpponentScore = Math.max(bestOpponentScore, oppScore);
+        });
+        
+        // Subtract opponent's best response from our score
+        score -= bestOpponentScore * 0.5;
+      }
     }
     
-    // Center control (more important in opening/middlegame)
+    // Center control (important in opening/middlegame)
     const moveNumber = currentGame.moveNumber();
     if (moveNumber < 20) {
       if (['e4', 'e5', 'd4', 'd5'].includes(move.to)) {
-        score += 12;
+        score += 15;
       }
       if (['c4', 'c5', 'f4', 'f5'].includes(move.to)) {
-        score += 8;
+        score += 10;
       }
     }
     
     // Piece development in opening
     if (moveNumber < 10) {
-      // Reward knight and bishop development
       if (['n', 'b'].includes(move.piece) && ['1', '8'].includes(move.from[1])) {
-        score += 10;
+        score += 12;
       }
-      // Penalize moving same piece twice
       if (move.piece !== 'p' && !['1', '8'].includes(move.from[1])) {
-        score -= 5;
+        score -= 6;
       }
     }
     
-    // Castling bonus
+    // Castling bonus (king safety)
     if (move.flags.includes('k') || move.flags.includes('q')) {
-      score += 20;
+      score += 25;
     }
     
-    // Piece safety - check if piece is protected
-    const defenders = testGame.attackers(move.to, currentGame.turn());
-    const attackers = testGame.attackers(move.to, currentGame.turn() === 'w' ? 'b' : 'w');
-    const movingPieceValue = pieceValues[move.piece];
-    
-    if (attackers.length > 0) {
-      if (defenders.length === 0) {
-        // Hanging piece - very bad
-        score -= movingPieceValue * 30;
-      } else if (attackers.length > defenders.length) {
-        // Outnumbered - risky
-        score -= movingPieceValue * 15;
+    // King safety - penalize exposed king
+    if (rating >= 1200) {
+      const kingSquare = testGame.board().flat().find(p => p && p.type === 'k' && p.color === currentGame.turn());
+      if (kingSquare) {
+        const kingPos = testGame.board().flatMap((row, i) => 
+          row.map((p, j) => p && p.type === 'k' && p.color === currentGame.turn() ? 
+            `${String.fromCharCode(97 + j)}${8 - i}` : null)
+        ).find(s => s) as Square;
+        
+        const kingAttackers = testGame.attackers(kingPos, currentGame.turn() === 'w' ? 'b' : 'w');
+        if (kingAttackers.length > 0) {
+          score -= 20;
+        }
       }
     }
     
-    // Control of important squares (for intermediate+ bots)
+    // Threat detection - are we defending our pieces?
     if (rating >= 1000) {
-      const controlledSquares = ['e4', 'e5', 'd4', 'd5', 'c4', 'c5', 'f4', 'f5'];
-      const controls = controlledSquares.filter(sq => {
-        const attackers = testGame.attackers(sq as any, currentGame.turn());
-        return attackers.length > 0;
-      }).length;
-      score += controls * 3;
+      const beforeHanging = detectHangingPieces(currentGame, currentGame.turn());
+      const afterHanging = detectHangingPieces(testGame, currentGame.turn());
+      
+      // Reward defending hanging pieces
+      if (beforeHanging.length > afterHanging.length) {
+        const defended = beforeHanging.find(h => !afterHanging.some(a => a.square === h.square));
+        if (defended) {
+          score += defended.value * 25;
+        }
+      }
     }
     
     // Pawn structure (for advanced bots)
     if (rating >= 1400) {
-      // Penalize doubled pawns
       if (move.piece === 'p') {
         const file = move.to[0];
         const pawnsOnFile = testGame.board().flat().filter(
           p => p && p.type === 'p' && p.color === currentGame.turn()
         ).length;
-        if (pawnsOnFile > 1) score -= 8;
+        if (pawnsOnFile > 1) score -= 10;
       }
     }
     
@@ -153,75 +242,122 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       if (moves.length === 0) return;
 
       const rating = selectedBot?.rating || 1000;
+      const pieceValues: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
       
-      // Calculate blunder rate based on rating tiers
+      // Calculate blunder rate - dramatically reduced for intermediate+
       let blunderRate: number;
       if (rating < 600) {
         blunderRate = 0.5; // Beginner: 50% blunder rate
       } else if (rating < 900) {
         blunderRate = 0.25; // Improving beginner: 25% blunder rate
       } else if (rating < 1200) {
-        blunderRate = 0.10; // Low intermediate: 10% blunder rate
+        blunderRate = 0.02; // Low intermediate: 2% blunder rate (was 10%)
       } else if (rating < 1500) {
-        blunderRate = 0.05; // Mid intermediate: 5% blunder rate
+        blunderRate = 0.01; // Mid intermediate: 1% blunder rate (was 5%)
       } else if (rating < 1800) {
-        blunderRate = 0.02; // High intermediate: 2% blunder rate
+        blunderRate = 0.005; // High intermediate: 0.5% blunder rate (was 2%)
       } else {
         blunderRate = 0; // Advanced+: no blunders
       }
       
+      // Evaluate all moves
+      const scoredMoves = moves.map(m => ({
+        move: m,
+        score: evaluateMove(m, currentGame, rating)
+      })).sort((a, b) => b.score - a.score);
+      
+      // Filter out obviously bad moves for intermediate+ bots
+      let filteredMoves = scoredMoves;
+      if (rating >= 1000) {
+        filteredMoves = scoredMoves.filter(sm => {
+          const testGame = new Chess(currentGame.fen());
+          testGame.move(sm.move);
+          
+          // Reject moves that hang pieces worth 3+ points
+          const hanging = detectHangingPieces(testGame, currentGame.turn());
+          const hangingValue = hanging.reduce((sum, h) => sum + h.value, 0);
+          if (hangingValue >= 3) return false;
+          
+          // Reject moves that allow mate in 1
+          const opponentMoves = testGame.moves({ verbose: true });
+          const allowsMate = opponentMoves.some(oppMove => {
+            const oppTest = new Chess(testGame.fen());
+            oppTest.move(oppMove);
+            return oppTest.isCheckmate();
+          });
+          if (allowsMate) return false;
+          
+          return true;
+        });
+        
+        // If all moves were filtered, use original list (forced situation)
+        if (filteredMoves.length === 0) {
+          filteredMoves = scoredMoves;
+        }
+      }
+      
       let move;
       
-      // Blunder: pick a random bad move
+      // Smarter blunder selection - pick from mediocre moves, not worst moves
       if (Math.random() < blunderRate) {
-        // Sort moves by score (ascending for worst moves)
-        const scoredMoves = moves.map(m => ({
-          move: m,
-          score: evaluateMove(m, currentGame, rating)
-        })).sort((a, b) => a.score - b.score);
-        
-        // Pick from worst 30% of moves
-        const worstMoves = scoredMoves.slice(0, Math.ceil(moves.length * 0.3));
-        move = worstMoves[Math.floor(Math.random() * worstMoves.length)].move;
-      } else {
-        // Good move: evaluate and pick based on skill
-        const scoredMoves = moves.map(m => ({
-          move: m,
-          score: evaluateMove(m, currentGame, rating)
-        })).sort((a, b) => b.score - a.score);
-        
-        // Determine selection pool based on rating
-        let selectionPoolSize: number;
-        if (rating < 600) {
-          selectionPoolSize = moves.length; // Pick from all moves
-        } else if (rating < 900) {
-          selectionPoolSize = Math.ceil(moves.length * 0.6); // Top 60%
-        } else if (rating < 1200) {
-          selectionPoolSize = Math.ceil(moves.length * 0.3); // Top 30%
+        let blunderRange: { start: number; end: number };
+        if (rating < 1200) {
+          // Pick from 60-80% percentile (miss tactics, not hang pieces)
+          blunderRange = { 
+            start: Math.floor(filteredMoves.length * 0.6), 
+            end: Math.floor(filteredMoves.length * 0.8) 
+          };
         } else if (rating < 1500) {
-          selectionPoolSize = Math.ceil(moves.length * 0.15); // Top 15%
-        } else if (rating < 1800) {
-          selectionPoolSize = Math.ceil(moves.length * 0.08); // Top 8%
+          // Pick from 70-85% percentile (slight positional mistakes)
+          blunderRange = { 
+            start: Math.floor(filteredMoves.length * 0.7), 
+            end: Math.floor(filteredMoves.length * 0.85) 
+          };
         } else {
-          selectionPoolSize = Math.max(1, Math.ceil(moves.length * 0.03)); // Top 3%
+          // Pick from 80-90% percentile (very subtle mistakes)
+          blunderRange = { 
+            start: Math.floor(filteredMoves.length * 0.8), 
+            end: Math.floor(filteredMoves.length * 0.9) 
+          };
         }
         
-        const topMoves = scoredMoves.slice(0, Math.max(1, selectionPoolSize));
+        const blunderMoves = filteredMoves.slice(blunderRange.start, Math.max(blunderRange.end, blunderRange.start + 1));
+        move = blunderMoves.length > 0 
+          ? blunderMoves[Math.floor(Math.random() * blunderMoves.length)].move
+          : filteredMoves[Math.floor(filteredMoves.length * 0.7)].move;
+      } else {
+        // Good move: tighter selection pools
+        let selectionPoolSize: number;
+        if (rating < 600) {
+          selectionPoolSize = filteredMoves.length; // Pick from all moves
+        } else if (rating < 900) {
+          selectionPoolSize = Math.ceil(filteredMoves.length * 0.6); // Top 60%
+        } else if (rating < 1200) {
+          selectionPoolSize = Math.ceil(filteredMoves.length * 0.2); // Top 20% (was 30%)
+        } else if (rating < 1500) {
+          selectionPoolSize = Math.ceil(filteredMoves.length * 0.1); // Top 10% (was 15%)
+        } else if (rating < 1800) {
+          selectionPoolSize = Math.ceil(filteredMoves.length * 0.05); // Top 5% (was 8%)
+        } else {
+          selectionPoolSize = Math.max(1, Math.ceil(filteredMoves.length * 0.03)); // Top 3%
+        }
         
-        // Determine best move selection chance based on rating
+        const topMoves = filteredMoves.slice(0, Math.max(1, selectionPoolSize));
+        
+        // Determine best move selection chance
         let bestMoveChance: number;
         if (rating < 600) {
           bestMoveChance = 0.2; // 20% chance
         } else if (rating < 900) {
           bestMoveChance = 0.4; // 40% chance
         } else if (rating < 1200) {
-          bestMoveChance = 0.65; // 65% chance
+          bestMoveChance = 0.7; // 70% chance (was 65%)
         } else if (rating < 1500) {
-          bestMoveChance = 0.80; // 80% chance
+          bestMoveChance = 0.85; // 85% chance (was 80%)
         } else if (rating < 1800) {
-          bestMoveChance = 0.90; // 90% chance
+          bestMoveChance = 0.93; // 93% chance (was 90%)
         } else {
-          bestMoveChance = 0.95; // 95% chance
+          bestMoveChance = 0.97; // 97% chance (was 95%)
         }
         
         if (Math.random() < bestMoveChance) {
