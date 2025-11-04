@@ -100,7 +100,7 @@ export const LuckyWheel = ({ onPrizeWon }: LuckyWheelProps) => {
     
     setRotation(finalRotation);
 
-    // Wait for animation to complete
+    // Wait for animation to complete (10 seconds)
     setTimeout(async () => {
       setSpinning(false);
       setSelectedPrize(prize);
@@ -140,7 +140,7 @@ export const LuckyWheel = ({ onPrizeWon }: LuckyWheelProps) => {
       toast.success(`🎉 You won ${prize.name}!`);
       onPrizeWon();
       setCanSpin(false);
-    }, 4000);
+    }, 10000);
   };
 
   const segmentAngle = 360 / prizes.length;
@@ -172,7 +172,7 @@ export const LuckyWheel = ({ onPrizeWon }: LuckyWheelProps) => {
               <div
                 className={cn(
                   "relative w-full h-full rounded-full overflow-hidden shadow-inner transition-transform",
-                  spinning ? "duration-[4000ms] ease-out" : "duration-300"
+                  spinning ? "duration-[10000ms] ease-in-out" : "duration-300"
                 )}
                 style={{
                   transform: `rotate(${rotation}deg)`,

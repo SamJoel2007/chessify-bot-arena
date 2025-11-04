@@ -257,6 +257,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     setIsThinking(false);
     setShowGameEndModal(false);
     setGameResult(null);
+    setGameMode(null);
+    if (onBotChange) onBotChange(null);
     toast("Game resigned!");
   };
 

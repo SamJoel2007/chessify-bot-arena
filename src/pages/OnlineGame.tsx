@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { getAvatarIcon } from "@/lib/avatarUtils";
+import { VoiceChat } from "@/components/VoiceChat";
+import { GameChat } from "@/components/GameChat";
 
 export default function OnlineGame() {
   const { gameId } = useParams();
@@ -21,6 +23,7 @@ export default function OnlineGame() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<Record<string, { background: string }>>({});
+  const [username, setUsername] = useState<string>("");
 
   useEffect(() => {
     loadGame();
@@ -55,6 +58,17 @@ export default function OnlineGame() {
         return;
       }
       setUserId(user.id);
+
+      // Get user profile for username
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile) {
+        setUsername(profile.username || "Player");
+      }
 
       const { data, error } = await supabase
         .from("games")
@@ -411,6 +425,9 @@ export default function OnlineGame() {
             <div className="space-y-4">
               <Card className="p-6 bg-gradient-card">
                 <h3 className="font-bold mb-4">Game Info</h3>
+                <div className="mb-4">
+                  <VoiceChat gameId={gameId || ""} userId={userId} />
+                </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Your Color:</span>
@@ -434,6 +451,12 @@ export default function OnlineGame() {
                   )}
                 </div>
               </Card>
+              
+              <GameChat 
+                gameId={gameId || ""} 
+                userId={userId} 
+                username={username}
+              />
             </div>
           </div>
         </div>
