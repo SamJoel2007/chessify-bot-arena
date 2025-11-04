@@ -366,8 +366,8 @@ export default function OnlineGame() {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {BlackAvatar && (
-                      <div className="w-8 h-8">
-                        <BlackAvatar />
+                      <div className="w-8 h-8 flex items-center justify-center text-2xl">
+                        {BlackAvatar}
                       </div>
                     )}
                     <span className="font-bold">{gameData.black_username}</span>
@@ -392,8 +392,8 @@ export default function OnlineGame() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {WhiteAvatar && (
-                      <div className="w-8 h-8">
-                        <WhiteAvatar />
+                      <div className="w-8 h-8 flex items-center justify-center text-2xl">
+                        {WhiteAvatar}
                       </div>
                     )}
                     <span className="font-bold">{gameData.white_username}</span>
