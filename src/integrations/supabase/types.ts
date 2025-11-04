@@ -340,6 +340,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_spins: {
+        Row: {
+          created_at: string
+          id: string
+          last_spin_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_spin_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_spin_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

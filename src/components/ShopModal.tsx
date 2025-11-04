@@ -8,9 +8,10 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bot, User, Palette, Coins, Check } from "lucide-react";
+import { Bot, User, Palette, Coins, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { LuckyWheel } from "./LuckyWheel";
 
 interface ShopModalProps {
   isOpen: boolean;
@@ -165,7 +166,7 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
         </DialogHeader>
 
         <Tabs defaultValue="bots" className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="bots" className="gap-2">
               <Bot className="w-4 h-4" />
               Bots
@@ -177,6 +178,10 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
             <TabsTrigger value="themes" className="gap-2">
               <Palette className="w-4 h-4" />
               Themes
+            </TabsTrigger>
+            <TabsTrigger value="luckdraw" className="gap-2">
+              <Sparkles className="w-4 h-4" />
+              Lucky Draw
             </TabsTrigger>
           </TabsList>
 
@@ -307,6 +312,13 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
                 );
               })}
             </div>
+          </TabsContent>
+
+          <TabsContent value="luckdraw" className="mt-6">
+            <LuckyWheel onPrizeWon={() => {
+              fetchPurchasedItems();
+              onCoinsUpdate();
+            }} />
           </TabsContent>
         </Tabs>
       </DialogContent>
