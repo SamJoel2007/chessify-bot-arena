@@ -13,6 +13,7 @@ import { ShopModal } from "@/components/ShopModal";
 import { RecentPosts } from "@/components/RecentPosts";
 import { AdminPostCreator } from "@/components/AdminPostCreator";
 import { OnlineMatchmaking } from "@/components/OnlineMatchmaking";
+import { HoverSidebar } from "@/components/HoverSidebar";
 import tournamentImage from "@/assets/tournament-hero.jpg";
 import puzzleBeginner from "@/assets/puzzles/puzzle-beginner.jpg";
 import puzzleIntermediate from "@/assets/puzzles/puzzle-intermediate.jpg";
@@ -79,6 +80,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Hover Sidebar */}
+      <HoverSidebar user={user} currentAvatar={currentAvatar} />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
