@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Users, Store, Puzzle } from "lucide-react";
+import { Bell, Users, Store, Puzzle, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -56,29 +56,41 @@ export function HoverSidebar({ user, currentAvatar }: HoverSidebarProps) {
 
               {/* Navigation Buttons */}
               <div className="space-y-2">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-3 h-12"
-                  onClick={() => {
-                    // TODO: Implement notifications
-                    setIsHovered(false);
-                  }}
-                >
-                  <Bell className="w-5 h-5" />
-                  <span>Notifications</span>
-                </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 h-12"
+              onClick={() => {
+                navigate('/notifications');
+                setIsHovered(false);
+              }}
+            >
+              <Bell className="w-5 h-5" />
+              <span>Notifications</span>
+            </Button>
 
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-3 h-12"
-                  onClick={() => {
-                    // TODO: Implement friends
-                    setIsHovered(false);
-                  }}
-                >
-                  <Users className="w-5 h-5" />
-                  <span>Friends</span>
-                </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 h-12"
+              onClick={() => {
+                navigate('/friends');
+                setIsHovered(false);
+              }}
+            >
+              <Users className="w-5 h-5" />
+              <span>Friends</span>
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 h-12"
+              onClick={() => {
+                navigate('/messages');
+                setIsHovered(false);
+              }}
+            >
+              <MessageSquare className="w-5 h-5" />
+              <span>Messages</span>
+            </Button>
 
                 <Button
                   variant="ghost"
