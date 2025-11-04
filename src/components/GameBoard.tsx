@@ -44,6 +44,51 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     }
   }, [selectedBot]);
 
+  // Helper function to evaluate move quality
+  const evaluateMove = (move: any, currentGame: Chess): number => {
+    const testGame = new Chess(currentGame.fen());
+    testGame.move(move);
+    
+    let score = 0;
+    
+    // Material values
+    const pieceValues: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+    
+    // Capture value
+    if (move.captured) {
+      score += pieceValues[move.captured] * 10;
+    }
+    
+    // Checkmate is best
+    if (testGame.isCheckmate()) {
+      return 1000;
+    }
+    
+    // Check is good
+    if (testGame.isCheck()) {
+      score += 15;
+    }
+    
+    // Center control
+    if (['e4', 'e5', 'd4', 'd5'].includes(move.to)) {
+      score += 5;
+    }
+    
+    // Piece development (not moving same piece twice in opening)
+    if (currentGame.moveNumber() < 10 && !['e2', 'd2', 'c2', 'f2'].includes(move.from)) {
+      score += 3;
+    }
+    
+    // Penalize leaving pieces hanging
+    const movingPieceValue = pieceValues[move.piece];
+    const attackers = testGame.attackers(move.to, currentGame.turn() === 'w' ? 'b' : 'w');
+    if (attackers.length > 0) {
+      score -= movingPieceValue * 5;
+    }
+    
+    return score;
+  };
+
   const makeBotMove = (currentGame: Chess) => {
     if (currentGame.isGameOver()) return;
 
@@ -52,87 +97,50 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       const moves = currentGame.moves({ verbose: true });
       if (moves.length === 0) return;
 
-      // Calculate difficulty based on bot rating
       const rating = selectedBot?.rating || 1000;
+      
+      // Calculate blunder rate (decreases with rating)
+      // 400 ELO: 70% blunder, 2800 ELO: 0% blunder
+      const blunderRate = Math.max(0, Math.min(0.7, (1000 - rating) / 1000));
+      
+      // Calculate thinking depth based on rating
+      // Higher rated bots consider better moves
+      const thinkingDepth = Math.min(10, Math.max(1, Math.floor((rating - 300) / 200)));
+      
       let move;
-
-      // Get move categories
-      const captures = moves.filter(m => m.flags.includes('c'));
-      const checks = moves.filter(m => {
-        const testGame = new Chess(currentGame.fen());
-        testGame.move(m);
-        return testGame.isCheck();
-      });
-      const centerMoves = moves.filter(m => 
-        ['e4', 'e5', 'd4', 'd5', 'c4', 'c5', 'f4', 'f5'].includes(m.to)
-      );
-
-      if (rating < 450) {
-        // 400-450: Very weak (80% random, 20% captures)
-        if (captures.length > 0 && Math.random() > 0.8) {
-          move = captures[Math.floor(Math.random() * captures.length)];
-        } else {
-          move = moves[Math.floor(Math.random() * moves.length)];
-        }
-      } else if (rating < 550) {
-        // 450-550: Weak (60% random, 40% captures)
-        if (captures.length > 0 && Math.random() > 0.6) {
-          move = captures[Math.floor(Math.random() * captures.length)];
-        } else {
-          move = moves[Math.floor(Math.random() * moves.length)];
-        }
-      } else if (rating < 650) {
-        // 550-650: Learning (50% captures, 30% checks, 20% random)
-        if (checks.length > 0 && Math.random() > 0.7) {
-          move = checks[Math.floor(Math.random() * checks.length)];
-        } else if (captures.length > 0 && Math.random() > 0.5) {
-          move = captures[Math.floor(Math.random() * captures.length)];
-        } else {
-          move = moves[Math.floor(Math.random() * moves.length)];
-        }
-      } else if (rating < 900) {
-        // 650-900: Developing (60% captures, 30% checks, 10% center)
-        if (checks.length > 0 && Math.random() > 0.7) {
-          move = checks[Math.floor(Math.random() * checks.length)];
-        } else if (captures.length > 0 && Math.random() > 0.4) {
-          move = captures[Math.floor(Math.random() * captures.length)];
-        } else if (centerMoves.length > 0 && Math.random() > 0.9) {
-          move = centerMoves[Math.floor(Math.random() * centerMoves.length)];
-        } else {
-          move = moves[Math.floor(Math.random() * moves.length)];
-        }
-      } else if (rating < 1400) {
-        // 900-1400: Intermediate (70% checks, 20% captures, 10% center)
-        if (checks.length > 0 && Math.random() > 0.3) {
-          move = checks[Math.floor(Math.random() * checks.length)];
-        } else if (captures.length > 0 && Math.random() > 0.8) {
-          move = captures[Math.floor(Math.random() * captures.length)];
-        } else if (centerMoves.length > 0 && Math.random() > 0.9) {
-          move = centerMoves[Math.floor(Math.random() * centerMoves.length)];
-        } else {
-          move = moves[Math.floor(Math.random() * moves.length)];
-        }
-      } else if (rating < 1900) {
-        // 1400-1900: Advanced (80% checks, 15% captures, 5% center)
-        if (checks.length > 0 && Math.random() > 0.2) {
-          move = checks[Math.floor(Math.random() * checks.length)];
-        } else if (captures.length > 0 && Math.random() > 0.85) {
-          move = captures[Math.floor(Math.random() * captures.length)];
-        } else if (centerMoves.length > 0 && Math.random() > 0.95) {
-          move = centerMoves[Math.floor(Math.random() * centerMoves.length)];
-        } else {
-          move = moves[Math.floor(Math.random() * moves.length)];
-        }
+      
+      // Blunder: pick a random bad move
+      if (Math.random() < blunderRate) {
+        // Sort moves by score (ascending for worst moves)
+        const scoredMoves = moves.map(m => ({
+          move: m,
+          score: evaluateMove(m, currentGame)
+        })).sort((a, b) => a.score - b.score);
+        
+        // Pick from worst 30% of moves
+        const worstMoves = scoredMoves.slice(0, Math.ceil(moves.length * 0.3));
+        move = worstMoves[Math.floor(Math.random() * worstMoves.length)].move;
       } else {
-        // 1900+: Expert/Master (90% checks, 10% captures, prioritize center)
-        if (checks.length > 0 && Math.random() > 0.1) {
-          move = checks[Math.floor(Math.random() * checks.length)];
-        } else if (captures.length > 0 && Math.random() > 0.9) {
-          move = captures[Math.floor(Math.random() * captures.length)];
-        } else if (centerMoves.length > 0) {
-          move = centerMoves[Math.floor(Math.random() * centerMoves.length)];
+        // Good move: evaluate and pick based on skill
+        const scoredMoves = moves.map(m => ({
+          move: m,
+          score: evaluateMove(m, currentGame)
+        })).sort((a, b) => b.score - a.score);
+        
+        // Lower rated bots pick from top moves with more randomness
+        // 400 ELO: picks from top 100% of moves randomly
+        // 800 ELO: picks from top 50% of moves
+        // 1200 ELO: picks from top 30% of moves
+        // 1600+ ELO: picks from top 10% of moves (best moves)
+        const selectionPool = Math.max(1, Math.ceil(moves.length * (1 - rating / 2000)));
+        const topMoves = scoredMoves.slice(0, Math.max(1, Math.min(selectionPool, thinkingDepth)));
+        
+        // Higher rated bots more likely to pick THE best move
+        const bestMoveChance = Math.min(0.9, rating / 2000);
+        if (Math.random() < bestMoveChance) {
+          move = topMoves[0].move;
         } else {
-          move = moves[Math.floor(Math.random() * moves.length)];
+          move = topMoves[Math.floor(Math.random() * topMoves.length)].move;
         }
       }
 
