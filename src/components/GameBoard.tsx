@@ -45,7 +45,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   }, [selectedBot]);
 
   // Helper function to evaluate move quality
-  const evaluateMove = (move: any, currentGame: Chess): number => {
+  const evaluateMove = (move: any, currentGame: Chess, rating: number): number => {
     const testGame = new Chess(currentGame.fen());
     testGame.move(move);
     
@@ -54,36 +54,91 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     // Material values
     const pieceValues: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
     
-    // Capture value
-    if (move.captured) {
-      score += pieceValues[move.captured] * 10;
-    }
-    
     // Checkmate is best
     if (testGame.isCheckmate()) {
-      return 1000;
+      return 10000;
     }
     
-    // Check is good
+    // Capture value - higher priority for good trades
+    if (move.captured) {
+      const captureValue = pieceValues[move.captured];
+      const movingValue = pieceValues[move.piece];
+      score += captureValue * 20;
+      
+      // Good trade bonus (capturing higher value)
+      if (captureValue > movingValue) {
+        score += (captureValue - movingValue) * 15;
+      }
+    }
+    
+    // Check is valuable
     if (testGame.isCheck()) {
-      score += 15;
+      score += 25;
     }
     
-    // Center control
-    if (['e4', 'e5', 'd4', 'd5'].includes(move.to)) {
-      score += 5;
+    // Center control (more important in opening/middlegame)
+    const moveNumber = currentGame.moveNumber();
+    if (moveNumber < 20) {
+      if (['e4', 'e5', 'd4', 'd5'].includes(move.to)) {
+        score += 12;
+      }
+      if (['c4', 'c5', 'f4', 'f5'].includes(move.to)) {
+        score += 8;
+      }
     }
     
-    // Piece development (not moving same piece twice in opening)
-    if (currentGame.moveNumber() < 10 && !['e2', 'd2', 'c2', 'f2'].includes(move.from)) {
-      score += 3;
+    // Piece development in opening
+    if (moveNumber < 10) {
+      // Reward knight and bishop development
+      if (['n', 'b'].includes(move.piece) && ['1', '8'].includes(move.from[1])) {
+        score += 10;
+      }
+      // Penalize moving same piece twice
+      if (move.piece !== 'p' && !['1', '8'].includes(move.from[1])) {
+        score -= 5;
+      }
     }
     
-    // Penalize leaving pieces hanging
-    const movingPieceValue = pieceValues[move.piece];
+    // Castling bonus
+    if (move.flags.includes('k') || move.flags.includes('q')) {
+      score += 20;
+    }
+    
+    // Piece safety - check if piece is protected
+    const defenders = testGame.attackers(move.to, currentGame.turn());
     const attackers = testGame.attackers(move.to, currentGame.turn() === 'w' ? 'b' : 'w');
+    const movingPieceValue = pieceValues[move.piece];
+    
     if (attackers.length > 0) {
-      score -= movingPieceValue * 5;
+      if (defenders.length === 0) {
+        // Hanging piece - very bad
+        score -= movingPieceValue * 30;
+      } else if (attackers.length > defenders.length) {
+        // Outnumbered - risky
+        score -= movingPieceValue * 15;
+      }
+    }
+    
+    // Control of important squares (for intermediate+ bots)
+    if (rating >= 1000) {
+      const controlledSquares = ['e4', 'e5', 'd4', 'd5', 'c4', 'c5', 'f4', 'f5'];
+      const controls = controlledSquares.filter(sq => {
+        const attackers = testGame.attackers(sq as any, currentGame.turn());
+        return attackers.length > 0;
+      }).length;
+      score += controls * 3;
+    }
+    
+    // Pawn structure (for advanced bots)
+    if (rating >= 1400) {
+      // Penalize doubled pawns
+      if (move.piece === 'p') {
+        const file = move.to[0];
+        const pawnsOnFile = testGame.board().flat().filter(
+          p => p && p.type === 'p' && p.color === currentGame.turn()
+        ).length;
+        if (pawnsOnFile > 1) score -= 8;
+      }
     }
     
     return score;
@@ -99,13 +154,21 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
 
       const rating = selectedBot?.rating || 1000;
       
-      // Calculate blunder rate (decreases with rating)
-      // 400 ELO: 70% blunder, 2800 ELO: 0% blunder
-      const blunderRate = Math.max(0, Math.min(0.7, (1000 - rating) / 1000));
-      
-      // Calculate thinking depth based on rating
-      // Higher rated bots consider better moves
-      const thinkingDepth = Math.min(10, Math.max(1, Math.floor((rating - 300) / 200)));
+      // Calculate blunder rate based on rating tiers
+      let blunderRate: number;
+      if (rating < 600) {
+        blunderRate = 0.5; // Beginner: 50% blunder rate
+      } else if (rating < 900) {
+        blunderRate = 0.25; // Improving beginner: 25% blunder rate
+      } else if (rating < 1200) {
+        blunderRate = 0.10; // Low intermediate: 10% blunder rate
+      } else if (rating < 1500) {
+        blunderRate = 0.05; // Mid intermediate: 5% blunder rate
+      } else if (rating < 1800) {
+        blunderRate = 0.02; // High intermediate: 2% blunder rate
+      } else {
+        blunderRate = 0; // Advanced+: no blunders
+      }
       
       let move;
       
@@ -114,7 +177,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         // Sort moves by score (ascending for worst moves)
         const scoredMoves = moves.map(m => ({
           move: m,
-          score: evaluateMove(m, currentGame)
+          score: evaluateMove(m, currentGame, rating)
         })).sort((a, b) => a.score - b.score);
         
         // Pick from worst 30% of moves
@@ -124,19 +187,43 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         // Good move: evaluate and pick based on skill
         const scoredMoves = moves.map(m => ({
           move: m,
-          score: evaluateMove(m, currentGame)
+          score: evaluateMove(m, currentGame, rating)
         })).sort((a, b) => b.score - a.score);
         
-        // Lower rated bots pick from top moves with more randomness
-        // 400 ELO: picks from top 100% of moves randomly
-        // 800 ELO: picks from top 50% of moves
-        // 1200 ELO: picks from top 30% of moves
-        // 1600+ ELO: picks from top 10% of moves (best moves)
-        const selectionPool = Math.max(1, Math.ceil(moves.length * (1 - rating / 2000)));
-        const topMoves = scoredMoves.slice(0, Math.max(1, Math.min(selectionPool, thinkingDepth)));
+        // Determine selection pool based on rating
+        let selectionPoolSize: number;
+        if (rating < 600) {
+          selectionPoolSize = moves.length; // Pick from all moves
+        } else if (rating < 900) {
+          selectionPoolSize = Math.ceil(moves.length * 0.6); // Top 60%
+        } else if (rating < 1200) {
+          selectionPoolSize = Math.ceil(moves.length * 0.3); // Top 30%
+        } else if (rating < 1500) {
+          selectionPoolSize = Math.ceil(moves.length * 0.15); // Top 15%
+        } else if (rating < 1800) {
+          selectionPoolSize = Math.ceil(moves.length * 0.08); // Top 8%
+        } else {
+          selectionPoolSize = Math.max(1, Math.ceil(moves.length * 0.03)); // Top 3%
+        }
         
-        // Higher rated bots more likely to pick THE best move
-        const bestMoveChance = Math.min(0.9, rating / 2000);
+        const topMoves = scoredMoves.slice(0, Math.max(1, selectionPoolSize));
+        
+        // Determine best move selection chance based on rating
+        let bestMoveChance: number;
+        if (rating < 600) {
+          bestMoveChance = 0.2; // 20% chance
+        } else if (rating < 900) {
+          bestMoveChance = 0.4; // 40% chance
+        } else if (rating < 1200) {
+          bestMoveChance = 0.65; // 65% chance
+        } else if (rating < 1500) {
+          bestMoveChance = 0.80; // 80% chance
+        } else if (rating < 1800) {
+          bestMoveChance = 0.90; // 90% chance
+        } else {
+          bestMoveChance = 0.95; // 95% chance
+        }
+        
         if (Math.random() < bestMoveChance) {
           move = topMoves[0].move;
         } else {
