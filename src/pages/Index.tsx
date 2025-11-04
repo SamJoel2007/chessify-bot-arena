@@ -30,6 +30,13 @@ const Index = () => {
   const [showShop, setShowShop] = useState(false);
 
   useEffect(() => {
+    // Load ad script
+    const script = document.createElement("script");
+    script.src = "//pl27964518.effectivegatecpm.com/6b73e2d7b6ada28eb7fcb5b7a7102a06/invoke.js";
+    script.async = true;
+    script.setAttribute("data-cfasync", "false");
+    document.body.appendChild(script);
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
       if (session?.user) {
@@ -44,7 +51,12 @@ const Index = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      // Cleanup ad script
+      const scripts = document.querySelectorAll('script[src*="effectivegatecpm.com"]');
+      scripts.forEach(script => script.remove());
+    };
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
@@ -297,6 +309,12 @@ const Index = () => {
               Stay updated with the latest events, tournaments, and community highlights
             </p>
           </div>
+          
+          {/* Ad Banner */}
+          <div className="flex justify-center mb-6">
+            <div id="container-6b73e2d7b6ada28eb7fcb5b7a7102a06"></div>
+          </div>
+          
           <AdminPostCreator />
           <RecentPosts />
         </section>

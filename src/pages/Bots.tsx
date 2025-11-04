@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Crown, ArrowLeft, Zap, Trophy, Star, Sparkles, Swords } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -176,6 +177,19 @@ const Bots = () => {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("beginner");
 
+  useEffect(() => {
+    // Load ad script
+    const script = document.createElement("script");
+    script.src = "//pl27964518.effectivegatecpm.com/6b73e2d7b6ada28eb7fcb5b7a7102a06/invoke.js";
+    script.async = true;
+    script.setAttribute("data-cfasync", "false");
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   const handlePlayBot = (bot: Bot) => {
     // Navigate to game page with selected bot
     navigate("/game", { state: { selectedBot: bot } });
@@ -218,6 +232,13 @@ const Bots = () => {
           </p>
         </div>
       </section>
+
+      {/* Ad Banner */}
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex justify-center">
+          <div id="container-6b73e2d7b6ada28eb7fcb5b7a7102a06"></div>
+        </div>
+      </div>
 
       {/* Bots Grid */}
       <main className="container mx-auto px-4 py-12">
