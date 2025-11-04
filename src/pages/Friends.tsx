@@ -10,31 +10,32 @@ import { toast } from "sonner";
 import { getAvatarIcon } from "@/lib/avatarUtils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface Profile {
+  id: string;
+  username: string | null;
+  email: string | null;
+  current_avatar: string | null;
+}
+
 interface FriendRequest {
   id: string;
   sender_id: string;
   receiver_id: string;
   status: string;
   created_at: string;
-  sender?: {
-    username: string;
-    email: string;
-    current_avatar: string | null;
-  };
-  receiver?: {
-    username: string;
-    email: string;
-    current_avatar: string | null;
-  };
+}
+
+interface FriendWithProfile extends FriendRequest {
+  profile?: Profile;
 }
 
 export default function Friends() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [username, setUsername] = useState("");
-  const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
-  const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([]);
-  const [friends, setFriends] = useState<FriendRequest[]>([]);
+  const [sentRequests, setSentRequests] = useState<FriendWithProfile[]>([]);
+  const [receivedRequests, setReceivedRequests] = useState<FriendWithProfile[]>([]);
+  const [friends, setFriends] = useState<FriendWithProfile[]>([]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -73,10 +74,7 @@ export default function Friends() {
       // Load sent requests
       const { data: sent, error: sentError } = await supabase
         .from('friend_requests')
-        .select(`
-          *,
-          receiver:profiles!friend_requests_receiver_id_fkey(username, email, current_avatar)
-        `)
+        .select('*')
         .eq('sender_id', userId);
 
       if (sentError) throw sentError;
@@ -84,20 +82,55 @@ export default function Friends() {
       // Load received requests
       const { data: received, error: receivedError } = await supabase
         .from('friend_requests')
-        .select(`
-          *,
-          sender:profiles!friend_requests_sender_id_fkey(username, email, current_avatar)
-        `)
+        .select('*')
         .eq('receiver_id', userId);
 
       if (receivedError) throw receivedError;
 
-      setSentRequests((sent || []).filter(r => r.status === 'pending'));
-      setReceivedRequests((received || []).filter(r => r.status === 'pending'));
-      setFriends([
-        ...(sent || []).filter(r => r.status === 'accepted'),
-        ...(received || []).filter(r => r.status === 'accepted')
-      ]);
+      // Get all unique user IDs
+      const allRequests = [...(sent || []), ...(received || [])];
+      const userIds = new Set<string>();
+      allRequests.forEach(req => {
+        userIds.add(req.sender_id);
+        userIds.add(req.receiver_id);
+      });
+
+      // Fetch profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', Array.from(userIds));
+
+      if (profilesError) throw profilesError;
+
+      const profileMap = new Map<string, Profile>();
+      (profiles || []).forEach(p => profileMap.set(p.id, p));
+
+      // Attach profiles to requests
+      const sentWithProfiles = (sent || []).filter(r => r.status === 'pending').map(r => ({
+        ...r,
+        profile: profileMap.get(r.receiver_id)
+      }));
+
+      const receivedWithProfiles = (received || []).filter(r => r.status === 'pending').map(r => ({
+        ...r,
+        profile: profileMap.get(r.sender_id)
+      }));
+
+      const friendsWithProfiles = [
+        ...(sent || []).filter(r => r.status === 'accepted').map(r => ({
+          ...r,
+          profile: profileMap.get(r.receiver_id)
+        })),
+        ...(received || []).filter(r => r.status === 'accepted').map(r => ({
+          ...r,
+          profile: profileMap.get(r.sender_id)
+        }))
+      ];
+
+      setSentRequests(sentWithProfiles);
+      setReceivedRequests(receivedWithProfiles);
+      setFriends(friendsWithProfiles);
     } catch (error) {
       console.error('Error loading friend requests:', error);
     }
@@ -115,7 +148,7 @@ export default function Friends() {
         .from('profiles')
         .select('id')
         .eq('username', username.trim())
-        .single();
+        .maybeSingle();
 
       if (userError || !targetUser) {
         toast.error('User not found');
@@ -219,27 +252,24 @@ export default function Friends() {
                 No friends yet
               </Card>
             ) : (
-              friends.map((friend) => {
-                const profile = friend.sender_id === user.id ? friend.receiver : friend.sender;
-                return (
-                  <Card key={friend.id} className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-12 h-12">
-                        <AvatarFallback className="bg-gradient-primary text-2xl">
-                          {getAvatarIcon(profile?.current_avatar || null)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-semibold">{profile?.username || profile?.email?.split('@')[0]}</p>
-                        <p className="text-sm text-muted-foreground">{profile?.email}</p>
-                      </div>
-                      <Button variant="outline" onClick={() => navigate('/messages')}>
-                        Message
-                      </Button>
+              friends.map((friend) => (
+                <Card key={friend.id} className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-12 h-12">
+                      <AvatarFallback className="bg-gradient-primary text-2xl">
+                        {getAvatarIcon(friend.profile?.current_avatar || null)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-semibold">{friend.profile?.username || friend.profile?.email?.split('@')[0]}</p>
+                      <p className="text-sm text-muted-foreground">{friend.profile?.email}</p>
                     </div>
-                  </Card>
-                );
-              })
+                    <Button variant="outline" onClick={() => navigate('/messages')}>
+                      Message
+                    </Button>
+                  </div>
+                </Card>
+              ))
             )}
           </TabsContent>
 
@@ -254,12 +284,12 @@ export default function Friends() {
                   <div className="flex items-center gap-3">
                     <Avatar className="w-12 h-12">
                       <AvatarFallback className="bg-gradient-primary text-2xl">
-                        {getAvatarIcon(request.sender?.current_avatar || null)}
+                        {getAvatarIcon(request.profile?.current_avatar || null)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <p className="font-semibold">{request.sender?.username || request.sender?.email?.split('@')[0]}</p>
-                      <p className="text-sm text-muted-foreground">{request.sender?.email}</p>
+                      <p className="font-semibold">{request.profile?.username || request.profile?.email?.split('@')[0]}</p>
+                      <p className="text-sm text-muted-foreground">{request.profile?.email}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button size="icon" onClick={() => handleFriendRequest(request.id, true)}>
@@ -286,12 +316,12 @@ export default function Friends() {
                   <div className="flex items-center gap-3">
                     <Avatar className="w-12 h-12">
                       <AvatarFallback className="bg-gradient-primary text-2xl">
-                        {getAvatarIcon(request.receiver?.current_avatar || null)}
+                        {getAvatarIcon(request.profile?.current_avatar || null)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <p className="font-semibold">{request.receiver?.username || request.receiver?.email?.split('@')[0]}</p>
-                      <p className="text-sm text-muted-foreground">{request.receiver?.email}</p>
+                      <p className="font-semibold">{request.profile?.username || request.profile?.email?.split('@')[0]}</p>
+                      <p className="text-sm text-muted-foreground">{request.profile?.email}</p>
                     </div>
                     <span className="text-sm text-muted-foreground">Pending</span>
                   </div>
