@@ -33,6 +33,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   const [gameResult, setGameResult] = useState<"win" | "lose" | null>(null);
   const [capturedSquare, setCapturedSquare] = useState<Square | null>(null);
   const [draggedPiece, setDraggedPiece] = useState<{ square: Square; element: HTMLElement } | null>(null);
+  const [movingPiece, setMovingPiece] = useState<{ piece: string; color: string; from: Square; to: Square } | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     if (selectedBot) {
@@ -384,16 +386,25 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     }, 2000);
   };
 
+  const calculateSquarePosition = (square: Square): { x: number; y: number } => {
+    const file = square.charCodeAt(0) - 97; // a=0, b=1, ..., h=7
+    const rank = 8 - parseInt(square[1]); // 8=0, 7=1, ..., 1=7
+    return { x: file, y: rank };
+  };
+
   const makeMove = (from: Square, to: Square) => {
+    if (isAnimating) return false;
+    
     try {
       const gameCopy = new Chess(game.fen());
       
+      // Get the piece info before moving
+      const movingPieceData = game.get(from);
+      if (!movingPieceData) return false;
+      
       // Check if this is a capture
       const targetPiece = game.get(to);
-      if (targetPiece) {
-        setCapturedSquare(to);
-        setTimeout(() => setCapturedSquare(null), 600);
-      }
+      const isCapture = !!targetPiece;
       
       const move = gameCopy.move({
         from,
@@ -403,11 +414,34 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
 
       if (move === null) return false;
 
-      // Delay the state update to allow animation
+      // Start animation
+      setIsAnimating(true);
+      setMovingPiece({
+        piece: movingPieceData.type,
+        color: movingPieceData.color,
+        from,
+        to,
+      });
+
+      // If capture, start breakdown animation at 80% of journey
+      if (isCapture) {
+        setTimeout(() => {
+          setCapturedSquare(to);
+        }, 400); // 80% of 500ms
+      }
+
+      // Complete move after animation
       setTimeout(() => {
         setGame(gameCopy);
         setMoveHistory([...moveHistory, move.san]);
         setOptionSquares({});
+        setMovingPiece(null);
+        setIsAnimating(false);
+        
+        // Clear captured square after breakdown animation
+        if (isCapture) {
+          setTimeout(() => setCapturedSquare(null), 200);
+        }
         
         if (gameCopy.isCheckmate()) {
           setGameResult("win");
@@ -418,13 +452,13 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
             makeBotMove(gameCopy);
           }
         } else if (gameMode === "bot" && !gameCopy.isGameOver()) {
-          // Bot's turn
           makeBotMove(gameCopy);
         }
       }, 500);
 
       return true;
     } catch (error) {
+      setIsAnimating(false);
       return false;
     }
   };
@@ -615,11 +649,12 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         const hasLegalMove = optionSquares[square];
 
         const isCaptured = capturedSquare === square;
+        const isMovingFrom = movingPiece?.from === square;
         
         squares.push(
           <button
             key={square}
-            draggable={!!piece && (gameMode !== "bot" || piece.color === "w")}
+            draggable={!!piece && (gameMode !== "bot" || piece.color === "w") && !isAnimating}
             onDragStart={(e) => handleDragStart(square, e)}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(square, e)}
@@ -634,8 +669,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
               ${piece?.color === 'w' ? 'text-[#F0D9B5] drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]' : 'text-[#1a1a1a] drop-shadow-[0_3px_6px_rgba(255,255,255,0.4)] [text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]'}
             `}
           >
-            {piece && !isCaptured && (
-              <span className="animate-piece-move">
+            {piece && !isCaptured && !isMovingFrom && (
+              <span>
                 {getPieceSymbol(piece.type, piece.color)}
               </span>
             )}
@@ -697,10 +732,53 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         </div>
         <div className="max-w-[600px] mx-auto">
           <div 
-            className="grid grid-cols-8 border-4 border-border rounded-lg overflow-hidden shadow-glow"
+            className="grid grid-cols-8 border-4 border-border rounded-lg overflow-hidden shadow-glow relative"
             style={{ aspectRatio: "1/1" }}
           >
             {renderBoard()}
+            
+            {/* Moving Piece Overlay */}
+            {movingPiece && (
+              <div
+                className="absolute inset-0 pointer-events-none grid grid-cols-8"
+                style={{ aspectRatio: "1/1" }}
+              >
+                {(() => {
+                  const fromPos = calculateSquarePosition(movingPiece.from);
+                  const toPos = calculateSquarePosition(movingPiece.to);
+                  const deltaX = (toPos.x - fromPos.x) * 100; // percentage
+                  const deltaY = (toPos.y - fromPos.y) * 100; // percentage
+                  
+                  return (
+                    <div
+                      className="absolute text-5xl font-bold animate-piece-slide"
+                      style={{
+                        left: `${fromPos.x * 12.5}%`,
+                        top: `${fromPos.y * 12.5}%`,
+                        width: '12.5%',
+                        height: '12.5%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        '--tw-slide-from-x': '0%',
+                        '--tw-slide-from-y': '0%',
+                        '--tw-slide-to-x': `${deltaX}%`,
+                        '--tw-slide-to-y': `${deltaY}%`,
+                        color: movingPiece.color === 'w' ? '#F0D9B5' : '#1a1a1a',
+                        filter: movingPiece.color === 'w' 
+                          ? 'drop-shadow(0 6px 12px rgba(0,0,0,0.9))' 
+                          : 'drop-shadow(0 6px 12px rgba(255,255,255,0.4))',
+                        textShadow: movingPiece.color === 'w'
+                          ? '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
+                          : '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff',
+                      } as React.CSSProperties}
+                    >
+                      {getPieceSymbol(movingPiece.piece, movingPiece.color)}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         </div>
       </Card>

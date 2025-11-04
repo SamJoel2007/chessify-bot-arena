@@ -128,6 +128,18 @@ export default {
             transform: "translateY(0)",
           },
         },
+        "piece-slide": {
+          "0%": {
+            transform: "translate(var(--tw-slide-from-x), var(--tw-slide-from-y)) scale(1.1)",
+            opacity: "0.9",
+            filter: "drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5))",
+          },
+          "100%": {
+            transform: "translate(var(--tw-slide-to-x), var(--tw-slide-to-y)) scale(1)",
+            opacity: "1",
+            filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -136,6 +148,7 @@ export default {
         "scale-in": "scale-in 0.4s ease-out",
         "piece-breakdown": "piece-breakdown 0.6s ease-out forwards",
         "piece-move": "piece-move 0.6s ease-in-out",
+        "piece-slide": "piece-slide 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards",
       },
     },
   },
