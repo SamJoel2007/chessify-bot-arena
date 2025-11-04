@@ -42,27 +42,47 @@ const shopItems = {
     { id: "bot-1", name: "Dragon Knight", price: 600, icon: "🐉" },
     { id: "bot-2", name: "Cyber Warrior", price: 500, icon: "🤖" },
     { id: "bot-3", name: "Wizard Master", price: 700, icon: "🧙‍♂️" },
+    { id: "bot-4", name: "Shadow Ninja", price: 550, icon: "🥷" },
+    { id: "bot-5", name: "Space Explorer", price: 650, icon: "🚀" },
+    { id: "bot-6", name: "Alien Master", price: 800, icon: "👽" },
+    { id: "bot-7", name: "Ancient Warrior", price: 450, icon: "⚔️" },
+    { id: "bot-8", name: "Mystic Oracle", price: 750, icon: "🔮" },
   ],
   avatars: [
     // Common
     { id: "1", name: "Knight Helmet", price: 100, icon: "⚔️", rarity: "common" as Rarity },
     { id: "2", name: "Chess Pawn", price: 120, icon: "♟️", rarity: "common" as Rarity },
     { id: "3", name: "Shield Bearer", price: 110, icon: "🛡️", rarity: "common" as Rarity },
+    { id: "13", name: "Sword Master", price: 90, icon: "🗡️", rarity: "common" as Rarity },
+    { id: "14", name: "Bow Hunter", price: 105, icon: "🏹", rarity: "common" as Rarity },
     
     // Uncommon
     { id: "4", name: "Cool King", price: 200, icon: "👑", rarity: "uncommon" as Rarity },
     { id: "5", name: "Chess Crown", price: 220, icon: "♛", rarity: "uncommon" as Rarity },
     { id: "6", name: "Battle Axe", price: 210, icon: "🪓", rarity: "uncommon" as Rarity },
+    { id: "15", name: "Victory Trophy", price: 230, icon: "🏆", rarity: "uncommon" as Rarity },
+    { id: "16", name: "War Horn", price: 190, icon: "📯", rarity: "uncommon" as Rarity },
     
     // Rare
     { id: "7", name: "Fire Phoenix", price: 350, icon: "🔥", rarity: "rare" as Rarity },
     { id: "8", name: "Ice Crystal", price: 330, icon: "❄️", rarity: "rare" as Rarity },
     { id: "9", name: "Lightning Bolt", price: 340, icon: "⚡", rarity: "rare" as Rarity },
+    { id: "17", name: "Storm Cloud", price: 360, icon: "⛈️", rarity: "rare" as Rarity },
+    { id: "18", name: "Golden Star", price: 370, icon: "⭐", rarity: "rare" as Rarity },
+    { id: "19", name: "Cosmic Gem", price: 355, icon: "💎", rarity: "rare" as Rarity },
     
     // Epic
     { id: "10", name: "Dragon Soul", price: 500, icon: "🐲", rarity: "epic" as Rarity },
     { id: "11", name: "Magic Wand", price: 480, icon: "🪄", rarity: "epic" as Rarity },
     { id: "12", name: "Royal Scepter", price: 520, icon: "🔱", rarity: "epic" as Rarity },
+    { id: "20", name: "Phoenix Wing", price: 510, icon: "🦅", rarity: "epic" as Rarity },
+    { id: "21", name: "Mystic Eye", price: 490, icon: "👁️", rarity: "epic" as Rarity },
+    
+    // Legendary
+    { id: "22", name: "Galaxy Crown", price: 800, icon: "🌌", rarity: "legendary" as Rarity },
+    { id: "23", name: "Divine Halo", price: 850, icon: "✨", rarity: "legendary" as Rarity },
+    { id: "24", name: "Infinity Stone", price: 900, icon: "♾️", rarity: "legendary" as Rarity },
+    { id: "25", name: "Time Master", price: 820, icon: "⏰", rarity: "legendary" as Rarity },
   ] as ShopAvatar[],
   themes: [
     { id: "theme-1", name: "Wood Classic", price: 250, color: "from-amber-800 to-amber-600" },
