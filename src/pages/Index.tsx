@@ -29,6 +29,7 @@ const Index = () => {
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [showShop, setShowShop] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   useEffect(() => {
     // Load ad script
@@ -81,13 +82,21 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hover Sidebar */}
-      <HoverSidebar user={user} currentAvatar={currentAvatar} />
+      <HoverSidebar 
+        user={user} 
+        currentAvatar={currentAvatar}
+        isOpen={showSidebar}
+        onClose={() => setShowSidebar(false)}
+      />
       
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <div className="flex items-center gap-2">
+            <div 
+              className="flex items-center gap-2 cursor-pointer"
+              onMouseEnter={() => user && setShowSidebar(true)}
+            >
               <Crown className="w-8 h-8 text-primary" />
               <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 Chessify

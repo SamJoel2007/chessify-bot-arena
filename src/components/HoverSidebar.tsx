@@ -9,31 +9,25 @@ import { getAvatarIcon } from "@/lib/avatarUtils";
 interface HoverSidebarProps {
   user: any;
   currentAvatar: string | null;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function HoverSidebar({ user, currentAvatar }: HoverSidebarProps) {
+export function HoverSidebar({ user, currentAvatar, isOpen, onClose }: HoverSidebarProps) {
   const navigate = useNavigate();
-  const [isHovered, setIsHovered] = useState(false);
 
   if (!user) return null;
 
   return (
-    <>
-      {/* Extended hover trigger zone - spans from left edge */}
-      <div 
-        className="fixed top-0 left-0 w-80 h-full z-40 pointer-events-none"
-        onMouseEnter={() => setIsHovered(true)}
+    <div 
+      className="fixed top-0 left-0 h-full z-40 pointer-events-none"
+      onMouseLeave={onClose}
+    >
+      <div
+        className={`h-screen w-72 bg-card border-r border-border shadow-2xl transition-transform duration-300 ease-in-out pointer-events-auto ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        <div 
-          className="pointer-events-auto w-full h-full"
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          {/* Sidebar */}
-          <div
-            className={`h-screen w-72 bg-card border-r border-border shadow-2xl transition-transform duration-300 ease-in-out ${
-              isHovered ? "translate-x-0" : "-translate-x-full"
-            }`}
-          >
             <div className="p-6 space-y-6">
               {/* User Profile Section */}
               <Card className="p-4 bg-gradient-card border-border/50">
@@ -54,50 +48,49 @@ export function HoverSidebar({ user, currentAvatar }: HoverSidebarProps) {
                 </div>
               </Card>
 
-              {/* Navigation Buttons */}
               <div className="space-y-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 h-12"
-              onClick={() => {
-                navigate('/notifications');
-                setIsHovered(false);
-              }}
-            >
-              <Bell className="w-5 h-5" />
-              <span>Notifications</span>
-            </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 h-12"
+                  onClick={() => {
+                    navigate('/notifications');
+                    onClose();
+                  }}
+                >
+                  <Bell className="w-5 h-5" />
+                  <span>Notifications</span>
+                </Button>
 
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 h-12"
-              onClick={() => {
-                navigate('/friends');
-                setIsHovered(false);
-              }}
-            >
-              <Users className="w-5 h-5" />
-              <span>Friends</span>
-            </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 h-12"
+                  onClick={() => {
+                    navigate('/friends');
+                    onClose();
+                  }}
+                >
+                  <Users className="w-5 h-5" />
+                  <span>Friends</span>
+                </Button>
 
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 h-12"
-              onClick={() => {
-                navigate('/messages');
-                setIsHovered(false);
-              }}
-            >
-              <MessageSquare className="w-5 h-5" />
-              <span>Messages</span>
-            </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 h-12"
+                  onClick={() => {
+                    navigate('/messages');
+                    onClose();
+                  }}
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  <span>Messages</span>
+                </Button>
 
                 <Button
                   variant="ghost"
                   className="w-full justify-start gap-3 h-12"
                   onClick={() => {
                     navigate('/purchase-coins');
-                    setIsHovered(false);
+                    onClose();
                   }}
                 >
                   <Store className="w-5 h-5" />
@@ -109,7 +102,7 @@ export function HoverSidebar({ user, currentAvatar }: HoverSidebarProps) {
                   className="w-full justify-start gap-3 h-12"
                   onClick={() => {
                     navigate('/puzzles');
-                    setIsHovered(false);
+                    onClose();
                   }}
                 >
                   <Puzzle className="w-5 h-5" />
@@ -119,7 +112,5 @@ export function HoverSidebar({ user, currentAvatar }: HoverSidebarProps) {
             </div>
           </div>
         </div>
-      </div>
-    </>
   );
 }
