@@ -12,27 +12,54 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Create Supabase client with service role for database function access
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Create Supabase client with user's JWT for authentication
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Get user info from request
-    const { userId, username, currentAvatar } = await req.json();
-
-    if (!userId || !username) {
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    
+    if (authError || !user) {
+      console.error('Auth error:', authError);
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get user info from request
+    const { username, currentAvatar } = await req.json();
+
+    if (!username) {
+      return new Response(
+        JSON.stringify({ error: 'Username is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Matchmaking request from user ${userId} (${username})`);
+    console.log(`Matchmaking request from user ${user.id} (${username})`);
+
+    // Create service role client for database function
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
     // Call the atomic matchmaking function
-    const { data, error } = await supabaseClient.rpc('find_match', {
-      p_user_id: userId,
+    const { data, error } = await supabaseAdmin.rpc('find_match', {
+      p_user_id: user.id,
       p_username: username,
       p_current_avatar: currentAvatar || null,
     });
@@ -45,7 +72,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Matchmaking result for ${userId}:`, data);
+    console.log(`Matchmaking result for ${user.id}:`, data);
 
     return new Response(
       JSON.stringify(data),

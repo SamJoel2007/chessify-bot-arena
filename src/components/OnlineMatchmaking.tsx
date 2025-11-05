@@ -82,7 +82,6 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
       // Call the server-side matchmaking function
       const { data, error } = await supabase.functions.invoke('matchmaking', {
         body: {
-          userId,
           username,
           currentAvatar,
         },
