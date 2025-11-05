@@ -7,4 +7,7 @@ enabled = true
 verify_jwt = false
 
 [functions.matchmaking]
+verify_jwt = false
+
+[functions.matchmaking]
 verify_jwt = true

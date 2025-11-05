@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.76.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,44 +12,27 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Create Supabase client with service role for database function access
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get user from JWT
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseClient.auth.getUser();
+    // Get user info from request
+    const { userId, username, currentAvatar } = await req.json();
 
-    if (authError || !user) {
-      console.error('Auth error:', authError);
+    if (!userId || !username) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const { username, currentAvatar } = await req.json();
-
-    if (!username) {
-      return new Response(
-        JSON.stringify({ error: 'Username is required' }),
+        JSON.stringify({ error: 'Missing required fields' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Matchmaking request from user ${user.id} (${username})`);
+    console.log(`Matchmaking request from user ${userId} (${username})`);
 
     // Call the atomic matchmaking function
     const { data, error } = await supabaseClient.rpc('find_match', {
-      p_user_id: user.id,
+      p_user_id: userId,
       p_username: username,
       p_current_avatar: currentAvatar || null,
     });
@@ -62,7 +45,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Matchmaking result for ${username}:`, data);
+    console.log(`Matchmaking result for ${userId}:`, data);
 
     return new Response(
       JSON.stringify(data),

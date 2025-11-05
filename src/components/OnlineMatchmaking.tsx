@@ -82,6 +82,7 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
       // Call the server-side matchmaking function
       const { data, error } = await supabase.functions.invoke('matchmaking', {
         body: {
+          userId,
           username,
           currentAvatar,
         },
@@ -91,13 +92,17 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
 
       console.log("Matchmaking result:", data);
 
-      // If matched immediately, navigate to the game
+      // Check the result
       if (data.status === 'matched') {
+        // Match found immediately
+        await leaveQueue();
         setIsSearching(false);
         toast.success("Match found!");
         navigate(`/online-game/${data.game_id}`);
+      } else if (data.status === 'waiting') {
+        // Added to queue, wait for realtime notification
+        console.log("Added to matchmaking queue, waiting for opponent...");
       }
-      // If status is 'waiting', the realtime subscription will handle navigation
     } catch (error) {
       console.error("Error in matchmaking:", error);
       toast.error("Failed to join matchmaking");
@@ -114,7 +119,6 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
 
       setIsSearching(false);
       setTimeElapsed(0);
-      toast.info("Stopped searching");
     } catch (error) {
       console.error("Error leaving queue:", error);
     }
