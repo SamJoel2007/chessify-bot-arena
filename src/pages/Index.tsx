@@ -125,12 +125,6 @@ const Index = () => {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => document.getElementById('online')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                Online
-              </Button>
-              <Button
-                variant="ghost"
                 onClick={() => document.getElementById('tournament')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Events
@@ -140,12 +134,6 @@ const Index = () => {
                 onClick={() => document.getElementById('puzzles')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Puzzles
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => document.getElementById('posts')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                Posts
               </Button>
               <Button
                 variant="ghost"
@@ -314,29 +302,6 @@ const Index = () => {
               </div>
             </div>
           </Card>
-        </section>
-
-        {/* Recent Posts Section */}
-        <section id="posts" className="mb-16">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <Megaphone className="w-8 h-8 text-primary" />
-              <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Recent Posts
-              </h2>
-            </div>
-            <p className="text-muted-foreground text-lg mb-6">
-              Stay updated with the latest events, tournaments, and community highlights
-            </p>
-          </div>
-          
-          {/* Ad Banner */}
-          <div className="flex justify-center mb-6">
-            <div id="container-6b73e2d7b6ada28eb7fcb5b7a7102a06"></div>
-          </div>
-          
-          <AdminPostCreator />
-          <RecentPosts />
         </section>
 
         {/* Puzzles Section */}
