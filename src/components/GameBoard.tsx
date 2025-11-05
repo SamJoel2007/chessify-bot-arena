@@ -73,13 +73,14 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     return hanging;
   };
 
-  // Helper function to evaluate move quality with 3-ply look-ahead for advanced bots
+  // Helper function to evaluate move quality with enhanced depth for expert bots
   const evaluateMove = (move: any, currentGame: Chess, rating: number): number => {
     const testGame = new Chess(currentGame.fen());
     testGame.move(move);
     
     let score = 0;
     const isAdvancedBot = rating >= 1800;
+    const isExpertBot = rating >= 2300;
     const moveNumber = currentGame.moveNumber();
     const isEndgame = moveNumber > 40 || (testGame.board().flat().filter(p => p).length < 12);
     
@@ -319,10 +320,13 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
 
     const rating = selectedBot?.rating || 1000;
     const isAdvancedBot = rating >= 1800;
+    const isExpertBot = rating >= 2300;
     
-    // Advanced bots think longer for more realistic play
-    const thinkingTime = isAdvancedBot 
-      ? Math.random() * 2000 + 3000  // 3-5 seconds
+    // Expert bots think even longer for more realistic play
+    const thinkingTime = isExpertBot
+      ? Math.random() * 3000 + 4000  // 4-7 seconds for expert
+      : isAdvancedBot 
+      ? Math.random() * 2000 + 3000  // 3-5 seconds for advanced
       : 2000;
 
     setIsThinking(true);
@@ -332,7 +336,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
 
       const pieceValues: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
       
-      // Calculate blunder rate
+      // Calculate blunder rate - expert bots never blunder
       let blunderRate: number;
       if (rating < 600) {
         blunderRate = 0.5;
@@ -344,8 +348,10 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         blunderRate = 0.01;
       } else if (rating < 1800) {
         blunderRate = 0.005;
-      } else {
+      } else if (rating < 2300) {
         blunderRate = 0; // Advanced bots don't blunder
+      } else {
+        blunderRate = 0; // Expert bots absolutely never blunder
       }
       
       // Evaluate all moves
@@ -405,26 +411,25 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         }
       }
       
-      // Filter out bad moves for intermediate+ bots
+      // Filter out bad moves for intermediate+ bots (stricter for expert)
       let filteredMoves = scoredMoves;
       if (rating >= 1000) {
         filteredMoves = scoredMoves.filter(sm => {
           const testGame = new Chess(currentGame.fen());
           testGame.move(sm.move);
           
-          // Reject moves that hang pieces worth 3+ points
+          // Expert bots reject moves that hang ANY piece (even pawns)
+          const hangThreshold = isExpertBot ? 1 : 3;
           const hanging = detectHangingPieces(testGame, currentGame.turn());
           const hangingValue = hanging.reduce((sum, h) => sum + h.value, 0);
-          if (hangingValue >= 3) return false;
+          if (hangingValue >= hangThreshold) return false;
           
-          // Reject moves that allow mate in 1
-          const opponentMoves = testGame.moves({ verbose: true });
-          const allowsMate = opponentMoves.some(oppMove => {
-            const oppTest = new Chess(testGame.fen());
-            oppTest.move(oppMove);
-            return oppTest.isCheckmate();
-          });
+          // Expert bots reject moves that allow mate in 2, others reject mate in 1
+          const allowsMate = isExpertBot ? checkMateInTwo(testGame) : checkMateInOne(testGame);
           if (allowsMate) return false;
+          
+          // Expert bots avoid significant positional loss
+          if (isExpertBot && sm.score < scoredMoves[0].score - 30) return false;
           
           return true;
         });
@@ -433,6 +438,30 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           filteredMoves = scoredMoves;
         }
       }
+      
+      // Helper to check mate in one
+      const checkMateInOne = (testGame: Chess) => {
+        const opponentMoves = testGame.moves({ verbose: true });
+        return opponentMoves.some(oppMove => {
+          const oppTest = new Chess(testGame.fen());
+          oppTest.move(oppMove);
+          return oppTest.isCheckmate();
+        });
+      };
+      
+      // Helper to check mate in two for expert bots
+      const checkMateInTwo = (testGame: Chess) => {
+        if (checkMateInOne(testGame)) return true;
+        
+        const opponentMoves = testGame.moves({ verbose: true });
+        for (const oppMove of opponentMoves.slice(0, 10)) {
+          const oppTest = new Chess(testGame.fen());
+          oppTest.move(oppMove);
+          
+          if (checkMateInOne(oppTest)) return true;
+        }
+        return false;
+      };
       
       let move;
       
@@ -475,8 +504,12 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           selectionPoolSize = Math.ceil(filteredMoves.length * 0.05);
         } else if (rating < 2000) {
           selectionPoolSize = Math.max(1, Math.ceil(filteredMoves.length * 0.01)); // Top 1%
+        } else if (rating < 2300) {
+          selectionPoolSize = Math.max(1, Math.min(2, filteredMoves.length)); // Advanced: Best 1-2 moves
+        } else if (rating < 2650) {
+          selectionPoolSize = Math.max(1, Math.min(2, filteredMoves.length)); // Expert: Best 1-2 moves
         } else {
-          selectionPoolSize = Math.max(1, Math.min(2, filteredMoves.length)); // Best 1-2 moves
+          selectionPoolSize = 1; // Elite expert: Best move only
         }
         
         const topMoves = filteredMoves.slice(0, Math.max(1, selectionPoolSize));
@@ -495,8 +528,14 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           bestMoveChance = 0.93;
         } else if (rating < 2000) {
           bestMoveChance = 0.97;
+        } else if (rating < 2300) {
+          bestMoveChance = 0.995; // Advanced bots
+        } else if (rating < 2500) {
+          bestMoveChance = 0.997; // Expert 2300-2499
+        } else if (rating < 2650) {
+          bestMoveChance = 0.9985; // High expert 2500-2649
         } else {
-          bestMoveChance = 0.995; // 99.5% for 2000+
+          bestMoveChance = 0.9995; // Elite expert 2650+
         }
         
         if (Math.random() < bestMoveChance) {

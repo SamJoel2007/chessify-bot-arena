@@ -51,6 +51,16 @@ import animeEdward from "@/assets/bots/anime-07-edward.jpg";
 import animeShikamaru from "@/assets/bots/anime-08-shikamaru.jpg";
 import animeSaitama from "@/assets/bots/anime-09-saitama.jpg";
 import animeGoku from "@/assets/bots/anime-10-goku.jpg";
+import expertEva from "@/assets/bots/expert-01-eva.jpg";
+import expertChristopher from "@/assets/bots/expert-02-christopher.jpg";
+import expertBenjamin from "@/assets/bots/expert-03-benjamin.jpg";
+import expertIris from "@/assets/bots/expert-04-iris.jpg";
+import expertPatricia from "@/assets/bots/expert-05-patricia.jpg";
+import expertTheodore from "@/assets/bots/expert-06-theodore.jpg";
+import expertGrace from "@/assets/bots/expert-07-grace.jpg";
+import expertWilliam from "@/assets/bots/expert-08-william.jpg";
+import expertRonald from "@/assets/bots/expert-09-ronald.jpg";
+import expertMary from "@/assets/bots/expert-10-mary.jpg";
 
 interface Bot {
   id: string;
@@ -118,16 +128,16 @@ const botCategories = {
     color: "text-yellow-500",
     image: botAdvanced,
     bots: [
-      { id: "e1", name: "Eva", rating: 2300, description: "Tournament veteran", difficulty: "Expert" },
-      { id: "e2", name: "Christopher", rating: 2350, description: "Crushes opponents", difficulty: "Expert" },
-      { id: "e3", name: "Benjamin", rating: 2400, description: "Brilliant combinations", difficulty: "Expert" },
-      { id: "e4", name: "Iris", rating: 2450, description: "Strong intuition", difficulty: "Expert" },
-      { id: "e5", name: "Patricia", rating: 2500, description: "Near perfection", difficulty: "Expert" },
-      { id: "e6", name: "Theodore", rating: 2550, description: "Opening theory expert", difficulty: "Expert" },
-      { id: "e7", name: "Grace", rating: 2600, description: "Endgame master", difficulty: "Expert" },
-      { id: "e8", name: "William", rating: 2650, description: "Time management pro", difficulty: "Expert" },
-      { id: "e9", name: "Ronald", rating: 2700, description: "Always finds resources", difficulty: "Expert" },
-      { id: "e10", name: "Mary", rating: 2750, description: "Shows no mercy", difficulty: "Expert" },
+      { id: "e1", name: "Eva", rating: 2300, description: "Tournament veteran with flawless technique", difficulty: "Expert", image: expertEva },
+      { id: "e2", name: "Christopher", rating: 2350, description: "Crushes opponents with relentless precision", difficulty: "Expert", image: expertChristopher },
+      { id: "e3", name: "Benjamin", rating: 2400, description: "Brilliant combinational vision and calculation", difficulty: "Expert", image: expertBenjamin },
+      { id: "e4", name: "Iris", rating: 2450, description: "Intuition backed by concrete calculation", difficulty: "Expert", image: expertIris },
+      { id: "e5", name: "Patricia", rating: 2500, description: "Near-perfect positional understanding", difficulty: "Expert", image: expertPatricia },
+      { id: "e6", name: "Theodore", rating: 2550, description: "Walking opening encyclopedia with deep preparation", difficulty: "Expert", image: expertTheodore },
+      { id: "e7", name: "Grace", rating: 2600, description: "Endgame mastery at grandmaster level", difficulty: "Expert", image: expertGrace },
+      { id: "e8", name: "William", rating: 2650, description: "Elite time management and strategic depth", difficulty: "Expert", image: expertWilliam },
+      { id: "e9", name: "Ronald", rating: 2700, description: "Always finds the most resourceful defense", difficulty: "Expert", image: expertRonald },
+      { id: "e10", name: "Mary", rating: 2750, description: "Shows absolutely no mercy or weaknesses", difficulty: "Expert", image: expertMary },
     ],
   },
   master: {
