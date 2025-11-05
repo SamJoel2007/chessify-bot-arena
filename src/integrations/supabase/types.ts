@@ -493,6 +493,14 @@ export type Database = {
     }
     Functions: {
       cleanup_expired_queue_entries: { Args: never; Returns: undefined }
+      find_match: {
+        Args: {
+          p_current_avatar: string
+          p_user_id: string
+          p_username: string
+        }
+        Returns: Json
+      }
       handle_purchase: {
         Args: {
           p_item_data: Json

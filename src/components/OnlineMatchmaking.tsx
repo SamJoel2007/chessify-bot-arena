@@ -48,7 +48,6 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    let matchCheckInterval: NodeJS.Timeout;
 
     if (isSearching) {
       // Timer for elapsed time
@@ -61,16 +60,10 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
           return prev + 1;
         });
       }, 1000);
-
-      // Check for matches every 2 seconds
-      matchCheckInterval = setInterval(async () => {
-        await checkForMatch();
-      }, 2000);
     }
 
     return () => {
       clearInterval(timer);
-      clearInterval(matchCheckInterval);
     };
   }, [isSearching]);
 
@@ -82,29 +75,33 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
 
   const joinQueue = async () => {
     try {
-      // Clean up any existing entries first
-      await supabase
-        .from("match_queue")
-        .delete()
-        .eq("user_id", userId);
-
-      // Join the queue
-      const { error } = await supabase
-        .from("match_queue")
-        .insert({
-          user_id: userId,
-          username: username,
-          current_avatar: currentAvatar,
-        });
-
-      if (error) throw error;
-
       setIsSearching(true);
       setTimeElapsed(0);
       toast.success("Searching for opponent...");
+
+      // Call the server-side matchmaking function
+      const { data, error } = await supabase.functions.invoke('matchmaking', {
+        body: {
+          username,
+          currentAvatar,
+        },
+      });
+
+      if (error) throw error;
+
+      console.log("Matchmaking result:", data);
+
+      // If matched immediately, navigate to the game
+      if (data.status === 'matched') {
+        setIsSearching(false);
+        toast.success("Match found!");
+        navigate(`/online-game/${data.game_id}`);
+      }
+      // If status is 'waiting', the realtime subscription will handle navigation
     } catch (error) {
-      console.error("Error joining queue:", error);
-      toast.error("Failed to join matchmaking queue");
+      console.error("Error in matchmaking:", error);
+      toast.error("Failed to join matchmaking");
+      setIsSearching(false);
     }
   };
 
@@ -117,87 +114,9 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
 
       setIsSearching(false);
       setTimeElapsed(0);
+      toast.info("Stopped searching");
     } catch (error) {
       console.error("Error leaving queue:", error);
-    }
-  };
-
-  const checkForMatch = async () => {
-    try {
-      // Get all players in queue except current user
-      const { data: opponents, error } = await supabase
-        .from("match_queue")
-        .select("*")
-        .neq("user_id", userId)
-        .order("created_at", { ascending: true })
-        .limit(1);
-
-      if (error) throw error;
-
-      if (opponents && opponents.length > 0) {
-        const opponent = opponents[0];
-        await createGame(opponent);
-      }
-    } catch (error) {
-      console.error("Error checking for match:", error);
-    }
-  };
-
-  const createGame = async (opponent: any) => {
-    try {
-      // Try to remove opponent from queue first (acts as a lock)
-      const { data: removed } = await supabase
-        .from("match_queue")
-        .delete()
-        .eq("user_id", opponent.user_id)
-        .select();
-
-      // If opponent was already removed, another player got them first
-      if (!removed || removed.length === 0) {
-        console.log("Opponent already matched with someone else");
-        return; // Continue searching
-      }
-
-      // Randomly assign colors
-      const isWhite = Math.random() < 0.5;
-      
-      const gameData = {
-        white_player_id: isWhite ? userId : opponent.user_id,
-        black_player_id: isWhite ? opponent.user_id : userId,
-        white_username: isWhite ? username : opponent.username,
-        black_username: isWhite ? opponent.username : username,
-        white_avatar: isWhite ? currentAvatar : opponent.current_avatar,
-        black_avatar: isWhite ? opponent.current_avatar : currentAvatar,
-      };
-
-      const { data: game, error: gameError } = await supabase
-        .from("games")
-        .insert(gameData)
-        .select()
-        .single();
-
-      if (gameError) {
-        // Re-add opponent to queue if game creation failed
-        await supabase
-          .from("match_queue")
-          .insert({
-            user_id: opponent.user_id,
-            username: opponent.username,
-            current_avatar: opponent.current_avatar,
-          });
-        throw gameError;
-      }
-
-      // Remove current user from queue
-      await supabase
-        .from("match_queue")
-        .delete()
-        .eq("user_id", userId);
-
-      // Realtime will handle navigation for both players
-    } catch (error) {
-      console.error("Error creating game:", error);
-      toast.error("Failed to create game");
     }
   };
 

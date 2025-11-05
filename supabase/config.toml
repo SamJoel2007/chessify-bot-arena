@@ -5,3 +5,6 @@ enabled = true
 
 [functions.chat-bot-response]
 verify_jwt = false
+
+[functions.matchmaking]
+verify_jwt = true
