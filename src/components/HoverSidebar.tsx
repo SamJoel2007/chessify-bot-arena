@@ -30,20 +30,22 @@ export function HoverSidebar({ user, currentAvatar, isOpen, onClose }: HoverSide
       >
             <div className="p-6 space-y-6">
               {/* User Profile Section */}
-              <Card className="p-4 bg-gradient-card border-border/50">
-                <div className="flex items-center gap-3 mb-3">
-                  <Avatar className="w-16 h-16">
-                    <AvatarFallback className="bg-gradient-primary text-4xl">
-                      {getAvatarIcon(currentAvatar)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate">
-                      {user.email?.split('@')[0]}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user.email}
-                    </p>
+              <Card className="p-5 bg-gradient-card border-border/50">
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-14 h-14 flex-shrink-0">
+                      <AvatarFallback className="bg-gradient-primary text-3xl">
+                        {getAvatarIcon(currentAvatar)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-base mb-1">
+                        {user.email?.split('@')[0]}
+                      </p>
+                      <p className="text-xs text-muted-foreground break-all">
+                        {user.email}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </Card>
