@@ -90,7 +90,7 @@ const Index = () => {
       />
       
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/90 backdrop-blur-md shadow-lg">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
@@ -188,7 +188,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="border-b border-border bg-gradient-card py-16">
+      <section className="border-b border-border/60 bg-gradient-card py-20 shadow-glow-secondary">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-5xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
             Master Your Chess Game
@@ -197,21 +197,21 @@ const Index = () => {
             Play against friends, challenge AI bots, and join a thriving community of chess enthusiasts
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Card className="p-6 bg-card/50 border-border/50 flex items-center gap-3">
+            <Card className="p-6 bg-card/60 border-primary/30 flex items-center gap-3 hover:border-primary/50 hover:shadow-glow transition-all">
               <Trophy className="w-8 h-8 text-primary" />
               <div className="text-left">
                 <p className="text-2xl font-bold">10K+</p>
                 <p className="text-sm text-muted-foreground">Active Players</p>
               </div>
             </Card>
-            <Card className="p-6 bg-card/50 border-border/50 flex items-center gap-3">
+            <Card className="p-6 bg-card/60 border-secondary/30 flex items-center gap-3 hover:border-secondary/50 hover:shadow-glow-secondary transition-all">
               <Zap className="w-8 h-8 text-secondary" />
               <div className="text-left">
                 <p className="text-2xl font-bold">50+</p>
                 <p className="text-sm text-muted-foreground">Chess Bots</p>
               </div>
             </Card>
-            <Card className="p-6 bg-card/50 border-border/50 flex items-center gap-3">
+            <Card className="p-6 bg-card/60 border-accent/30 flex items-center gap-3 hover:border-accent/50 hover:shadow-glow transition-all">
               <Users className="w-8 h-8 text-accent" />
               <div className="text-left">
                 <p className="text-2xl font-bold">24/7</p>
@@ -264,7 +264,7 @@ const Index = () => {
 
         {/* Tournament Section */}
         <section id="tournament" className="mb-16">
-          <Card className="overflow-hidden bg-gradient-card border-border/50">
+          <Card className="overflow-hidden bg-gradient-card border-primary/30 shadow-glow hover:border-primary/50 transition-all">
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div className="p-8 md:p-12">
                 <div className="flex items-center gap-2 mb-4">
@@ -288,7 +288,7 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground">Prize Pool</p>
                   </div>
                 </div>
-                <Button size="lg" className="gap-2 shadow-glow">
+                <Button size="lg" className="gap-2 shadow-glow hover:shadow-glow-secondary transition-all">
                   <Trophy className="w-5 h-5" />
                   Register Now
                 </Button>
@@ -318,7 +318,7 @@ const Index = () => {
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="overflow-hidden bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow">
+            <Card className="overflow-hidden bg-card/60 border-primary/20 hover:border-primary/60 transition-all hover:shadow-glow hover:scale-105 duration-300">
               <div className="aspect-square w-full overflow-hidden">
                 <img
                   src={puzzleBeginner}
@@ -361,7 +361,7 @@ const Index = () => {
               </div>
             </Card>
 
-            <Card className="overflow-hidden bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow">
+            <Card className="overflow-hidden bg-card/60 border-primary/20 hover:border-primary/60 transition-all hover:shadow-glow hover:scale-105 duration-300">
               <div className="aspect-square w-full overflow-hidden">
                 <img
                   src={puzzleIntermediate}
@@ -389,7 +389,7 @@ const Index = () => {
               </div>
             </Card>
 
-            <Card className="overflow-hidden bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow">
+            <Card className="overflow-hidden bg-card/60 border-primary/20 hover:border-primary/60 transition-all hover:shadow-glow hover:scale-105 duration-300">
               <div className="aspect-square w-full overflow-hidden">
                 <img
                   src={puzzleAdvanced}
@@ -432,7 +432,7 @@ const Index = () => {
               </div>
             </Card>
 
-            <Card className="overflow-hidden bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow">
+            <Card className="overflow-hidden bg-card/60 border-primary/20 hover:border-primary/60 transition-all hover:shadow-glow hover:scale-105 duration-300">
               <div className="aspect-square w-full overflow-hidden">
                 <img
                   src={puzzleExpert}
@@ -477,7 +477,7 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card/30 py-12">
+      <footer className="border-t border-border/60 bg-gradient-card/50 py-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
