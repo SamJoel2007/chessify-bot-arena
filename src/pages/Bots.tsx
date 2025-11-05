@@ -11,6 +11,16 @@ import botIntermediate from "@/assets/bot-intermediate.jpg";
 import botAdvanced from "@/assets/bot-advanced.jpg";
 import botGrandmaster from "@/assets/bot-grandmaster.jpg";
 import botAnime from "@/assets/bot-anime.jpg";
+import advancedMagnus from "@/assets/bots/advanced-01-magnus.jpg";
+import advancedAlexander from "@/assets/bots/advanced-02-alexander.jpg";
+import advancedVictor from "@/assets/bots/advanced-03-victor.jpg";
+import advancedSebastian from "@/assets/bots/advanced-04-sebastian.jpg";
+import advancedClara from "@/assets/bots/advanced-05-clara.jpg";
+import advancedPercy from "@/assets/bots/advanced-06-percy.jpg";
+import advancedDavid from "@/assets/bots/advanced-07-david.jpg";
+import advancedSteven from "@/assets/bots/advanced-08-steven.jpg";
+import advancedAnna from "@/assets/bots/advanced-09-anna.jpg";
+import advancedRobert from "@/assets/bots/advanced-10-robert.jpg";
 import beginnerPawnPusher from "@/assets/bots/beginner-01-pawn-pusher.jpg";
 import beginnerCastleKeeper from "@/assets/bots/beginner-02-castle-keeper.jpg";
 import beginnerKnightNovice from "@/assets/bots/beginner-03-knight-novice.jpg";
@@ -91,16 +101,16 @@ const botCategories = {
     color: "text-purple-500",
     image: botAdvanced,
     bots: [
-      { id: "a1", name: "Magnus", rating: 1800, description: "Inspired by the World Champion", difficulty: "Advanced" },
-      { id: "a2", name: "Alexander", rating: 1850, description: "Calculates deeply", difficulty: "Advanced" },
-      { id: "a3", name: "Victor", rating: 1900, description: "Constant pressure", difficulty: "Advanced" },
-      { id: "a4", name: "Sebastian", rating: 1950, description: "Bold sacrifices", difficulty: "Advanced" },
-      { id: "a5", name: "Clara", rating: 2000, description: "Loves complexity", difficulty: "Advanced" },
-      { id: "a6", name: "Percy", rating: 2050, description: "Extremely accurate", difficulty: "Advanced" },
-      { id: "a7", name: "David", rating: 2100, description: "Dynamic play", difficulty: "Advanced" },
-      { id: "a8", name: "Steven", rating: 2150, description: "Deep strategist", difficulty: "Advanced" },
-      { id: "a9", name: "Anna", rating: 2200, description: "Relentless attacker", difficulty: "Advanced" },
-      { id: "a10", name: "Robert", rating: 2250, description: "Perfectly balanced", difficulty: "Advanced" },
+      { id: "a1", name: "Magnus", rating: 1800, description: "Tactical genius who punishes mistakes", difficulty: "Advanced", image: advancedMagnus },
+      { id: "a2", name: "Alexander", rating: 1850, description: "Positional master with deadly precision", difficulty: "Advanced", image: advancedAlexander },
+      { id: "a3", name: "Victor", rating: 1900, description: "Aggressive attacker with sharp calculations", difficulty: "Advanced", image: advancedVictor },
+      { id: "a4", name: "Sebastian", rating: 1950, description: "Endgame specialist with perfect technique", difficulty: "Advanced", image: advancedSebastian },
+      { id: "a5", name: "Clara", rating: 2000, description: "Strategic mastermind with deep understanding", difficulty: "Advanced", image: advancedClara },
+      { id: "a6", name: "Percy", rating: 2050, description: "Opening theory expert with vast knowledge", difficulty: "Advanced", image: advancedPercy },
+      { id: "a7", name: "David", rating: 2100, description: "Dynamic player with creative ideas", difficulty: "Advanced", image: advancedDavid },
+      { id: "a8", name: "Steven", rating: 2150, description: "Solid defender who counterattacks brilliantly", difficulty: "Advanced", image: advancedSteven },
+      { id: "a9", name: "Anna", rating: 2200, description: "Grandmaster-level calculation and intuition", difficulty: "Advanced", image: advancedAnna },
+      { id: "a10", name: "Robert", rating: 2250, description: "Near-perfect play with minimal errors", difficulty: "Advanced", image: advancedRobert },
     ],
   },
   expert: {

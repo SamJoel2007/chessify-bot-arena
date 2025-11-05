@@ -73,12 +73,15 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     return hanging;
   };
 
-  // Helper function to evaluate move quality with 2-ply look-ahead for intermediate+
+  // Helper function to evaluate move quality with 3-ply look-ahead for advanced bots
   const evaluateMove = (move: any, currentGame: Chess, rating: number): number => {
     const testGame = new Chess(currentGame.fen());
     testGame.move(move);
     
     let score = 0;
+    const isAdvancedBot = rating >= 1800;
+    const moveNumber = currentGame.moveNumber();
+    const isEndgame = moveNumber > 40 || (testGame.board().flat().filter(p => p).length < 12);
     
     // Material values
     const pieceValues: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
@@ -88,63 +91,123 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       return 10000;
     }
     
+    // Stalemate is bad
+    if (testGame.isStalemate()) {
+      return -5000;
+    }
+    
+    // Advanced positional evaluation for strong bots
+    if (isAdvancedBot) {
+      const board = testGame.board();
+      
+      // Evaluate material and positional factors
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          const piece = board[i][j];
+          if (piece && piece.color === 'b') {
+            // Pawn structure bonuses
+            if (piece.type === 'p') {
+              // Connected pawns
+              const hasConnectedPawn = [j-1, j+1].some(file => 
+                file >= 0 && file < 8 && board[i][file]?.type === 'p' && board[i][file]?.color === 'b'
+              );
+              if (hasConnectedPawn) score += 8;
+              
+              // Passed pawns
+              const isPassed = !board.slice(i + 1).some(rank => 
+                rank[j]?.type === 'p' && rank[j]?.color === 'w'
+              );
+              if (isPassed) score += 20 + (6 - i) * 5;
+            }
+            
+            // Piece activity
+            if (piece.type === 'r') {
+              // Rooks on open files
+              const fileHasPawn = board.some(rank => rank[j]?.type === 'p');
+              if (!fileHasPawn) score += 15;
+            }
+            
+            if (piece.type === 'b') {
+              // Bishops on long diagonals
+              const centerDistance = Math.abs(i - 3.5) + Math.abs(j - 3.5);
+              if (centerDistance < 3) score += 12;
+            }
+            
+            if (piece.type === 'n') {
+              // Knights on outposts (protected squares in enemy territory)
+              if (i < 4) score += 18;
+            }
+            
+            // King evaluation based on game phase
+            if (piece.type === 'k') {
+              if (isEndgame) {
+                // King centralization in endgame
+                const centerDistance = Math.abs(i - 3.5) + Math.abs(j - 3.5);
+                score += (7 - centerDistance) * 4;
+              } else {
+                // King safety in middlegame
+                if (i === 7) score += 15; // Back rank
+              }
+            }
+          }
+        }
+      }
+    }
+    
     // Check for immediate mate-in-one threats
     if (testGame.isCheck()) {
-      score += 30;
-      // Check if we're getting checkmated next move
+      score += 50;
       const opponentMoves = testGame.moves({ verbose: true });
-      const hasEscape = opponentMoves.length > 0;
-      if (!hasEscape) {
+      if (opponentMoves.length === 0) {
         return 10000; // We deliver checkmate
       }
     }
     
-    // Capture value - with exchange calculation
+    // Capture value with SEE for advanced bots
     if (move.captured) {
       const captureValue = pieceValues[move.captured];
       const movingValue = pieceValues[move.piece];
-      score += captureValue * 25;
+      score += captureValue * (isAdvancedBot ? 30 : 25);
       
-      // Calculate if this is a good trade
-      const attackersOnSquare = testGame.attackers(move.to as Square, currentGame.turn() === 'w' ? 'b' : 'w');
-      const defendersOnSquare = testGame.attackers(move.to as Square, currentGame.turn());
-      
-      if (attackersOnSquare.length > 0) {
-        // They can recapture - calculate the exchange
-        const exchangeLoss = movingValue - captureValue;
-        if (exchangeLoss > 0) {
-          score -= exchangeLoss * 20; // Bad trade
-        } else {
-          score += Math.abs(exchangeLoss) * 15; // Good trade
-        }
-      } else {
-        // Free capture
-        score += captureValue * 10;
+      // Better exchange calculation for advanced bots
+      if (isAdvancedBot && movingValue < captureValue) {
+        score += 50; // Winning exchange
       }
     }
     
-    // 2-ply look-ahead for intermediate+ bots
-    if (rating >= 1000) {
+    // Tactical pattern recognition for advanced bots
+    if (isAdvancedBot) {
+      // Detect forks (knight/queen attacking multiple pieces)
+      if (['n', 'q'].includes(move.piece)) {
+        const attacks = testGame.moves({ verbose: true, square: move.to as Square })
+          .filter(m => m.captured).length;
+        if (attacks >= 2) score += 50;
+      }
+    }
+    
+    // 3-ply look-ahead for advanced bots, 2-ply for others
+    const lookAheadDepth = isAdvancedBot ? 15 : (rating >= 1000 ? 10 : 0);
+    
+    if (lookAheadDepth > 0) {
       // Check if our piece becomes hanging after this move
       const hanging = detectHangingPieces(testGame, currentGame.turn());
       if (hanging.length > 0) {
-        // Heavily penalize hanging pieces
         hanging.forEach(h => {
-          score -= h.value * 40;
+          score -= h.value * (isAdvancedBot ? 50 : 40);
         });
       }
       
-      // Look for opponent's hanging pieces we can capture
+      // Look for opponent's hanging pieces
       const opponentHanging = detectHangingPieces(testGame, currentGame.turn() === 'w' ? 'b' : 'w');
       opponentHanging.forEach(h => {
         score += h.value * 15;
       });
       
-      // Simulate opponent's best response (minimax)
+      // Simulate opponent's best response
       const opponentMoves = testGame.moves({ verbose: true });
       if (opponentMoves.length > 0) {
         let bestOpponentScore = -Infinity;
-        opponentMoves.slice(0, 10).forEach(oppMove => {
+        opponentMoves.slice(0, lookAheadDepth).forEach(oppMove => {
           const oppTestGame = new Chess(testGame.fen());
           oppTestGame.move(oppMove);
           let oppScore = 0;
@@ -156,45 +219,62 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
             oppScore += 25;
           }
           
+          // 3-ply for advanced bots only
+          if (isAdvancedBot) {
+            const counterMoves = oppTestGame.moves({ verbose: true });
+            let bestCounterScore = -Infinity;
+            
+            counterMoves.slice(0, 8).forEach(counterMove => {
+              const counterGame = new Chess(oppTestGame.fen());
+              counterGame.move(counterMove);
+              
+              let counterScore = 0;
+              if (counterMove.captured) {
+                counterScore += pieceValues[counterMove.captured] * 20;
+              }
+              
+              bestCounterScore = Math.max(bestCounterScore, counterScore);
+            });
+            
+            oppScore -= bestCounterScore * 0.2;
+          }
+          
           const newHanging = detectHangingPieces(oppTestGame, currentGame.turn());
           oppScore += newHanging.reduce((sum, h) => sum + h.value * 30, 0);
           
           bestOpponentScore = Math.max(bestOpponentScore, oppScore);
         });
         
-        // Subtract opponent's best response from our score
-        score -= bestOpponentScore * 0.5;
+        score -= bestOpponentScore * (isAdvancedBot ? 0.4 : 0.5);
       }
     }
     
-    // Center control (important in opening/middlegame)
-    const moveNumber = currentGame.moveNumber();
+    // Center control
     if (moveNumber < 20) {
-      if (['e4', 'e5', 'd4', 'd5'].includes(move.to)) {
+      const centerSquares = ['e4', 'e5', 'd4', 'd5'];
+      const extendedCenter = ['c4', 'c5', 'f4', 'f5', 'c3', 'c6', 'f3', 'f6'];
+      
+      if (centerSquares.includes(move.to)) {
+        score += isAdvancedBot ? 40 : 15;
+      } else if (isAdvancedBot && extendedCenter.includes(move.to)) {
         score += 15;
       }
-      if (['c4', 'c5', 'f4', 'f5'].includes(move.to)) {
-        score += 10;
-      }
     }
     
-    // Piece development in opening
+    // Development in opening
     if (moveNumber < 10) {
       if (['n', 'b'].includes(move.piece) && ['1', '8'].includes(move.from[1])) {
-        score += 12;
-      }
-      if (move.piece !== 'p' && !['1', '8'].includes(move.from[1])) {
-        score -= 6;
+        score += isAdvancedBot ? 30 : 12;
       }
     }
     
-    // Castling bonus (king safety)
+    // Castling bonus
     if (move.flags.includes('k') || move.flags.includes('q')) {
-      score += 25;
+      score += isAdvancedBot ? 100 : 25;
     }
     
-    // King safety - penalize exposed king
-    if (rating >= 1200) {
+    // King safety
+    if (rating >= 1200 && moveNumber < 25) {
       const kingSquare = testGame.board().flat().find(p => p && p.type === 'k' && p.color === currentGame.turn());
       if (kingSquare) {
         const kingPos = testGame.board().flatMap((row, i) => 
@@ -204,17 +284,16 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         
         const kingAttackers = testGame.attackers(kingPos, currentGame.turn() === 'w' ? 'b' : 'w');
         if (kingAttackers.length > 0) {
-          score -= 20;
+          score -= isAdvancedBot ? 35 : 20;
         }
       }
     }
     
-    // Threat detection - are we defending our pieces?
+    // Defending threats
     if (rating >= 1000) {
       const beforeHanging = detectHangingPieces(currentGame, currentGame.turn());
       const afterHanging = detectHangingPieces(testGame, currentGame.turn());
       
-      // Reward defending hanging pieces
       if (beforeHanging.length > afterHanging.length) {
         const defended = beforeHanging.find(h => !afterHanging.some(a => a.square === h.square));
         if (defended) {
@@ -223,15 +302,13 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       }
     }
     
-    // Pawn structure (for advanced bots)
-    if (rating >= 1400) {
-      if (move.piece === 'p') {
-        const file = move.to[0];
-        const pawnsOnFile = testGame.board().flat().filter(
-          p => p && p.type === 'p' && p.color === currentGame.turn()
-        ).length;
-        if (pawnsOnFile > 1) score -= 10;
-      }
+    // Pawn structure
+    if (rating >= 1400 && move.piece === 'p') {
+      const file = move.to[0];
+      const pawnsOnFile = testGame.board().flat().filter(
+        p => p && p.type === 'p' && p.color === currentGame.turn()
+      ).length;
+      if (pawnsOnFile > 1) score -= 10;
     }
     
     return score;
@@ -240,28 +317,35 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   const makeBotMove = (currentGame: Chess) => {
     if (currentGame.isGameOver()) return;
 
+    const rating = selectedBot?.rating || 1000;
+    const isAdvancedBot = rating >= 1800;
+    
+    // Advanced bots think longer for more realistic play
+    const thinkingTime = isAdvancedBot 
+      ? Math.random() * 2000 + 3000  // 3-5 seconds
+      : 2000;
+
     setIsThinking(true);
     setTimeout(() => {
       const moves = currentGame.moves({ verbose: true });
       if (moves.length === 0) return;
 
-      const rating = selectedBot?.rating || 1000;
       const pieceValues: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
       
-      // Calculate blunder rate - dramatically reduced for intermediate+
+      // Calculate blunder rate
       let blunderRate: number;
       if (rating < 600) {
-        blunderRate = 0.5; // Beginner: 50% blunder rate
+        blunderRate = 0.5;
       } else if (rating < 900) {
-        blunderRate = 0.25; // Improving beginner: 25% blunder rate
+        blunderRate = 0.25;
       } else if (rating < 1200) {
-        blunderRate = 0.02; // Low intermediate: 2% blunder rate (was 10%)
+        blunderRate = 0.02;
       } else if (rating < 1500) {
-        blunderRate = 0.01; // Mid intermediate: 1% blunder rate (was 5%)
+        blunderRate = 0.01;
       } else if (rating < 1800) {
-        blunderRate = 0.005; // High intermediate: 0.5% blunder rate (was 2%)
+        blunderRate = 0.005;
       } else {
-        blunderRate = 0; // Advanced+: no blunders
+        blunderRate = 0; // Advanced bots don't blunder
       }
       
       // Evaluate all moves
@@ -270,7 +354,25 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         score: evaluateMove(m, currentGame, rating)
       })).sort((a, b) => b.score - a.score);
       
-      // Filter out obviously bad moves for intermediate+ bots
+      // Check for forced mate for advanced bots
+      if (isAdvancedBot) {
+        const mateMove = scoredMoves.find(sm => sm.score >= 9000);
+        if (mateMove) {
+          const gameCopy = new Chess(currentGame.fen());
+          gameCopy.move(mateMove.move);
+          setGame(gameCopy);
+          setMoveHistory(prev => [...prev, mateMove.move.san]);
+          setIsThinking(false);
+          
+          if (gameCopy.isCheckmate()) {
+            setGameResult("lose");
+            setShowGameEndModal(true);
+          }
+          return;
+        }
+      }
+      
+      // Filter out bad moves for intermediate+ bots
       let filteredMoves = scoredMoves;
       if (rating >= 1000) {
         filteredMoves = scoredMoves.filter(sm => {
@@ -294,7 +396,6 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           return true;
         });
         
-        // If all moves were filtered, use original list (forced situation)
         if (filteredMoves.length === 0) {
           filteredMoves = scoredMoves;
         }
@@ -302,23 +403,20 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       
       let move;
       
-      // Smarter blunder selection - pick from mediocre moves, not worst moves
+      // Smarter blunder selection
       if (Math.random() < blunderRate) {
         let blunderRange: { start: number; end: number };
         if (rating < 1200) {
-          // Pick from 60-80% percentile (miss tactics, not hang pieces)
           blunderRange = { 
             start: Math.floor(filteredMoves.length * 0.6), 
             end: Math.floor(filteredMoves.length * 0.8) 
           };
         } else if (rating < 1500) {
-          // Pick from 70-85% percentile (slight positional mistakes)
           blunderRange = { 
             start: Math.floor(filteredMoves.length * 0.7), 
             end: Math.floor(filteredMoves.length * 0.85) 
           };
         } else {
-          // Pick from 80-90% percentile (very subtle mistakes)
           blunderRange = { 
             start: Math.floor(filteredMoves.length * 0.8), 
             end: Math.floor(filteredMoves.length * 0.9) 
@@ -330,38 +428,42 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           ? blunderMoves[Math.floor(Math.random() * blunderMoves.length)].move
           : filteredMoves[Math.floor(filteredMoves.length * 0.7)].move;
       } else {
-        // Good move: tighter selection pools
+        // Good move: tighter selection pools for advanced bots
         let selectionPoolSize: number;
         if (rating < 600) {
-          selectionPoolSize = filteredMoves.length; // Pick from all moves
+          selectionPoolSize = filteredMoves.length;
         } else if (rating < 900) {
-          selectionPoolSize = Math.ceil(filteredMoves.length * 0.6); // Top 60%
+          selectionPoolSize = Math.ceil(filteredMoves.length * 0.6);
         } else if (rating < 1200) {
-          selectionPoolSize = Math.ceil(filteredMoves.length * 0.2); // Top 20% (was 30%)
+          selectionPoolSize = Math.ceil(filteredMoves.length * 0.2);
         } else if (rating < 1500) {
-          selectionPoolSize = Math.ceil(filteredMoves.length * 0.1); // Top 10% (was 15%)
+          selectionPoolSize = Math.ceil(filteredMoves.length * 0.1);
         } else if (rating < 1800) {
-          selectionPoolSize = Math.ceil(filteredMoves.length * 0.05); // Top 5% (was 8%)
+          selectionPoolSize = Math.ceil(filteredMoves.length * 0.05);
+        } else if (rating < 2000) {
+          selectionPoolSize = Math.max(1, Math.ceil(filteredMoves.length * 0.01)); // Top 1%
         } else {
-          selectionPoolSize = Math.max(1, Math.ceil(filteredMoves.length * 0.03)); // Top 3%
+          selectionPoolSize = Math.max(1, Math.min(2, filteredMoves.length)); // Best 1-2 moves
         }
         
         const topMoves = filteredMoves.slice(0, Math.max(1, selectionPoolSize));
         
-        // Determine best move selection chance
+        // Higher best move chance for advanced bots
         let bestMoveChance: number;
         if (rating < 600) {
-          bestMoveChance = 0.2; // 20% chance
+          bestMoveChance = 0.2;
         } else if (rating < 900) {
-          bestMoveChance = 0.4; // 40% chance
+          bestMoveChance = 0.4;
         } else if (rating < 1200) {
-          bestMoveChance = 0.7; // 70% chance (was 65%)
+          bestMoveChance = 0.7;
         } else if (rating < 1500) {
-          bestMoveChance = 0.85; // 85% chance (was 80%)
+          bestMoveChance = 0.85;
         } else if (rating < 1800) {
-          bestMoveChance = 0.93; // 93% chance (was 90%)
+          bestMoveChance = 0.93;
+        } else if (rating < 2000) {
+          bestMoveChance = 0.97;
         } else {
-          bestMoveChance = 0.97; // 97% chance (was 95%)
+          bestMoveChance = 0.995; // 99.5% for 2000+
         }
         
         if (Math.random() < bestMoveChance) {
@@ -383,7 +485,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       } else if (gameCopy.isCheck()) {
         toast("Check!");
       }
-    }, 2000);
+    }, thinkingTime);
   };
 
   const calculateSquarePosition = (square: Square): { x: number; y: number } => {
