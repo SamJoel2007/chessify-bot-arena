@@ -17,6 +17,35 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
   const [timeElapsed, setTimeElapsed] = useState(0);
   const navigate = useNavigate();
 
+  // Subscribe to realtime game creation
+  useEffect(() => {
+    const channel = supabase
+      .channel('game-matches')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'games',
+        },
+        async (payload) => {
+          const newGame = payload.new as any;
+          // Check if this user is part of the game
+          if (newGame.white_player_id === userId || newGame.black_player_id === userId) {
+            await leaveQueue();
+            setIsSearching(false);
+            toast.success("Match found!");
+            navigate(`/online-game/${newGame.id}`);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, navigate]);
+
   useEffect(() => {
     let timer: NodeJS.Timeout;
     let matchCheckInterval: NodeJS.Timeout;
@@ -116,6 +145,19 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
 
   const createGame = async (opponent: any) => {
     try {
+      // Try to remove opponent from queue first (acts as a lock)
+      const { data: removed } = await supabase
+        .from("match_queue")
+        .delete()
+        .eq("user_id", opponent.user_id)
+        .select();
+
+      // If opponent was already removed, another player got them first
+      if (!removed || removed.length === 0) {
+        console.log("Opponent already matched with someone else");
+        return; // Continue searching
+      }
+
       // Randomly assign colors
       const isWhite = Math.random() < 0.5;
       
@@ -134,18 +176,25 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
         .select()
         .single();
 
-      if (gameError) throw gameError;
+      if (gameError) {
+        // Re-add opponent to queue if game creation failed
+        await supabase
+          .from("match_queue")
+          .insert({
+            user_id: opponent.user_id,
+            username: opponent.username,
+            current_avatar: opponent.current_avatar,
+          });
+        throw gameError;
+      }
 
-      // Remove both players from queue
+      // Remove current user from queue
       await supabase
         .from("match_queue")
         .delete()
-        .in("user_id", [userId, opponent.user_id]);
+        .eq("user_id", userId);
 
-      // Navigate to game
-      setIsSearching(false);
-      toast.success("Match found!");
-      navigate(`/online-game/${game.id}`);
+      // Realtime will handle navigation for both players
     } catch (error) {
       console.error("Error creating game:", error);
       toast.error("Failed to create game");
