@@ -24,13 +24,43 @@ const AdminUsers = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem("adminAuth");
-    if (!isAdmin) {
-      navigate("/admin/login");
-    } else {
-      fetchUsers();
-    }
+    checkAdminAccess();
   }, [navigate]);
+
+  const checkAdminAccess = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        navigate("/admin/login");
+        return;
+      }
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin");
+
+      if (!roles || roles.length === 0) {
+        toast({
+          title: "Access denied",
+          description: "You do not have admin privileges",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      navigate("/admin/login");
+    }
+  };
 
   const fetchUsers = async (search?: string) => {
     try {

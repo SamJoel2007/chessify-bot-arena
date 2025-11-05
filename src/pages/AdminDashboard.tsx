@@ -21,13 +21,43 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({ users: 0, posts: 0, messages: 0 });
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem("adminAuth");
-    if (!isAdmin) {
-      navigate("/admin/login");
-    } else {
-      fetchDashboardData();
-    }
+    checkAdminAccess();
   }, [navigate]);
+
+  const checkAdminAccess = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        navigate("/admin/login");
+        return;
+      }
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin");
+
+      if (!roles || roles.length === 0) {
+        toast({
+          title: "Access denied",
+          description: "You do not have admin privileges",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      fetchDashboardData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      navigate("/admin/login");
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
