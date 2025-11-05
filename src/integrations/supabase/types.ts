@@ -507,6 +507,10 @@ export type Database = {
         }
         Returns: Json
       }
+      get_user_role: {
+        Args: { target_user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       handle_purchase: {
         Args: {
           p_item_data: Json
