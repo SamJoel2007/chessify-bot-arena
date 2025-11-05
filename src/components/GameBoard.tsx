@@ -358,16 +358,49 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       if (isAdvancedBot) {
         const mateMove = scoredMoves.find(sm => sm.score >= 9000);
         if (mateMove) {
+          // Get piece info before moving
+          const movingPieceData = currentGame.get(mateMove.move.from);
+          const targetPiece = currentGame.get(mateMove.move.to);
+          const isCapture = !!targetPiece;
+
+          // Execute the move
           const gameCopy = new Chess(currentGame.fen());
           gameCopy.move(mateMove.move);
-          setGame(gameCopy);
-          setMoveHistory(prev => [...prev, mateMove.move.san]);
-          setIsThinking(false);
-          
-          if (gameCopy.isCheckmate()) {
-            setGameResult("lose");
-            setShowGameEndModal(true);
+
+          // Start animation
+          setIsAnimating(true);
+          setMovingPiece({
+            piece: movingPieceData.type,
+            color: movingPieceData.color,
+            from: mateMove.move.from,
+            to: mateMove.move.to,
+          });
+
+          // If capture, start breakdown animation at 80% of journey
+          if (isCapture) {
+            setTimeout(() => {
+              setCapturedSquare(mateMove.move.to);
+            }, 400);
           }
+
+          // Complete move after animation
+          setTimeout(() => {
+            setGame(gameCopy);
+            setMoveHistory(prev => [...prev, mateMove.move.san]);
+            setMovingPiece(null);
+            setIsAnimating(false);
+            setIsThinking(false);
+            
+            // Clear captured square after breakdown animation
+            if (isCapture) {
+              setTimeout(() => setCapturedSquare(null), 200);
+            }
+            
+            if (gameCopy.isCheckmate()) {
+              setGameResult("lose");
+              setShowGameEndModal(true);
+            }
+          }, 500);
           return;
         }
       }
@@ -473,18 +506,52 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         }
       }
 
+      // Get piece info before moving
+      const movingPieceData = currentGame.get(move.from);
+      const targetPiece = currentGame.get(move.to);
+      const isCapture = !!targetPiece;
+
+      // Execute the move
       const gameCopy = new Chess(currentGame.fen());
       gameCopy.move(move);
-      setGame(gameCopy);
-      setMoveHistory(prev => [...prev, move.san]);
-      setIsThinking(false);
 
-      if (gameCopy.isCheckmate()) {
-        setGameResult("lose");
-        setShowGameEndModal(true);
-      } else if (gameCopy.isCheck()) {
-        toast("Check!");
+      // Start animation
+      setIsAnimating(true);
+      setMovingPiece({
+        piece: movingPieceData.type,
+        color: movingPieceData.color,
+        from: move.from,
+        to: move.to,
+      });
+
+      // If capture, start breakdown animation at 80% of journey
+      if (isCapture) {
+        setTimeout(() => {
+          setCapturedSquare(move.to);
+        }, 400); // 80% of 500ms
       }
+
+      // Complete move after animation
+      setTimeout(() => {
+        setGame(gameCopy);
+        setMoveHistory(prev => [...prev, move.san]);
+        setMovingPiece(null);
+        setIsAnimating(false);
+        setIsThinking(false);
+        
+        // Clear captured square after breakdown animation
+        if (isCapture) {
+          setTimeout(() => setCapturedSquare(null), 200);
+        }
+        
+        // Check game end conditions
+        if (gameCopy.isCheckmate()) {
+          setGameResult("lose");
+          setShowGameEndModal(true);
+        } else if (gameCopy.isCheck()) {
+          toast("Check!");
+        }
+      }, 500); // Match the animation duration
     }, thinkingTime);
   };
 
