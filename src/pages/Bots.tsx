@@ -61,6 +61,26 @@ import expertGrace from "@/assets/bots/expert-07-grace.jpg";
 import expertWilliam from "@/assets/bots/expert-08-william.jpg";
 import expertRonald from "@/assets/bots/expert-09-ronald.jpg";
 import expertMary from "@/assets/bots/expert-10-mary.jpg";
+import masterMarcus from "@/assets/bots/master-01-marcus.jpg";
+import masterAlexis from "@/assets/bots/master-02-alexis.jpg";
+import masterGenevieve from "@/assets/bots/master-03-genevieve.jpg";
+import masterThomas from "@/assets/bots/master-04-thomas.jpg";
+import masterJames from "@/assets/bots/master-05-james.jpg";
+import masterStella from "@/assets/bots/master-06-stella.jpg";
+import masterTitus from "@/assets/bots/master-07-titus.jpg";
+import masterSamantha from "@/assets/bots/master-08-samantha.jpg";
+import masterUlysses from "@/assets/bots/master-09-ulysses.jpg";
+import masterEleanor from "@/assets/bots/master-10-eleanor.jpg";
+import gmStephanie from "@/assets/bots/gm-01-stephanie.jpg";
+import gmKevin from "@/assets/bots/gm-02-kevin.jpg";
+import gmLeela from "@/assets/bots/gm-03-leela.jpg";
+import gmAlexander from "@/assets/bots/gm-04-alexander.jpg";
+import gmGarry from "@/assets/bots/gm-05-garry.jpg";
+import gmBobby from "@/assets/bots/gm-06-bobby.jpg";
+import gmMikhail from "@/assets/bots/gm-07-mikhail.jpg";
+import gmJose from "@/assets/bots/gm-08-jose.jpg";
+import gmPaul from "@/assets/bots/gm-09-paul.jpg";
+import gmVictoria from "@/assets/bots/gm-10-victoria.jpg";
 
 interface Bot {
   id: string;
@@ -145,16 +165,16 @@ const botCategories = {
     color: "text-gold",
     image: botGrandmaster,
     bots: [
-      { id: "m1", name: "Marcus", rating: 2800, description: "International Master level", difficulty: "Master" },
-      { id: "m2", name: "Alexis", rating: 2850, description: "Superhuman play", difficulty: "Master" },
-      { id: "m3", name: "Genevieve", rating: 2900, description: "Genius strategist", difficulty: "Master" },
-      { id: "m4", name: "Thomas", rating: 2950, description: "Lightning tactics", difficulty: "Master" },
-      { id: "m5", name: "James", rating: 3000, description: "Computer-like accuracy", difficulty: "Master" },
-      { id: "m6", name: "Stella", rating: 3050, description: "Devastating attacks", difficulty: "Master" },
-      { id: "m7", name: "Titus", rating: 3100, description: "Titanic strength", difficulty: "Master" },
-      { id: "m8", name: "Samantha", rating: 3150, description: "Supreme understanding", difficulty: "Master" },
-      { id: "m9", name: "Ulysses", rating: 3200, description: "Professional level", difficulty: "Master" },
-      { id: "m10", name: "Eleanor", rating: 3250, description: "Elite performer", difficulty: "Master" },
+      { id: "m1", name: "Marcus", rating: 2800, description: "International Master level with intense focus", difficulty: "Master", image: masterMarcus },
+      { id: "m2", name: "Alexis", rating: 2850, description: "Superhuman play with piercing analytical mind", difficulty: "Master", image: masterAlexis },
+      { id: "m3", name: "Genevieve", rating: 2900, description: "Genius strategist with calculating brilliance", difficulty: "Master", image: masterGenevieve },
+      { id: "m4", name: "Thomas", rating: 2950, description: "Lightning tactics with computer-like speed", difficulty: "Master", image: masterThomas },
+      { id: "m5", name: "James", rating: 3000, description: "Computer-like accuracy with perfect precision", difficulty: "Master", image: masterJames },
+      { id: "m6", name: "Stella", rating: 3050, description: "Devastating attacks with ruthless efficiency", difficulty: "Master", image: masterStella },
+      { id: "m7", name: "Titus", rating: 3100, description: "Titanic strength with commanding presence", difficulty: "Master", image: masterTitus },
+      { id: "m8", name: "Samantha", rating: 3150, description: "Supreme understanding with serene wisdom", difficulty: "Master", image: masterSamantha },
+      { id: "m9", name: "Ulysses", rating: 3200, description: "Professional level with experienced mastery", difficulty: "Master", image: masterUlysses },
+      { id: "m10", name: "Eleanor", rating: 3250, description: "Elite performer with concentrated excellence", difficulty: "Master", image: masterEleanor },
     ],
   },
   grandmaster: {
@@ -162,16 +182,16 @@ const botCategories = {
     color: "text-gold",
     image: botGrandmaster,
     bots: [
-      { id: "g1", name: "Stephanie", rating: 3300, description: "Engine-based GM", difficulty: "Grandmaster" },
-      { id: "g2", name: "Kevin", rating: 3350, description: "Positional perfection", difficulty: "Grandmaster" },
-      { id: "g3", name: "Leela", rating: 3400, description: "Neural network beast", difficulty: "Grandmaster" },
-      { id: "g4", name: "Alexander", rating: 3450, description: "Self-taught genius", difficulty: "Grandmaster" },
-      { id: "g5", name: "Garry", rating: 3500, description: "Named after Kasparov", difficulty: "Grandmaster" },
-      { id: "g6", name: "Bobby", rating: 3550, description: "Fischer's spirit", difficulty: "Grandmaster" },
-      { id: "g7", name: "Mikhail", rating: 3600, description: "Sacrificial magic", difficulty: "Grandmaster" },
-      { id: "g8", name: "Jose", rating: 3650, description: "Endgame wizard", difficulty: "Grandmaster" },
-      { id: "g9", name: "Paul", rating: 3700, description: "Tactical brilliance", difficulty: "Grandmaster" },
-      { id: "g10", name: "Victoria", rating: 3750, description: "Nearly unbeatable", difficulty: "Grandmaster" },
+      { id: "g1", name: "Stephanie", rating: 3300, description: "Engine-based GM with machine-like precision", difficulty: "Grandmaster", image: gmStephanie },
+      { id: "g2", name: "Kevin", rating: 3350, description: "Positional perfection with flawless understanding", difficulty: "Grandmaster", image: gmKevin },
+      { id: "g3", name: "Leela", rating: 3400, description: "Neural network beast with AI-level dominance", difficulty: "Grandmaster", image: gmLeela },
+      { id: "g4", name: "Alexander", rating: 3450, description: "Self-taught genius with brilliant intuition", difficulty: "Grandmaster", image: gmAlexander },
+      { id: "g5", name: "Garry", rating: 3500, description: "Named after Kasparov, legendary mastery", difficulty: "Grandmaster", image: gmGarry },
+      { id: "g6", name: "Bobby", rating: 3550, description: "Fischer's spirit with unmatched genius", difficulty: "Grandmaster", image: gmBobby },
+      { id: "g7", name: "Mikhail", rating: 3600, description: "Sacrificial magic with artistic brilliance", difficulty: "Grandmaster", image: gmMikhail },
+      { id: "g8", name: "Jose", rating: 3650, description: "Endgame wizard with theoretical mastery", difficulty: "Grandmaster", image: gmJose },
+      { id: "g9", name: "Paul", rating: 3700, description: "Tactical brilliance with sharp precision", difficulty: "Grandmaster", image: gmPaul },
+      { id: "g10", name: "Victoria", rating: 3750, description: "Nearly unbeatable with absolute dominance", difficulty: "Grandmaster", image: gmVictoria },
     ],
   },
   anime: {
