@@ -105,7 +105,7 @@ const Index = () => {
                 </Button>
               )}
               <Crown className="w-8 h-8 text-primary" />
-              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent hidden md:block">
                 Chessify
               </h1>
             </div>
