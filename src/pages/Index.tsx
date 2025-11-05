@@ -91,21 +91,21 @@ const Index = () => {
       
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/60 bg-card/90 backdrop-blur-md shadow-lg">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-8">
+        <div className="container mx-auto px-2 md:px-4 py-3 md:py-4 flex items-center justify-between max-w-full">
+          <div className="flex items-center gap-4 md:gap-8">
             <div className="flex items-center gap-2">
               {user && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowSidebar(!showSidebar)}
-                  className="mr-2"
+                  className="mr-1 md:mr-2 w-8 h-8 md:w-10 md:h-10"
                 >
-                  <Menu className="w-6 h-6" />
+                  <Menu className="w-5 h-5 md:w-6 md:h-6" />
                 </Button>
               )}
-              <Crown className="w-8 h-8 text-primary" />
-              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent hidden md:block">
+              <Crown className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+              <h1 className="text-xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent hidden sm:block">
                 Chessify
               </h1>
             </div>
@@ -144,42 +144,45 @@ const Index = () => {
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <Button
               variant="outline"
-              className="gap-2"
+              className="gap-1 md:gap-2 px-2 md:px-4"
+              size="sm"
               onClick={() => user ? setShowShop(true) : navigate('/auth')}
             >
-              <Store className="w-5 h-5 text-primary" />
-              Shop
+              <Store className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+              <span className="hidden md:inline">Shop</span>
             </Button>
             <Button
               variant="outline"
-              className="gap-2"
+              className="gap-1 md:gap-2 px-2 md:px-4"
+              size="sm"
               onClick={() => navigate('/purchase-coins')}
             >
-              <Coins className="w-5 h-5 text-gold" />
-              <span className="font-bold text-gold">{coins}</span>
+              <Coins className="w-4 h-4 md:w-5 md:h-5 text-gold" />
+              <span className="font-bold text-gold text-xs md:text-sm">{coins}</span>
             </Button>
             {user ? (
-              <Button variant="outline" onClick={handleSignOut}>
+              <Button variant="outline" onClick={handleSignOut} size="sm" className="px-2 md:px-4 text-xs md:text-sm hidden sm:flex">
                 Sign Out
               </Button>
             ) : (
               <>
-                <Button variant="outline" onClick={() => navigate("/auth")}>
-                  Sign In
+                <Button variant="outline" onClick={() => navigate("/auth")} size="sm" className="px-2 md:px-4 text-xs md:text-sm">
+                  <span className="hidden sm:inline">Sign In</span>
+                  <span className="sm:hidden">In</span>
                 </Button>
-                <Button variant="default" onClick={() => navigate("/auth")}>
+                <Button variant="default" onClick={() => navigate("/auth")} size="sm" className="px-2 md:px-4 text-xs md:text-sm hidden md:flex">
                   Sign Up
                 </Button>
               </>
             )}
             <Avatar 
-              className="cursor-pointer hover:ring-2 hover:ring-primary transition-all" 
+              className="cursor-pointer hover:ring-2 hover:ring-primary transition-all w-8 h-8 md:w-10 md:h-10" 
               onClick={() => user && setShowAvatarSelector(true)}
             >
-              <AvatarFallback className="bg-gradient-primary text-3xl">
+              <AvatarFallback className="bg-gradient-primary text-2xl md:text-3xl">
                 {getAvatarIcon(currentAvatar)}
               </AvatarFallback>
             </Avatar>

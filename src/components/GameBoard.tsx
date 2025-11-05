@@ -910,38 +910,39 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   };
 
   return (
-    <div className="grid lg:grid-cols-[1fr,400px] gap-6">
+    <div className="grid lg:grid-cols-[1fr,400px] gap-4 md:gap-6">
       {/* Chess Board */}
-      <Card className="p-6 bg-gradient-card border-border/50">
-        <div className="mb-4 flex justify-between items-center">
+      <Card className="p-3 md:p-6 bg-gradient-card border-border/50">
+        <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h2 className="text-2xl font-bold">Game Board</h2>
+            <h2 className="text-xl md:text-2xl font-bold">Game Board</h2>
             {selectedBot && (
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-sm text-muted-foreground">Playing against:</span>
-                <span className="font-semibold">{selectedBot.name}</span>
-                <Badge variant="outline">{selectedBot.rating} ELO</Badge>
+                <span className="text-xs md:text-sm text-muted-foreground">Playing against:</span>
+                <span className="text-sm md:text-base font-semibold">{selectedBot.name}</span>
+                <Badge variant="outline" className="text-xs">{selectedBot.rating} ELO</Badge>
               </div>
             )}
             {isThinking && (
-              <p className="text-sm text-muted-foreground mt-1">Bot is thinking...</p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1">Bot is thinking...</p>
             )}
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleDraw}>
-              <Handshake className="w-4 h-4 mr-2" />
-              Draw (20 coins)
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" size="sm" onClick={handleDraw} className="text-xs">
+              <Handshake className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Draw (20 coins)</span>
+              <span className="sm:hidden">Draw</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={resetGame}>
-              <Flag className="w-4 h-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={resetGame} className="text-xs">
+              <Flag className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
               Resign
             </Button>
           </div>
         </div>
-        <div className="max-w-[600px] mx-auto">
+        <div className="w-full max-w-[min(600px,100vw-2rem)] mx-auto">
           <div 
-            className="grid grid-cols-8 border-4 border-border rounded-lg overflow-hidden shadow-glow relative"
-            style={{ aspectRatio: "1/1" }}
+            className="grid grid-cols-8 border-2 md:border-4 border-border rounded-lg overflow-hidden shadow-glow relative"
+            style={{ aspectRatio: "1/1", maxWidth: "100%" }}
           >
             {renderBoard()}
             
