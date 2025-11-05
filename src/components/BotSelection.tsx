@@ -40,8 +40,8 @@ const bots = [
     category: "Intermediate",
     rating: 1500,
     image: intermediateGambitGary,
-    owned: false,
-    price: 300,
+    owned: true,
+    price: 0,
   },
   {
     id: 4,
@@ -49,8 +49,8 @@ const bots = [
     category: "Anime",
     rating: 2200,
     image: animeLight,
-    owned: false,
-    price: 500,
+    owned: true,
+    price: 0,
   },
   {
     id: 5,
@@ -58,8 +58,8 @@ const bots = [
     category: "Anime",
     rating: 2500,
     image: animeLelouch,
-    owned: false,
-    price: 700,
+    owned: true,
+    price: 0,
   },
 ];
 
