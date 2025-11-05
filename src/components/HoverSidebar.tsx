@@ -4,6 +4,7 @@ import { Bell, Users, Store, Puzzle, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAvatarIcon } from "@/lib/avatarUtils";
 
 interface HoverSidebarProps {
@@ -28,9 +29,10 @@ export function HoverSidebar({ user, currentAvatar, isOpen, onClose }: HoverSide
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-            <div className="p-6 space-y-6">
-              {/* User Profile Section */}
-              <Card className="p-5 bg-gradient-card border-border/50">
+        <ScrollArea className="h-full">
+          <div className="pt-20 px-6 pb-6 space-y-6">
+            {/* User Profile Section */}
+            <Card className="p-5 bg-gradient-card border-border/50">
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-3">
                     <Avatar className="w-14 h-14 flex-shrink-0">
@@ -112,7 +114,8 @@ export function HoverSidebar({ user, currentAvatar, isOpen, onClose }: HoverSide
                 </Button>
               </div>
             </div>
-          </div>
+          </ScrollArea>
         </div>
+      </div>
   );
 }
