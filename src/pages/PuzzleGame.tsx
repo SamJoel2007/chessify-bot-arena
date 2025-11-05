@@ -60,13 +60,6 @@ const PuzzleGame = () => {
           setGame(new Chess(currentGameState.fen()));
           setMoveHistory(prev => [...prev, move.san]);
           setCurrentMoveIndex(nextMoveIndex + 1);
-          
-          // Check if puzzle is complete after opponent's move
-          if (nextMoveIndex + 1 >= puzzle.solution.length) {
-            setPuzzleSolved(true);
-            setShowGameEndModal(true);
-            toast.success("Puzzle solved! Well done!");
-          }
         }
       } catch (error) {
         console.error("Error making opponent move:", error);
@@ -88,11 +81,16 @@ const PuzzleGame = () => {
       setMoveHistory([...moveHistory, move]);
 
       if (nextMoveIndex >= puzzle.solution.length) {
-        // Puzzle solved!
-        setPuzzleSolved(true);
-        setShowGameEndModal(true);
-        toast.success("Puzzle solved! Well done!");
-        return true;
+        // Verify it's actually checkmate before declaring victory
+        if (currentGameState.isCheckmate()) {
+          setPuzzleSolved(true);
+          setShowGameEndModal(true);
+          toast.success("Puzzle solved! Well done!");
+          return true;
+        } else {
+          toast.error("Position is not checkmate. Try another move!");
+          return false;
+        }
       } else {
         toast.success("Correct move!");
         // Make opponent move after player's correct move
