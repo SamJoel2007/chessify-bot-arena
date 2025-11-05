@@ -33,12 +33,12 @@ const puzzles: Puzzle[] = [
   {
     id: "p2",
     name: "Mate in 2",
-    description: "Calculate the winning sequence in this tactical puzzle",
+    description: "Deliver checkmate in just 2 moves with the queen",
     rating: 1400,
     difficulty: "intermediate",
     image: puzzleIntermediate,
-    fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1",
-    solution: ["Bxf7+", "Kxf7", "Ng5+", "Ke8", "Qh5#"],
+    fen: "5rk1/5ppp/8/8/8/8/2Q2PPP/6K1 w - - 0 1",
+    solution: ["Qc8+", "Rf8", "Qxf8#"],
   },
   {
     id: "p3",
