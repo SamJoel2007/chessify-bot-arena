@@ -103,7 +103,7 @@ const botCategories = {
         rating: 400,
         description: "Just learning the basics",
         difficulty: "Beginner",
-        image: url("https://devwithsam.w3spaces.com/images/logo.jpg"),
+        image: beginnerPawnPusher,
       },
       {
         id: "b2",
