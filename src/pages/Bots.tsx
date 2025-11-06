@@ -99,7 +99,7 @@ const botCategories = {
     bots: [
       {
         id: "b1",
-        name: "Emily",
+        name: "Mark",
         rating: 400,
         description: "Just learning the basics",
         difficulty: "Beginner",
