@@ -362,6 +362,44 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     return score;
   };
 
+  // Helper to check mate in one
+  const checkMateInOne = (testGame: Chess) => {
+    const opponentMoves = testGame.moves({ verbose: true });
+    return opponentMoves.some(oppMove => {
+      const oppTest = new Chess(testGame.fen());
+      oppTest.move(oppMove);
+      return oppTest.isCheckmate();
+    });
+  };
+  
+  // Helper to check mate in two for expert bots
+  const checkMateInTwo = (testGame: Chess) => {
+    if (checkMateInOne(testGame)) return true;
+    
+    const opponentMoves = testGame.moves({ verbose: true });
+    for (const oppMove of opponentMoves.slice(0, 10)) {
+      const oppTest = new Chess(testGame.fen());
+      oppTest.move(oppMove);
+      
+      if (checkMateInOne(oppTest)) return true;
+    }
+    return false;
+  };
+  
+  // Helper to check mate in three for Master bots
+  const checkMateInThree = (testGame: Chess) => {
+    if (checkMateInTwo(testGame)) return true;
+    
+    const opponentMoves = testGame.moves({ verbose: true });
+    for (const oppMove of opponentMoves.slice(0, 8)) {
+      const oppTest = new Chess(testGame.fen());
+      oppTest.move(oppMove);
+      
+      if (checkMateInTwo(oppTest)) return true;
+    }
+    return false;
+  };
+
   const makeBotMove = (currentGame: Chess) => {
     if (currentGame.isGameOver()) return;
 
@@ -494,44 +532,6 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           filteredMoves = scoredMoves;
         }
       }
-      
-      // Helper to check mate in one
-      const checkMateInOne = (testGame: Chess) => {
-        const opponentMoves = testGame.moves({ verbose: true });
-        return opponentMoves.some(oppMove => {
-          const oppTest = new Chess(testGame.fen());
-          oppTest.move(oppMove);
-          return oppTest.isCheckmate();
-        });
-      };
-      
-      // Helper to check mate in two for expert bots
-      const checkMateInTwo = (testGame: Chess) => {
-        if (checkMateInOne(testGame)) return true;
-        
-        const opponentMoves = testGame.moves({ verbose: true });
-        for (const oppMove of opponentMoves.slice(0, 10)) {
-          const oppTest = new Chess(testGame.fen());
-          oppTest.move(oppMove);
-          
-          if (checkMateInOne(oppTest)) return true;
-        }
-        return false;
-      };
-      
-      // Helper to check mate in three for Master bots
-      const checkMateInThree = (testGame: Chess) => {
-        if (checkMateInTwo(testGame)) return true;
-        
-        const opponentMoves = testGame.moves({ verbose: true });
-        for (const oppMove of opponentMoves.slice(0, 8)) {
-          const oppTest = new Chess(testGame.fen());
-          oppTest.move(oppMove);
-          
-          if (checkMateInTwo(oppTest)) return true;
-        }
-        return false;
-      };
       
       let move;
       
