@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import FriendChallengeDialog from "@/components/FriendChallengeDialog";
 
 interface GameBoardProps {
   selectedBot?: any;
@@ -22,6 +23,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   const navigate = useNavigate();
   const [game, setGame] = useState(new Chess());
   const [showMatchmaking, setShowMatchmaking] = useState(false);
+  const [showFriendChallenge, setShowFriendChallenge] = useState(false);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [gameMode, setGameMode] = useState<"friend" | "bot" | null>(null);
@@ -908,14 +910,16 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   };
 
   const startBotGame = () => {
-    setGameMode("bot");
-    resetGame();
+    navigate('/bots');
   };
 
   const startFriendGame = () => {
-    setGameMode("friend");
-    if (onBotChange) onBotChange(null);
-    resetGame();
+    if (!userId) {
+      toast.error("Please sign in to challenge friends");
+      navigate("/auth");
+      return;
+    }
+    setShowFriendChallenge(true);
   };
 
   const renderBoard = () => {
@@ -1185,6 +1189,14 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           </div>
         </Card>
       </div>
+
+      <FriendChallengeDialog
+        isOpen={showFriendChallenge}
+        onClose={() => setShowFriendChallenge(false)}
+        userId={userId || ''}
+        username={username || 'Player'}
+        currentAvatar={currentAvatar || null}
+      />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Bell } from "lucide-react";
 import { toast } from "sonner";
+import ChallengeNotification from "@/components/ChallengeNotification";
 
 interface Notification {
   id: string;
@@ -83,9 +84,15 @@ export default function Notifications() {
   };
 
   const handleNotificationClick = (notification: Notification) => {
+    if (notification.type === 'game_challenge') {
+      return;
+    }
     markAsRead(notification.id);
     if (notification.type === 'friend_request') {
       navigate('/friends');
+    }
+    if (notification.type === 'challenge_accepted') {
+      navigate(`/online-game?gameId=${notification.related_id}`);
     }
   };
 
@@ -111,7 +118,7 @@ export default function Notifications() {
             {notifications.map((notification) => (
               <Card
                 key={notification.id}
-                className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors ${
+                className={`p-4 ${notification.type !== 'game_challenge' ? 'cursor-pointer hover:bg-muted/50' : ''} transition-colors ${
                   !notification.read ? 'bg-muted/30 border-primary/50' : ''
                 }`}
                 onClick={() => handleNotificationClick(notification)}
@@ -123,6 +130,13 @@ export default function Notifications() {
                     <p className="text-sm text-muted-foreground mt-1">
                       {new Date(notification.created_at).toLocaleString()}
                     </p>
+                    {notification.type === 'game_challenge' && notification.related_id && (
+                      <ChallengeNotification
+                        challengeId={notification.related_id}
+                        challengerName={notification.content.split(' ')[0]}
+                        onUpdate={() => loadNotifications(user.id)}
+                      />
+                    )}
                   </div>
                 </div>
               </Card>

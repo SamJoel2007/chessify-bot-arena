@@ -107,6 +107,56 @@ export type Database = {
           },
         ]
       }
+      game_challenges: {
+        Row: {
+          challenged_avatar: string | null
+          challenged_id: string
+          challenged_username: string
+          challenger_avatar: string | null
+          challenger_id: string
+          challenger_username: string
+          created_at: string
+          expires_at: string
+          game_id: string | null
+          id: string
+          status: string
+        }
+        Insert: {
+          challenged_avatar?: string | null
+          challenged_id: string
+          challenged_username: string
+          challenger_avatar?: string | null
+          challenger_id: string
+          challenger_username: string
+          created_at?: string
+          expires_at?: string
+          game_id?: string | null
+          id?: string
+          status?: string
+        }
+        Update: {
+          challenged_avatar?: string | null
+          challenged_id?: string
+          challenged_username?: string
+          challenger_avatar?: string | null
+          challenger_id?: string
+          challenger_username?: string
+          created_at?: string
+          expires_at?: string
+          game_id?: string | null
+          id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_challenges_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_chat: {
         Row: {
           created_at: string
@@ -499,6 +549,7 @@ export type Database = {
     }
     Functions: {
       cleanup_expired_queue_entries: { Args: never; Returns: undefined }
+      expire_old_challenges: { Args: never; Returns: undefined }
       find_match: {
         Args: {
           p_current_avatar: string
