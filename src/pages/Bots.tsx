@@ -107,7 +107,7 @@ const botCategories = {
       },
       {
         id: "b2",
-        name: "Oliver",
+        name: "Ashley",
         rating: 450,
         description: "Loves castling early",
         difficulty: "Beginner",
@@ -115,7 +115,7 @@ const botCategories = {
       },
       {
         id: "b3",
-        name: "Sophia",
+        name: "Chris",
         rating: 500,
         description: "Enjoys knight moves",
         difficulty: "Beginner",
@@ -123,7 +123,7 @@ const botCategories = {
       },
       {
         id: "b4",
-        name: "Lucas",
+        name: "Ada Wong",
         rating: 550,
         description: "Diagonal specialist",
         difficulty: "Beginner",
@@ -131,7 +131,7 @@ const botCategories = {
       },
       {
         id: "b5",
-        name: "Emma",
+        name: "Ravi",
         rating: 600,
         description: "Learning rook endgames",
         difficulty: "Beginner",
@@ -139,7 +139,7 @@ const botCategories = {
       },
       {
         id: "b6",
-        name: "Noah",
+        name: "Anna Williams",
         rating: 650,
         description: "Protective player",
         difficulty: "Beginner",
@@ -147,7 +147,7 @@ const botCategories = {
       },
       {
         id: "b7",
-        name: "Isabella",
+        name: "Gojo",
         rating: 700,
         description: "Defensive minded",
         difficulty: "Beginner",
@@ -155,7 +155,7 @@ const botCategories = {
       },
       {
         id: "b8",
-        name: "Liam",
+        name: "Sahana",
         rating: 750,
         description: "Loves giving checks",
         difficulty: "Beginner",
@@ -171,7 +171,7 @@ const botCategories = {
       },
       {
         id: "b10",
-        name: "Ethan",
+        name: "Emi",
         rating: 850,
         description: "Learning openings",
         difficulty: "Beginner",
