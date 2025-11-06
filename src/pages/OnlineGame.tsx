@@ -155,14 +155,14 @@ export default function OnlineGame() {
       .eq("id", gameId);
 
     // Update points - winner gets +10, loser gets -5
-    await supabase.rpc('increment', {
-      row_id: winnerId,
-      x: 10
+    await supabase.rpc('update_user_points', {
+      user_id: winnerId,
+      points_change: 10
     });
 
-    await supabase.rpc('increment', {
-      row_id: loserId,
-      x: -5
+    await supabase.rpc('update_user_points', {
+      user_id: loserId,
+      points_change: -5
     });
 
     setIsGameOver(true);
@@ -233,15 +233,15 @@ export default function OnlineGame() {
             : gameData.white_player_id;
 
           // Winner gets +10 points
-          await supabase.rpc('increment', {
-            row_id: winnerId,
-            x: 10
+          await supabase.rpc('update_user_points', {
+            user_id: winnerId,
+            points_change: 10
           });
 
           // Loser gets -5 points
-          await supabase.rpc('increment', {
-            row_id: loserId,
-            x: -5
+          await supabase.rpc('update_user_points', {
+            user_id: loserId,
+            points_change: -5
           });
         }
       }

@@ -579,6 +579,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_user_points: {
+        Args: { points_change: number; user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
