@@ -18,6 +18,7 @@ import Messages from "./pages/Messages";
 import Friends from "./pages/Friends";
 import Notifications from "./pages/Notifications";
 import MyProfile from "./pages/MyProfile";
+import Leaderboards from "./pages/Leaderboards";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/friends" element={<Friends />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/my-profile" element={<MyProfile />} />
+          <Route path="/leaderboards" element={<Leaderboards />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

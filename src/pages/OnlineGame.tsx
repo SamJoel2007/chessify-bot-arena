@@ -144,6 +144,7 @@ export default function OnlineGame() {
     if (isGameOver) return;
     
     const winnerId = whiteTime === 0 ? gameData.black_player_id : gameData.white_player_id;
+    const loserId = whiteTime === 0 ? gameData.white_player_id : gameData.black_player_id;
     
     await supabase
       .from("games")
@@ -152,6 +153,17 @@ export default function OnlineGame() {
         winner_id: winnerId,
       })
       .eq("id", gameId);
+
+    // Update points - winner gets +10, loser gets -5
+    await supabase.rpc('increment', {
+      row_id: winnerId,
+      x: 10
+    });
+
+    await supabase.rpc('increment', {
+      row_id: loserId,
+      x: -5
+    });
 
     setIsGameOver(true);
   };
@@ -213,6 +225,25 @@ export default function OnlineGame() {
             winner_id: winnerId,
           })
           .eq("id", gameId);
+
+        // Update points for both players
+        if (winnerId) {
+          const loserId = winnerId === gameData.white_player_id 
+            ? gameData.black_player_id 
+            : gameData.white_player_id;
+
+          // Winner gets +10 points
+          await supabase.rpc('increment', {
+            row_id: winnerId,
+            x: 10
+          });
+
+          // Loser gets -5 points
+          await supabase.rpc('increment', {
+            row_id: loserId,
+            x: -5
+          });
+        }
       }
 
       setGame(gameCopy);
