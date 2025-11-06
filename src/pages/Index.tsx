@@ -247,7 +247,7 @@ const Index = () => {
       <EventRegistrationDialog
         isOpen={showEventRegistration}
         onClose={() => setShowEventRegistration(false)}
-        userId={user?.id || null}
+        userId={user?.id}
       />
 
       {/* Main Content */}
