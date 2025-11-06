@@ -97,16 +97,86 @@ const botCategories = {
     color: "text-green-500",
     image: botBeginner,
     bots: [
-      { id: "b1", name: "Emily", rating: 400, description: "Just learning the basics", difficulty: "Beginner", image: beginnerPawnPusher },
-      { id: "b2", name: "Oliver", rating: 450, description: "Loves castling early", difficulty: "Beginner", image: beginnerCastleKeeper },
-      { id: "b3", name: "Sophia", rating: 500, description: "Enjoys knight moves", difficulty: "Beginner", image: beginnerKnightNovice },
-      { id: "b4", name: "Lucas", rating: 550, description: "Diagonal specialist", difficulty: "Beginner", image: beginnerBishopBuddy },
-      { id: "b5", name: "Emma", rating: 600, description: "Learning rook endgames", difficulty: "Beginner", image: beginnerRookRookie },
-      { id: "b6", name: "Noah", rating: 650, description: "Protective player", difficulty: "Beginner", image: beginnerQueensGuard },
-      { id: "b7", name: "Isabella", rating: 700, description: "Defensive minded", difficulty: "Beginner", image: beginnerKingsShadow },
-      { id: "b8", name: "Liam", rating: 750, description: "Loves giving checks", difficulty: "Beginner", image: beginnerCheckChaser },
-      { id: "b9", name: "Ava", rating: 800, description: "Controls the center", difficulty: "Beginner", image: beginnerCenterControl },
-      { id: "b10", name: "Ethan", rating: 850, description: "Learning openings", difficulty: "Beginner", image: beginnerOpeningExplorer },
+      {
+        id: "b1",
+        name: "Emily",
+        rating: 400,
+        description: "Just learning the basics",
+        difficulty: "Beginner",
+        image: beginnerPawnPusher,
+      },
+      {
+        id: "b2",
+        name: "Oliver",
+        rating: 450,
+        description: "Loves castling early",
+        difficulty: "Beginner",
+        image: beginnerCastleKeeper,
+      },
+      {
+        id: "b3",
+        name: "Sophia",
+        rating: 500,
+        description: "Enjoys knight moves",
+        difficulty: "Beginner",
+        image: beginnerKnightNovice,
+      },
+      {
+        id: "b4",
+        name: "Lucas",
+        rating: 550,
+        description: "Diagonal specialist",
+        difficulty: "Beginner",
+        image: beginnerBishopBuddy,
+      },
+      {
+        id: "b5",
+        name: "Emma",
+        rating: 600,
+        description: "Learning rook endgames",
+        difficulty: "Beginner",
+        image: beginnerRookRookie,
+      },
+      {
+        id: "b6",
+        name: "Noah",
+        rating: 650,
+        description: "Protective player",
+        difficulty: "Beginner",
+        image: beginnerQueensGuard,
+      },
+      {
+        id: "b7",
+        name: "Isabella",
+        rating: 700,
+        description: "Defensive minded",
+        difficulty: "Beginner",
+        image: beginnerKingsShadow,
+      },
+      {
+        id: "b8",
+        name: "Liam",
+        rating: 750,
+        description: "Loves giving checks",
+        difficulty: "Beginner",
+        image: beginnerCheckChaser,
+      },
+      {
+        id: "b9",
+        name: "Leon Kennedy",
+        rating: 800,
+        description: "Controls the center",
+        difficulty: "Beginner",
+        image: beginnerCenterControl,
+      },
+      {
+        id: "b10",
+        name: "Ethan",
+        rating: 850,
+        description: "Learning openings",
+        difficulty: "Beginner",
+        image: beginnerOpeningExplorer,
+      },
     ],
   },
   intermediate: {
@@ -114,16 +184,86 @@ const botCategories = {
     color: "text-blue-500",
     image: botIntermediate,
     bots: [
-      { id: "i1", name: "Timothy", rating: 1000, description: "Spots basic tactics", difficulty: "Intermediate", image: intermediateTacticalTim },
-      { id: "i2", name: "Samuel", rating: 1100, description: "Plans ahead", difficulty: "Intermediate", image: intermediateStrategicSam },
-      { id: "i3", name: "Edward", rating: 1200, description: "Strong finisher", difficulty: "Intermediate", image: intermediateEndgameEddie },
-      { id: "i4", name: "Peter", rating: 1300, description: "Loves good positions", difficulty: "Intermediate", image: intermediatePositionalPete },
-      { id: "i5", name: "Andrew", rating: 1400, description: "Aggressive player", difficulty: "Intermediate", image: intermediateAttackAndy },
-      { id: "i6", name: "Daniel", rating: 1450, description: "Solid defender", difficulty: "Intermediate", image: intermediateDefenseDan },
-      { id: "i7", name: "Gary", rating: 1500, description: "Loves gambits", difficulty: "Intermediate", image: intermediateGambitGary },
-      { id: "i8", name: "Carl", rating: 1550, description: "Counter-attack expert", difficulty: "Intermediate", image: intermediateCounterCarl },
-      { id: "i9", name: "Paul", rating: 1600, description: "Recognizes patterns", difficulty: "Intermediate", image: intermediatePatternPaul },
-      { id: "i10", name: "Terry", rating: 1650, description: "Never wastes time", difficulty: "Intermediate", image: intermediateTempoTerry },
+      {
+        id: "i1",
+        name: "Timothy",
+        rating: 1000,
+        description: "Spots basic tactics",
+        difficulty: "Intermediate",
+        image: intermediateTacticalTim,
+      },
+      {
+        id: "i2",
+        name: "Samuel",
+        rating: 1100,
+        description: "Plans ahead",
+        difficulty: "Intermediate",
+        image: intermediateStrategicSam,
+      },
+      {
+        id: "i3",
+        name: "Edward",
+        rating: 1200,
+        description: "Strong finisher",
+        difficulty: "Intermediate",
+        image: intermediateEndgameEddie,
+      },
+      {
+        id: "i4",
+        name: "Peter",
+        rating: 1300,
+        description: "Loves good positions",
+        difficulty: "Intermediate",
+        image: intermediatePositionalPete,
+      },
+      {
+        id: "i5",
+        name: "Andrew",
+        rating: 1400,
+        description: "Aggressive player",
+        difficulty: "Intermediate",
+        image: intermediateAttackAndy,
+      },
+      {
+        id: "i6",
+        name: "Daniel",
+        rating: 1450,
+        description: "Solid defender",
+        difficulty: "Intermediate",
+        image: intermediateDefenseDan,
+      },
+      {
+        id: "i7",
+        name: "Gary",
+        rating: 1500,
+        description: "Loves gambits",
+        difficulty: "Intermediate",
+        image: intermediateGambitGary,
+      },
+      {
+        id: "i8",
+        name: "Carl",
+        rating: 1550,
+        description: "Counter-attack expert",
+        difficulty: "Intermediate",
+        image: intermediateCounterCarl,
+      },
+      {
+        id: "i9",
+        name: "Paul",
+        rating: 1600,
+        description: "Recognizes patterns",
+        difficulty: "Intermediate",
+        image: intermediatePatternPaul,
+      },
+      {
+        id: "i10",
+        name: "Terry",
+        rating: 1650,
+        description: "Never wastes time",
+        difficulty: "Intermediate",
+        image: intermediateTempoTerry,
+      },
     ],
   },
   advanced: {
@@ -131,16 +271,86 @@ const botCategories = {
     color: "text-purple-500",
     image: botAdvanced,
     bots: [
-      { id: "a1", name: "Magnus", rating: 1800, description: "Tactical genius who punishes mistakes", difficulty: "Advanced", image: advancedMagnus },
-      { id: "a2", name: "Alexander", rating: 1850, description: "Positional master with deadly precision", difficulty: "Advanced", image: advancedAlexander },
-      { id: "a3", name: "Victor", rating: 1900, description: "Aggressive attacker with sharp calculations", difficulty: "Advanced", image: advancedVictor },
-      { id: "a4", name: "Sebastian", rating: 1950, description: "Endgame specialist with perfect technique", difficulty: "Advanced", image: advancedSebastian },
-      { id: "a5", name: "Clara", rating: 2000, description: "Strategic mastermind with deep understanding", difficulty: "Advanced", image: advancedClara },
-      { id: "a6", name: "Percy", rating: 2050, description: "Opening theory expert with vast knowledge", difficulty: "Advanced", image: advancedPercy },
-      { id: "a7", name: "David", rating: 2100, description: "Dynamic player with creative ideas", difficulty: "Advanced", image: advancedDavid },
-      { id: "a8", name: "Steven", rating: 2150, description: "Solid defender who counterattacks brilliantly", difficulty: "Advanced", image: advancedSteven },
-      { id: "a9", name: "Anna", rating: 2200, description: "Grandmaster-level calculation and intuition", difficulty: "Advanced", image: advancedAnna },
-      { id: "a10", name: "Robert", rating: 2250, description: "Near-perfect play with minimal errors", difficulty: "Advanced", image: advancedRobert },
+      {
+        id: "a1",
+        name: "Magnus",
+        rating: 1800,
+        description: "Tactical genius who punishes mistakes",
+        difficulty: "Advanced",
+        image: advancedMagnus,
+      },
+      {
+        id: "a2",
+        name: "Alexander",
+        rating: 1850,
+        description: "Positional master with deadly precision",
+        difficulty: "Advanced",
+        image: advancedAlexander,
+      },
+      {
+        id: "a3",
+        name: "Victor",
+        rating: 1900,
+        description: "Aggressive attacker with sharp calculations",
+        difficulty: "Advanced",
+        image: advancedVictor,
+      },
+      {
+        id: "a4",
+        name: "Sebastian",
+        rating: 1950,
+        description: "Endgame specialist with perfect technique",
+        difficulty: "Advanced",
+        image: advancedSebastian,
+      },
+      {
+        id: "a5",
+        name: "Clara",
+        rating: 2000,
+        description: "Strategic mastermind with deep understanding",
+        difficulty: "Advanced",
+        image: advancedClara,
+      },
+      {
+        id: "a6",
+        name: "Percy",
+        rating: 2050,
+        description: "Opening theory expert with vast knowledge",
+        difficulty: "Advanced",
+        image: advancedPercy,
+      },
+      {
+        id: "a7",
+        name: "David",
+        rating: 2100,
+        description: "Dynamic player with creative ideas",
+        difficulty: "Advanced",
+        image: advancedDavid,
+      },
+      {
+        id: "a8",
+        name: "Steven",
+        rating: 2150,
+        description: "Solid defender who counterattacks brilliantly",
+        difficulty: "Advanced",
+        image: advancedSteven,
+      },
+      {
+        id: "a9",
+        name: "Anna",
+        rating: 2200,
+        description: "Grandmaster-level calculation and intuition",
+        difficulty: "Advanced",
+        image: advancedAnna,
+      },
+      {
+        id: "a10",
+        name: "Robert",
+        rating: 2250,
+        description: "Near-perfect play with minimal errors",
+        difficulty: "Advanced",
+        image: advancedRobert,
+      },
     ],
   },
   expert: {
@@ -148,16 +358,86 @@ const botCategories = {
     color: "text-yellow-500",
     image: botAdvanced,
     bots: [
-      { id: "e1", name: "Eva", rating: 2300, description: "Tournament veteran with flawless technique", difficulty: "Expert", image: expertEva },
-      { id: "e2", name: "Christopher", rating: 2350, description: "Crushes opponents with relentless precision", difficulty: "Expert", image: expertChristopher },
-      { id: "e3", name: "Benjamin", rating: 2400, description: "Brilliant combinational vision and calculation", difficulty: "Expert", image: expertBenjamin },
-      { id: "e4", name: "Iris", rating: 2450, description: "Intuition backed by concrete calculation", difficulty: "Expert", image: expertIris },
-      { id: "e5", name: "Patricia", rating: 2500, description: "Near-perfect positional understanding", difficulty: "Expert", image: expertPatricia },
-      { id: "e6", name: "Theodore", rating: 2550, description: "Walking opening encyclopedia with deep preparation", difficulty: "Expert", image: expertTheodore },
-      { id: "e7", name: "Grace", rating: 2600, description: "Endgame mastery at grandmaster level", difficulty: "Expert", image: expertGrace },
-      { id: "e8", name: "William", rating: 2650, description: "Elite time management and strategic depth", difficulty: "Expert", image: expertWilliam },
-      { id: "e9", name: "Ronald", rating: 2700, description: "Always finds the most resourceful defense", difficulty: "Expert", image: expertRonald },
-      { id: "e10", name: "Mary", rating: 2750, description: "Shows absolutely no mercy or weaknesses", difficulty: "Expert", image: expertMary },
+      {
+        id: "e1",
+        name: "Eva",
+        rating: 2300,
+        description: "Tournament veteran with flawless technique",
+        difficulty: "Expert",
+        image: expertEva,
+      },
+      {
+        id: "e2",
+        name: "Christopher",
+        rating: 2350,
+        description: "Crushes opponents with relentless precision",
+        difficulty: "Expert",
+        image: expertChristopher,
+      },
+      {
+        id: "e3",
+        name: "Benjamin",
+        rating: 2400,
+        description: "Brilliant combinational vision and calculation",
+        difficulty: "Expert",
+        image: expertBenjamin,
+      },
+      {
+        id: "e4",
+        name: "Iris",
+        rating: 2450,
+        description: "Intuition backed by concrete calculation",
+        difficulty: "Expert",
+        image: expertIris,
+      },
+      {
+        id: "e5",
+        name: "Patricia",
+        rating: 2500,
+        description: "Near-perfect positional understanding",
+        difficulty: "Expert",
+        image: expertPatricia,
+      },
+      {
+        id: "e6",
+        name: "Theodore",
+        rating: 2550,
+        description: "Walking opening encyclopedia with deep preparation",
+        difficulty: "Expert",
+        image: expertTheodore,
+      },
+      {
+        id: "e7",
+        name: "Grace",
+        rating: 2600,
+        description: "Endgame mastery at grandmaster level",
+        difficulty: "Expert",
+        image: expertGrace,
+      },
+      {
+        id: "e8",
+        name: "William",
+        rating: 2650,
+        description: "Elite time management and strategic depth",
+        difficulty: "Expert",
+        image: expertWilliam,
+      },
+      {
+        id: "e9",
+        name: "Ronald",
+        rating: 2700,
+        description: "Always finds the most resourceful defense",
+        difficulty: "Expert",
+        image: expertRonald,
+      },
+      {
+        id: "e10",
+        name: "Mary",
+        rating: 2750,
+        description: "Shows absolutely no mercy or weaknesses",
+        difficulty: "Expert",
+        image: expertMary,
+      },
     ],
   },
   master: {
@@ -165,16 +445,86 @@ const botCategories = {
     color: "text-gold",
     image: botGrandmaster,
     bots: [
-      { id: "m1", name: "Marcus", rating: 2800, description: "International Master level with intense focus", difficulty: "Master", image: masterMarcus },
-      { id: "m2", name: "Alexis", rating: 2850, description: "Superhuman play with piercing analytical mind", difficulty: "Master", image: masterAlexis },
-      { id: "m3", name: "Genevieve", rating: 2900, description: "Genius strategist with calculating brilliance", difficulty: "Master", image: masterGenevieve },
-      { id: "m4", name: "Thomas", rating: 2950, description: "Lightning tactics with computer-like speed", difficulty: "Master", image: masterThomas },
-      { id: "m5", name: "James", rating: 3000, description: "Computer-like accuracy with perfect precision", difficulty: "Master", image: masterJames },
-      { id: "m6", name: "Stella", rating: 3050, description: "Devastating attacks with ruthless efficiency", difficulty: "Master", image: masterStella },
-      { id: "m7", name: "Titus", rating: 3100, description: "Titanic strength with commanding presence", difficulty: "Master", image: masterTitus },
-      { id: "m8", name: "Samantha", rating: 3150, description: "Supreme understanding with serene wisdom", difficulty: "Master", image: masterSamantha },
-      { id: "m9", name: "Ulysses", rating: 3200, description: "Professional level with experienced mastery", difficulty: "Master", image: masterUlysses },
-      { id: "m10", name: "Eleanor", rating: 3250, description: "Elite performer with concentrated excellence", difficulty: "Master", image: masterEleanor },
+      {
+        id: "m1",
+        name: "Marcus",
+        rating: 2800,
+        description: "International Master level with intense focus",
+        difficulty: "Master",
+        image: masterMarcus,
+      },
+      {
+        id: "m2",
+        name: "Alexis",
+        rating: 2850,
+        description: "Superhuman play with piercing analytical mind",
+        difficulty: "Master",
+        image: masterAlexis,
+      },
+      {
+        id: "m3",
+        name: "Genevieve",
+        rating: 2900,
+        description: "Genius strategist with calculating brilliance",
+        difficulty: "Master",
+        image: masterGenevieve,
+      },
+      {
+        id: "m4",
+        name: "Thomas",
+        rating: 2950,
+        description: "Lightning tactics with computer-like speed",
+        difficulty: "Master",
+        image: masterThomas,
+      },
+      {
+        id: "m5",
+        name: "James",
+        rating: 3000,
+        description: "Computer-like accuracy with perfect precision",
+        difficulty: "Master",
+        image: masterJames,
+      },
+      {
+        id: "m6",
+        name: "Stella",
+        rating: 3050,
+        description: "Devastating attacks with ruthless efficiency",
+        difficulty: "Master",
+        image: masterStella,
+      },
+      {
+        id: "m7",
+        name: "Titus",
+        rating: 3100,
+        description: "Titanic strength with commanding presence",
+        difficulty: "Master",
+        image: masterTitus,
+      },
+      {
+        id: "m8",
+        name: "Samantha",
+        rating: 3150,
+        description: "Supreme understanding with serene wisdom",
+        difficulty: "Master",
+        image: masterSamantha,
+      },
+      {
+        id: "m9",
+        name: "Ulysses",
+        rating: 3200,
+        description: "Professional level with experienced mastery",
+        difficulty: "Master",
+        image: masterUlysses,
+      },
+      {
+        id: "m10",
+        name: "Eleanor",
+        rating: 3250,
+        description: "Elite performer with concentrated excellence",
+        difficulty: "Master",
+        image: masterEleanor,
+      },
     ],
   },
   grandmaster: {
@@ -182,16 +532,86 @@ const botCategories = {
     color: "text-gold",
     image: botGrandmaster,
     bots: [
-      { id: "g1", name: "Stephanie", rating: 3300, description: "Engine-based GM with machine-like precision", difficulty: "Grandmaster", image: gmStephanie },
-      { id: "g2", name: "Kevin", rating: 3350, description: "Positional perfection with flawless understanding", difficulty: "Grandmaster", image: gmKevin },
-      { id: "g3", name: "Leela", rating: 3400, description: "Neural network beast with AI-level dominance", difficulty: "Grandmaster", image: gmLeela },
-      { id: "g4", name: "Alexander", rating: 3450, description: "Self-taught genius with brilliant intuition", difficulty: "Grandmaster", image: gmAlexander },
-      { id: "g5", name: "Garry", rating: 3500, description: "Named after Kasparov, legendary mastery", difficulty: "Grandmaster", image: gmGarry },
-      { id: "g6", name: "Bobby", rating: 3550, description: "Fischer's spirit with unmatched genius", difficulty: "Grandmaster", image: gmBobby },
-      { id: "g7", name: "Mikhail", rating: 3600, description: "Sacrificial magic with artistic brilliance", difficulty: "Grandmaster", image: gmMikhail },
-      { id: "g8", name: "Jose", rating: 3650, description: "Endgame wizard with theoretical mastery", difficulty: "Grandmaster", image: gmJose },
-      { id: "g9", name: "Paul", rating: 3700, description: "Tactical brilliance with sharp precision", difficulty: "Grandmaster", image: gmPaul },
-      { id: "g10", name: "Victoria", rating: 3750, description: "Nearly unbeatable with absolute dominance", difficulty: "Grandmaster", image: gmVictoria },
+      {
+        id: "g1",
+        name: "Stephanie",
+        rating: 3300,
+        description: "Engine-based GM with machine-like precision",
+        difficulty: "Grandmaster",
+        image: gmStephanie,
+      },
+      {
+        id: "g2",
+        name: "Kevin",
+        rating: 3350,
+        description: "Positional perfection with flawless understanding",
+        difficulty: "Grandmaster",
+        image: gmKevin,
+      },
+      {
+        id: "g3",
+        name: "Leela",
+        rating: 3400,
+        description: "Neural network beast with AI-level dominance",
+        difficulty: "Grandmaster",
+        image: gmLeela,
+      },
+      {
+        id: "g4",
+        name: "Alexander",
+        rating: 3450,
+        description: "Self-taught genius with brilliant intuition",
+        difficulty: "Grandmaster",
+        image: gmAlexander,
+      },
+      {
+        id: "g5",
+        name: "Garry",
+        rating: 3500,
+        description: "Named after Kasparov, legendary mastery",
+        difficulty: "Grandmaster",
+        image: gmGarry,
+      },
+      {
+        id: "g6",
+        name: "Bobby",
+        rating: 3550,
+        description: "Fischer's spirit with unmatched genius",
+        difficulty: "Grandmaster",
+        image: gmBobby,
+      },
+      {
+        id: "g7",
+        name: "Mikhail",
+        rating: 3600,
+        description: "Sacrificial magic with artistic brilliance",
+        difficulty: "Grandmaster",
+        image: gmMikhail,
+      },
+      {
+        id: "g8",
+        name: "Jose",
+        rating: 3650,
+        description: "Endgame wizard with theoretical mastery",
+        difficulty: "Grandmaster",
+        image: gmJose,
+      },
+      {
+        id: "g9",
+        name: "Paul",
+        rating: 3700,
+        description: "Tactical brilliance with sharp precision",
+        difficulty: "Grandmaster",
+        image: gmPaul,
+      },
+      {
+        id: "g10",
+        name: "Victoria",
+        rating: 3750,
+        description: "Nearly unbeatable with absolute dominance",
+        difficulty: "Grandmaster",
+        image: gmVictoria,
+      },
     ],
   },
   anime: {
@@ -199,16 +619,86 @@ const botCategories = {
     color: "text-secondary",
     image: botAnime,
     bots: [
-      { id: "an1", name: "Hikaru", rating: 2000, description: "Strategic anime spirit", difficulty: "Anime", image: animeHikaru },
-      { id: "an2", name: "Lelouch", rating: 2100, description: "Strategic mastermind", difficulty: "Anime", image: animeCodeGeass },
-      { id: "an3", name: "Light", rating: 2200, description: "Mind games master", difficulty: "Anime", image: animeLightYagami },
-      { id: "an4", name: "Lawliet", rating: 2300, description: "Analytical genius", difficulty: "Anime", image: animeLDetective },
-      { id: "an5", name: "Senku", rating: 2400, description: "Scientific approach", difficulty: "Anime", image: animeSenku },
-      { id: "an6", name: "Suzaku", rating: 2500, description: "Zero strategy", difficulty: "Anime", image: animeLelouch },
-      { id: "an7", name: "Edward", rating: 2600, description: "Alchemist tactician", difficulty: "Anime", image: animeEdward },
-      { id: "an8", name: "Shikamaru", rating: 2700, description: "200 IQ plays", difficulty: "Anime", image: animeShikamaru },
-      { id: "an9", name: "Saitama", rating: 2800, description: "One move victory", difficulty: "Anime", image: animeSaitama },
-      { id: "an10", name: "Goku", rating: 2900, description: "Ultra instinct moves", difficulty: "Anime", image: animeGoku },
+      {
+        id: "an1",
+        name: "Hikaru",
+        rating: 2000,
+        description: "Strategic anime spirit",
+        difficulty: "Anime",
+        image: animeHikaru,
+      },
+      {
+        id: "an2",
+        name: "Lelouch",
+        rating: 2100,
+        description: "Strategic mastermind",
+        difficulty: "Anime",
+        image: animeCodeGeass,
+      },
+      {
+        id: "an3",
+        name: "Light",
+        rating: 2200,
+        description: "Mind games master",
+        difficulty: "Anime",
+        image: animeLightYagami,
+      },
+      {
+        id: "an4",
+        name: "Lawliet",
+        rating: 2300,
+        description: "Analytical genius",
+        difficulty: "Anime",
+        image: animeLDetective,
+      },
+      {
+        id: "an5",
+        name: "Senku",
+        rating: 2400,
+        description: "Scientific approach",
+        difficulty: "Anime",
+        image: animeSenku,
+      },
+      {
+        id: "an6",
+        name: "Suzaku",
+        rating: 2500,
+        description: "Zero strategy",
+        difficulty: "Anime",
+        image: animeLelouch,
+      },
+      {
+        id: "an7",
+        name: "Edward",
+        rating: 2600,
+        description: "Alchemist tactician",
+        difficulty: "Anime",
+        image: animeEdward,
+      },
+      {
+        id: "an8",
+        name: "Shikamaru",
+        rating: 2700,
+        description: "200 IQ plays",
+        difficulty: "Anime",
+        image: animeShikamaru,
+      },
+      {
+        id: "an9",
+        name: "Saitama",
+        rating: 2800,
+        description: "One move victory",
+        difficulty: "Anime",
+        image: animeSaitama,
+      },
+      {
+        id: "an10",
+        name: "Goku",
+        rating: 2900,
+        description: "Ultra instinct moves",
+        difficulty: "Anime",
+        image: animeGoku,
+      },
     ],
   },
 };
@@ -241,12 +731,7 @@ const Bots = () => {
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-2 md:px-4 py-3 md:py-4 flex items-center justify-between max-w-full">
           <div className="flex items-center gap-2 md:gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/")}
-              className="w-8 h-8 md:w-10 md:h-10"
-            >
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="w-8 h-8 md:w-10 md:h-10">
               <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
             </Button>
             <div className="flex items-center gap-2">
@@ -309,11 +794,7 @@ const Bots = () => {
                     className="bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow overflow-hidden"
                   >
                     <div className="aspect-square w-full overflow-hidden">
-                      <img
-                        src={bot.image || image}
-                        alt={bot.name}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={bot.image || image} alt={bot.name} className="w-full h-full object-cover" />
                     </div>
                     <CardHeader>
                       <div className="flex items-start justify-between">
@@ -325,15 +806,10 @@ const Bots = () => {
                         </div>
                         <Icon className={`w-6 h-6 ${color}`} />
                       </div>
-                      <CardDescription className="mt-2">
-                        {bot.description}
-                      </CardDescription>
+                      <CardDescription className="mt-2">{bot.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Button
-                        className="w-full gap-2 shadow-glow"
-                        onClick={() => handlePlayBot(bot)}
-                      >
+                      <Button className="w-full gap-2 shadow-glow" onClick={() => handlePlayBot(bot)}>
                         <Swords className="w-4 h-4" />
                         Play Now
                       </Button>
@@ -353,9 +829,7 @@ const Bots = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Crown className="w-6 h-6 text-primary" />
-                <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Chessify
-                </span>
+                <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">Chessify</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Your ultimate online chess platform for players of all levels
@@ -364,25 +838,61 @@ const Bots = () => {
             <div>
               <h3 className="font-bold mb-3">Play</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="/#play" className="hover:text-primary transition-colors">Quick Match</a></li>
-                <li><a href="/bots" className="hover:text-primary transition-colors">Play vs Bot</a></li>
-                <li><a href="/#play" className="hover:text-primary transition-colors">Play vs Friend</a></li>
+                <li>
+                  <a href="/#play" className="hover:text-primary transition-colors">
+                    Quick Match
+                  </a>
+                </li>
+                <li>
+                  <a href="/bots" className="hover:text-primary transition-colors">
+                    Play vs Bot
+                  </a>
+                </li>
+                <li>
+                  <a href="/#play" className="hover:text-primary transition-colors">
+                    Play vs Friend
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold mb-3">Community</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="/#community" className="hover:text-primary transition-colors">Chat Room</a></li>
-                <li><a href="/#community" className="hover:text-primary transition-colors">Forums</a></li>
-                <li><a href="/#tournament" className="hover:text-primary transition-colors">Tournaments</a></li>
+                <li>
+                  <a href="/#community" className="hover:text-primary transition-colors">
+                    Chat Room
+                  </a>
+                </li>
+                <li>
+                  <a href="/#community" className="hover:text-primary transition-colors">
+                    Forums
+                  </a>
+                </li>
+                <li>
+                  <a href="/#tournament" className="hover:text-primary transition-colors">
+                    Tournaments
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold mb-3">Resources</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Learn Chess</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Strategy Guide</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">FAQ</a></li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Learn Chess
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    Strategy Guide
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary transition-colors">
+                    FAQ
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
