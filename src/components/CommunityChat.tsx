@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Send, UserPlus, Check, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getAvatarIcon } from "@/lib/avatarUtils";
@@ -26,6 +27,8 @@ export const CommunityChat = () => {
   const [loading, setLoading] = useState(true);
   const [activeUsers, setActiveUsers] = useState<number>(0);
   const [userAvatars, setUserAvatars] = useState<Record<string, string>>({});
+  const [friendRequests, setFriendRequests] = useState<any[]>([]);
+  const [friends, setFriends] = useState<any[]>([]);
   const channelRef = useRef<any>(null);
 
   useEffect(() => {
@@ -95,6 +98,25 @@ export const CommunityChat = () => {
 
     fetchUserAvatars();
 
+    // Fetch friend relationships
+    const loadFriendRelationships = async () => {
+      const { data: sent } = await supabase
+        .from("friend_requests")
+        .select("*")
+        .eq("sender_id", currentUser.id);
+      
+      const { data: received } = await supabase
+        .from("friend_requests")
+        .select("*")
+        .eq("receiver_id", currentUser.id);
+      
+      const allRequests = [...(sent || []), ...(received || [])];
+      setFriendRequests(allRequests);
+      setFriends(allRequests.filter(r => r.status === "accepted"));
+    };
+
+    loadFriendRelationships();
+
     // Set up presence tracking and message subscription
     const channel = supabase.channel("community-chat");
 
@@ -117,6 +139,29 @@ export const CommunityChat = () => {
           setMessages((prev) => [...prev, payload.new as Message]);
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "friend_requests",
+        },
+        async () => {
+          const { data: sent } = await supabase
+            .from("friend_requests")
+            .select("*")
+            .eq("sender_id", currentUser.id);
+          
+          const { data: received } = await supabase
+            .from("friend_requests")
+            .select("*")
+            .eq("receiver_id", currentUser.id);
+          
+          const allRequests = [...(sent || []), ...(received || [])];
+          setFriendRequests(allRequests);
+          setFriends(allRequests.filter(r => r.status === "accepted"));
+        }
+      )
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
           await channel.track({
@@ -136,6 +181,64 @@ export const CommunityChat = () => {
       }
     };
   }, [currentUser]);
+
+  const getRelationshipStatus = (userId: string) => {
+    if (userId === currentUser?.id) return "self";
+    
+    const isFriend = friends.some(
+      f => (f.sender_id === userId || f.receiver_id === userId)
+    );
+    if (isFriend) return "friend";
+    
+    const sentRequest = friendRequests.find(
+      f => f.sender_id === currentUser?.id && f.receiver_id === userId && f.status === "pending"
+    );
+    if (sentRequest) return "sent";
+    
+    const receivedRequest = friendRequests.find(
+      f => f.sender_id === userId && f.receiver_id === currentUser?.id && f.status === "pending"
+    );
+    if (receivedRequest) return "received";
+    
+    return "none";
+  };
+
+  const sendFriendRequest = async (targetUserId: string, targetUsername: string) => {
+    if (targetUserId === currentUser?.id) {
+      toast.error("You can't send a friend request to yourself");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("friend_requests")
+        .insert({
+          sender_id: currentUser.id,
+          receiver_id: targetUserId,
+        });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast.error("Friend request already sent");
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      await supabase.from("notifications").insert({
+        user_id: targetUserId,
+        type: "friend_request",
+        content: `You have a new friend request`,
+        related_id: currentUser.id,
+      });
+
+      toast.success(`Friend request sent to ${targetUsername}!`);
+    } catch (error) {
+      console.error("Error sending friend request:", error);
+      toast.error("Failed to send friend request");
+    }
+  };
 
   const handleSend = async () => {
     if (!message.trim() || !currentUser) return;
@@ -220,9 +323,81 @@ export const CommunityChat = () => {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-2 mb-1">
-                        <span className="font-semibold text-sm">
-                          {isCurrentUser ? "You" : msg.username}
-                        </span>
+                        <HoverCard>
+                          <HoverCardTrigger asChild>
+                            <span className="font-semibold text-sm cursor-pointer hover:text-primary transition-colors">
+                              {isCurrentUser ? "You" : msg.username}
+                            </span>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-80">
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="w-12 h-12">
+                                  <AvatarFallback className={isCurrentUser ? "bg-accent" : "bg-primary"}>
+                                    <span className="text-2xl">{getAvatarIcon(userAvatar)}</span>
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="font-semibold">{msg.username}</p>
+                                  <p className="text-xs text-muted-foreground">{timestamp}</p>
+                                </div>
+                              </div>
+                              
+                              {!isCurrentUser && (
+                                <div className="flex gap-2">
+                                  {(() => {
+                                    const status = getRelationshipStatus(msg.user_id);
+                                    switch (status) {
+                                      case "friend":
+                                        return (
+                                          <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="w-full"
+                                            onClick={() => navigate("/messages")}
+                                          >
+                                            <MessageCircle className="w-4 h-4 mr-2" />
+                                            Message
+                                          </Button>
+                                        );
+                                      case "sent":
+                                        return (
+                                          <Button variant="outline" size="sm" className="w-full" disabled>
+                                            <Check className="w-4 h-4 mr-2" />
+                                            Request Sent
+                                          </Button>
+                                        );
+                                      case "received":
+                                        return (
+                                          <Button 
+                                            variant="default" 
+                                            size="sm" 
+                                            className="w-full"
+                                            onClick={() => navigate("/friends")}
+                                          >
+                                            <Check className="w-4 h-4 mr-2" />
+                                            Accept Request
+                                          </Button>
+                                        );
+                                      default:
+                                        return (
+                                          <Button 
+                                            variant="default" 
+                                            size="sm" 
+                                            className="w-full"
+                                            onClick={() => sendFriendRequest(msg.user_id, msg.username)}
+                                          >
+                                            <UserPlus className="w-4 h-4 mr-2" />
+                                            Add Friend
+                                          </Button>
+                                        );
+                                    }
+                                  })()}
+                                </div>
+                              )}
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
                         <span className="text-xs text-muted-foreground">{timestamp}</span>
                       </div>
                       <p className="text-sm bg-muted/30 rounded-lg p-3 break-words">
