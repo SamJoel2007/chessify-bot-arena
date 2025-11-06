@@ -14,6 +14,7 @@ import { RecentPosts } from "@/components/RecentPosts";
 import { AdminPostCreator } from "@/components/AdminPostCreator";
 import { OnlineMatchmaking } from "@/components/OnlineMatchmaking";
 import { HoverSidebar } from "@/components/HoverSidebar";
+import { EventRegistrationDialog } from "@/components/EventRegistrationDialog";
 import tournamentImage from "@/assets/tournament-hero.jpg";
 import puzzleBeginner from "@/assets/puzzles/puzzle-beginner.jpg";
 import puzzleIntermediate from "@/assets/puzzles/puzzle-intermediate.jpg";
@@ -30,6 +31,7 @@ const Index = () => {
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showEventRegistration, setShowEventRegistration] = useState(false);
 
   useEffect(() => {
     // Load ad script
@@ -241,6 +243,13 @@ const Index = () => {
         onCoinsUpdate={() => user && fetchUserProfile(user.id)}
       />
 
+      {/* Event Registration Dialog */}
+      <EventRegistrationDialog
+        isOpen={showEventRegistration}
+        onClose={() => setShowEventRegistration(false)}
+        userId={user?.id || null}
+      />
+
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
         {/* Game Board Section */}
@@ -291,7 +300,11 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground">Prize Pool</p>
                   </div>
                 </div>
-                <Button size="lg" className="gap-2 shadow-glow hover:shadow-glow-secondary transition-all">
+                <Button 
+                  size="lg" 
+                  className="gap-2 shadow-glow hover:shadow-glow-secondary transition-all"
+                  onClick={() => user ? setShowEventRegistration(true) : navigate('/auth')}
+                >
                   <Trophy className="w-5 h-5" />
                   Register Now
                 </Button>
