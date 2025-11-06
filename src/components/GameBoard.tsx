@@ -81,6 +81,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     let score = 0;
     const isAdvancedBot = rating >= 1800;
     const isExpertBot = rating >= 2300;
+    const isMasterBot = rating >= 2800;
+    const isGrandmasterBot = rating >= 3300;
     const moveNumber = currentGame.moveNumber();
     const isEndgame = moveNumber > 40 || (testGame.board().flat().filter(p => p).length < 12);
     
@@ -112,31 +114,31 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
               const hasConnectedPawn = [j-1, j+1].some(file => 
                 file >= 0 && file < 8 && board[i][file]?.type === 'p' && board[i][file]?.color === 'b'
               );
-              if (hasConnectedPawn) score += 8;
+              if (hasConnectedPawn) score += (isMasterBot ? 12 : 8);
               
               // Passed pawns
               const isPassed = !board.slice(i + 1).some(rank => 
                 rank[j]?.type === 'p' && rank[j]?.color === 'w'
               );
-              if (isPassed) score += 20 + (6 - i) * 5;
+              if (isPassed) score += (isMasterBot ? 30 : 20) + (6 - i) * (isMasterBot ? 7.5 : 5);
             }
             
             // Piece activity
             if (piece.type === 'r') {
               // Rooks on open files
               const fileHasPawn = board.some(rank => rank[j]?.type === 'p');
-              if (!fileHasPawn) score += 15;
+              if (!fileHasPawn) score += (isMasterBot ? 22 : 15);
             }
             
             if (piece.type === 'b') {
               // Bishops on long diagonals
               const centerDistance = Math.abs(i - 3.5) + Math.abs(j - 3.5);
-              if (centerDistance < 3) score += 12;
+              if (centerDistance < 3) score += (isMasterBot ? 18 : 12);
             }
             
             if (piece.type === 'n') {
               // Knights on outposts (protected squares in enemy territory)
-              if (i < 4) score += 18;
+              if (i < 4) score += (isMasterBot ? 27 : 18);
             }
             
             // King evaluation based on game phase
@@ -144,14 +146,19 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
               if (isEndgame) {
                 // King centralization in endgame
                 const centerDistance = Math.abs(i - 3.5) + Math.abs(j - 3.5);
-                score += (7 - centerDistance) * 4;
+                score += (7 - centerDistance) * (isMasterBot ? 6 : 4);
               } else {
                 // King safety in middlegame
-                if (i === 7) score += 15; // Back rank
+                if (i === 7) score += (isMasterBot ? 22 : 15); // Back rank
               }
             }
           }
         }
+      }
+      
+      // Add piece coordination evaluation for Master+ bots
+      if (isMasterBot || isGrandmasterBot) {
+        score += evaluatePieceCoordination(testGame, 'b');
       }
     }
     
@@ -186,8 +193,12 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       }
     }
     
-    // 3-ply look-ahead for advanced bots, 2-ply for others
-    const lookAheadDepth = isAdvancedBot ? 15 : (rating >= 1000 ? 10 : 0);
+    // Enhanced look-ahead depth for Master/GM bots
+    const lookAheadDepth = isGrandmasterBot ? 25 : 
+                           isMasterBot ? 20 :           // 5-ply for Master
+                           isExpertBot ? 15 :           // 3-ply for Expert
+                           isAdvancedBot ? 15 : 
+                           (rating >= 1000 ? 10 : 0);
     
     if (lookAheadDepth > 0) {
       // Check if our piece becomes hanging after this move
@@ -315,16 +326,56 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     return score;
   };
 
+  // Helper function to evaluate piece coordination for Master bots
+  const evaluatePieceCoordination = (testGame: Chess, color: 'w' | 'b'): number => {
+    let score = 0;
+    const board = testGame.board();
+    
+    // Rooks doubled on files or ranks
+    const rooks: Array<{ rank: number; file: number }> = [];
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        const piece = board[i][j];
+        if (piece && piece.type === 'r' && piece.color === color) {
+          rooks.push({ rank: i, file: j });
+        }
+      }
+    }
+    
+    // Check if rooks are doubled on same file or rank
+    if (rooks.length === 2) {
+      if (rooks[0].file === rooks[1].file) score += 30; // Same file
+      if (rooks[0].rank === rooks[1].rank) score += 25; // Same rank
+    }
+    
+    // Bishop pair bonus
+    const bishops = board.flat().filter(p => p && p.type === 'b' && p.color === color);
+    if (bishops.length === 2) score += 25;
+    
+    // Queen and knight coordination (queen supports knight attacks)
+    const queen = board.flat().find(p => p && p.type === 'q' && p.color === color);
+    const knights = board.flat().filter(p => p && p.type === 'n' && p.color === color);
+    if (queen && knights.length > 0) score += 15;
+    
+    return score;
+  };
+
   const makeBotMove = (currentGame: Chess) => {
     if (currentGame.isGameOver()) return;
 
     const rating = selectedBot?.rating || 1000;
     const isAdvancedBot = rating >= 1800;
     const isExpertBot = rating >= 2300;
+    const isMasterBot = rating >= 2800;
+    const isGrandmasterBot = rating >= 3300;
     
-    // Expert bots think even longer for more realistic play
-    const thinkingTime = isExpertBot
-      ? Math.random() * 3000 + 4000  // 4-7 seconds for expert
+    // Master bots think even longer for more realistic play
+    const thinkingTime = isGrandmasterBot
+      ? Math.random() * 4000 + 6000  // 6-10 seconds for GM
+      : isMasterBot
+      ? Math.random() * 3000 + 5000  // 5-8 seconds for Master
+      : isExpertBot
+      ? Math.random() * 3000 + 4000  // 4-7 seconds for Expert
       : isAdvancedBot 
       ? Math.random() * 2000 + 3000  // 3-5 seconds for advanced
       : 2000;
@@ -360,8 +411,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         score: evaluateMove(m, currentGame, rating)
       })).sort((a, b) => b.score - a.score);
       
-      // Check for forced mate for advanced bots
-      if (isAdvancedBot) {
+      // Check for forced mate for advanced/master/GM bots
+      if (isAdvancedBot || isMasterBot || isGrandmasterBot) {
         const mateMove = scoredMoves.find(sm => sm.score >= 9000);
         if (mateMove) {
           // Get piece info before moving
@@ -418,17 +469,20 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           const testGame = new Chess(currentGame.fen());
           testGame.move(sm.move);
           
-          // Expert bots reject moves that hang ANY piece (even pawns)
-          const hangThreshold = isExpertBot ? 1 : 3;
+          // Master bots reject moves that hang even half a pawn, Expert: full pawn
+          const hangThreshold = isMasterBot ? 0.5 : (isExpertBot ? 1 : 3);
           const hanging = detectHangingPieces(testGame, currentGame.turn());
           const hangingValue = hanging.reduce((sum, h) => sum + h.value, 0);
           if (hangingValue >= hangThreshold) return false;
           
-          // Expert bots reject moves that allow mate in 2, others reject mate in 1
-          const allowsMate = isExpertBot ? checkMateInTwo(testGame) : checkMateInOne(testGame);
+          // Master bots check mate-in-3, Expert checks mate-in-2, others check mate-in-1
+          const allowsMate = isMasterBot ? checkMateInThree(testGame) :
+                            isExpertBot ? checkMateInTwo(testGame) : 
+                            checkMateInOne(testGame);
           if (allowsMate) return false;
           
-          // Expert bots avoid significant positional loss
+          // Master bots avoid smaller positional loss than Expert bots
+          if (isMasterBot && sm.score < scoredMoves[0].score - 15) return false;
           if (isExpertBot && sm.score < scoredMoves[0].score - 30) return false;
           
           return true;
@@ -459,6 +513,20 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           oppTest.move(oppMove);
           
           if (checkMateInOne(oppTest)) return true;
+        }
+        return false;
+      };
+      
+      // Helper to check mate in three for Master bots
+      const checkMateInThree = (testGame: Chess) => {
+        if (checkMateInTwo(testGame)) return true;
+        
+        const opponentMoves = testGame.moves({ verbose: true });
+        for (const oppMove of opponentMoves.slice(0, 8)) {
+          const oppTest = new Chess(testGame.fen());
+          oppTest.move(oppMove);
+          
+          if (checkMateInTwo(oppTest)) return true;
         }
         return false;
       };
@@ -506,10 +574,12 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           selectionPoolSize = Math.max(1, Math.ceil(filteredMoves.length * 0.01)); // Top 1%
         } else if (rating < 2300) {
           selectionPoolSize = Math.max(1, Math.min(2, filteredMoves.length)); // Advanced: Best 1-2 moves
-        } else if (rating < 2650) {
+        } else if (rating < 2800) {
           selectionPoolSize = Math.max(1, Math.min(2, filteredMoves.length)); // Expert: Best 1-2 moves
+        } else if (rating < 3300) {
+          selectionPoolSize = 1; // Master: ALWAYS best move
         } else {
-          selectionPoolSize = 1; // Elite expert: Best move only
+          selectionPoolSize = 1; // Grandmaster: ALWAYS best move
         }
         
         const topMoves = filteredMoves.slice(0, Math.max(1, selectionPoolSize));
@@ -534,8 +604,12 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           bestMoveChance = 0.997; // Expert 2300-2499
         } else if (rating < 2650) {
           bestMoveChance = 0.9985; // High expert 2500-2649
+        } else if (rating < 2800) {
+          bestMoveChance = 0.9995; // Elite expert 2650-2799
+        } else if (rating < 3300) {
+          bestMoveChance = 0.9998; // Master 2800-3299: 99.98% accuracy
         } else {
-          bestMoveChance = 0.9995; // Elite expert 2650+
+          bestMoveChance = 0.9999; // Grandmaster 3300+: 99.99% accuracy
         }
         
         if (Math.random() < bestMoveChance) {
