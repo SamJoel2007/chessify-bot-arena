@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Send, UserPlus, Check, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -314,6 +313,8 @@ export const CommunityChat = () => {
                   minute: "2-digit",
                 });
 
+                const status = getRelationshipStatus(msg.user_id);
+                
                 return (
                   <div key={msg.id} className="flex gap-3 group">
                     <Avatar className="w-10 h-10 flex-shrink-0">
@@ -322,83 +323,60 @@ export const CommunityChat = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 mb-1">
-                        <HoverCard>
-                          <HoverCardTrigger asChild>
-                            <span className="font-semibold text-sm cursor-pointer hover:text-primary transition-colors">
-                              {isCurrentUser ? "You" : msg.username}
-                            </span>
-                          </HoverCardTrigger>
-                          <HoverCardContent className="w-80">
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-3">
-                                <Avatar className="w-12 h-12">
-                                  <AvatarFallback className={isCurrentUser ? "bg-accent" : "bg-primary"}>
-                                    <span className="text-2xl">{getAvatarIcon(userAvatar)}</span>
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p className="font-semibold">{msg.username}</p>
-                                  <p className="text-xs text-muted-foreground">{timestamp}</p>
-                                </div>
-                              </div>
-                              
-                              {!isCurrentUser && (
-                                <div className="flex gap-2">
-                                  {(() => {
-                                    const status = getRelationshipStatus(msg.user_id);
-                                    switch (status) {
-                                      case "friend":
-                                        return (
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => navigate("/messages")}
-                                          >
-                                            <MessageCircle className="w-4 h-4 mr-2" />
-                                            Message
-                                          </Button>
-                                        );
-                                      case "sent":
-                                        return (
-                                          <Button variant="outline" size="sm" className="w-full" disabled>
-                                            <Check className="w-4 h-4 mr-2" />
-                                            Request Sent
-                                          </Button>
-                                        );
-                                      case "received":
-                                        return (
-                                          <Button 
-                                            variant="default" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => navigate("/friends")}
-                                          >
-                                            <Check className="w-4 h-4 mr-2" />
-                                            Accept Request
-                                          </Button>
-                                        );
-                                      default:
-                                        return (
-                                          <Button 
-                                            variant="default" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => sendFriendRequest(msg.user_id, msg.username)}
-                                          >
-                                            <UserPlus className="w-4 h-4 mr-2" />
-                                            Add Friend
-                                          </Button>
-                                        );
-                                    }
-                                  })()}
-                                </div>
-                              )}
-                            </div>
-                          </HoverCardContent>
-                        </HoverCard>
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="font-semibold text-sm">
+                          {isCurrentUser ? "You" : msg.username}
+                        </span>
                         <span className="text-xs text-muted-foreground">{timestamp}</span>
+                        
+                        {!isCurrentUser && (
+                          <>
+                            {status === "friend" && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 px-2 text-xs"
+                                onClick={() => navigate("/messages")}
+                              >
+                                <MessageCircle className="w-3 h-3 mr-1" />
+                                Message
+                              </Button>
+                            )}
+                            {status === "sent" && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 px-2 text-xs"
+                                disabled
+                              >
+                                <Check className="w-3 h-3 mr-1" />
+                                Sent
+                              </Button>
+                            )}
+                            {status === "received" && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 px-2 text-xs"
+                                onClick={() => navigate("/friends")}
+                              >
+                                <Check className="w-3 h-3 mr-1" />
+                                Accept
+                              </Button>
+                            )}
+                            {status === "none" && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 px-2 text-xs"
+                                onClick={() => sendFriendRequest(msg.user_id, msg.username)}
+                              >
+                                <UserPlus className="w-3 h-3 mr-1" />
+                                Add Friend
+                              </Button>
+                            )}
+                          </>
+                        )}
                       </div>
                       <p className="text-sm bg-muted/30 rounded-lg p-3 break-words">
                         {msg.message}
