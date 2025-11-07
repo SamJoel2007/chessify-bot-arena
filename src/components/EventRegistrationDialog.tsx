@@ -10,9 +10,10 @@ interface EventRegistrationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string | undefined;
+  onRegistrationComplete?: () => void;
 }
 
-export const EventRegistrationDialog = ({ isOpen, onClose, userId }: EventRegistrationDialogProps) => {
+export const EventRegistrationDialog = ({ isOpen, onClose, userId, onRegistrationComplete }: EventRegistrationDialogProps) => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -81,6 +82,9 @@ export const EventRegistrationDialog = ({ isOpen, onClose, userId }: EventRegist
       } else {
         toast.success("Successfully registered for Winter ARC Chess!");
         setIsAlreadyRegistered(true);
+        if (onRegistrationComplete) {
+          onRegistrationComplete();
+        }
       }
     } catch (error) {
       console.error("Registration error:", error);

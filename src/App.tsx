@@ -13,6 +13,7 @@ import PurchaseCoins from "./pages/PurchaseCoins";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
+import AdminEvent from "./pages/AdminEvent";
 import OnlineGame from "./pages/OnlineGame";
 import Messages from "./pages/Messages";
 import Friends from "./pages/Friends";
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/event" element={<AdminEvent />} />
           <Route path="/online-game/:gameId" element={<OnlineGame />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/friends" element={<Friends />} />

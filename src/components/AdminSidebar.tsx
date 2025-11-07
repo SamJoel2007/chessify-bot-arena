@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, MessageSquare, FileText, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, MessageSquare, FileText, LogOut, Calendar } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -15,12 +15,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const items = [
-  { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
-  { title: "Users", url: "/admin/users", icon: Users },
-  { title: "Chat Messages", url: "/admin/chat", icon: MessageSquare },
-  { title: "Posts", url: "/admin/posts", icon: FileText },
-];
+  const items = [
+    { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
+    { title: "Users", url: "/admin/users", icon: Users },
+    { title: "Event", url: "/admin/event", icon: Calendar },
+    { title: "Chat Messages", url: "/admin/chat", icon: MessageSquare },
+    { title: "Posts", url: "/admin/posts", icon: FileText },
+  ];
 
 export function AdminSidebar() {
   const { open } = useSidebar();

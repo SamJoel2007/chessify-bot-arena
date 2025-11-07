@@ -32,6 +32,9 @@ const Index = () => {
   const [showShop, setShowShop] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showEventRegistration, setShowEventRegistration] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [eventData, setEventData] = useState<any>(null);
+  const [timeRemaining, setTimeRemaining] = useState("");
 
   useEffect(() => {
     // Load ad script
@@ -74,7 +77,76 @@ const Index = () => {
       setCoins(data.coins || 1000);
       setCurrentAvatar(data.current_avatar);
     }
+
+    // Check registration status
+    const { data: registration } = await supabase
+      .from("event_registrations")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("event_name", "Winter ARC Chess")
+      .single();
+
+    setIsRegistered(!!registration);
   };
+
+  useEffect(() => {
+    // Fetch event data
+    const fetchEventData = async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("*")
+        .eq("name", "Winter ARC Chess")
+        .single();
+
+      setEventData(data);
+    };
+
+    fetchEventData();
+
+    // Subscribe to event updates
+    const channel = supabase
+      .channel('event-updates')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'events'
+      }, fetchEventData)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!eventData?.start_time) {
+      setTimeRemaining("");
+      return;
+    }
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const start = new Date(eventData.start_time).getTime();
+      const distance = start - now;
+
+      if (distance < 0) {
+        setTimeRemaining("Event Started");
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      setTimeRemaining(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [eventData]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -248,6 +320,7 @@ const Index = () => {
         isOpen={showEventRegistration}
         onClose={() => setShowEventRegistration(false)}
         userId={user?.id}
+        onRegistrationComplete={() => user && fetchUserProfile(user.id)}
       />
 
       {/* Main Content */}
@@ -300,14 +373,46 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground">Prize Pool</p>
                   </div>
                 </div>
-                <Button 
-                  size="lg" 
-                  className="gap-2 shadow-glow hover:shadow-glow-secondary transition-all"
-                  onClick={() => user ? setShowEventRegistration(true) : navigate('/auth')}
-                >
-                  <Trophy className="w-5 h-5" />
-                  Register Now
-                </Button>
+                <div className="flex flex-col gap-3">
+                  {isRegistered ? (
+                    <div className="flex items-center gap-3">
+                      <Button 
+                        size="lg" 
+                        className="gap-2 bg-green-600 hover:bg-green-700"
+                        disabled
+                      >
+                        <Trophy className="w-5 h-5" />
+                        Registered
+                      </Button>
+                      {timeRemaining && eventData?.status === "not_started" && (
+                        <div className="bg-card border border-primary/30 rounded-lg px-4 py-2">
+                          <p className="text-xs text-muted-foreground">Time Remaining</p>
+                          <p className="text-sm font-bold text-primary">{timeRemaining}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <Button 
+                      size="lg" 
+                      className="gap-2 shadow-glow hover:shadow-glow-secondary transition-all"
+                      onClick={() => user ? setShowEventRegistration(true) : navigate('/auth')}
+                    >
+                      <Trophy className="w-5 h-5" />
+                      Register Now
+                    </Button>
+                  )}
+                  {eventData?.status === "ongoing" && isRegistered && (
+                    <Button 
+                      size="lg" 
+                      variant="default"
+                      className="gap-2"
+                      onClick={() => navigate('/online-matchmaking')}
+                    >
+                      <Zap className="w-5 h-5" />
+                      Play Now
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="h-full min-h-[400px]">
                 <img 
