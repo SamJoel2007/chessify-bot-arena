@@ -19,39 +19,8 @@ const AdminEvent = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    checkAdminAccess();
+    fetchEventData();
   }, []);
-
-  const checkAdminAccess = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        navigate("/admin/login");
-        return;
-      }
-
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .eq("role", "admin");
-
-      if (!roles || roles.length === 0) {
-        toast({
-          title: "Access denied",
-          description: "You need admin privileges",
-          variant: "destructive",
-        });
-        navigate("/");
-        return;
-      }
-
-      fetchEventData();
-    } catch (error) {
-      console.error("Error checking admin access:", error);
-      navigate("/admin/login");
-    }
-  };
 
   const fetchEventData = async () => {
     try {
