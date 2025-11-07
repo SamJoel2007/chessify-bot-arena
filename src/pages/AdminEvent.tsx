@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminSidebar } from "@/components/AdminSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { Calendar, Clock, Users, Play, Loader2 } from "lucide-react";
 
 const AdminEvent = () => {
@@ -148,9 +149,10 @@ const AdminEvent = () => {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <AdminSidebar />
-      <main className="flex-1 p-8">
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-background">
+        <AdminSidebar />
+        <main className="flex-1 p-8">
         <div className="max-w-6xl mx-auto space-y-6">
           <div>
             <h1 className="text-3xl font-bold mb-2">Event Management</h1>
@@ -270,8 +272,9 @@ const AdminEvent = () => {
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 };
 
