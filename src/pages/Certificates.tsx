@@ -92,20 +92,21 @@ const Certificates = () => {
       ctx.font = '40px system-ui, -apple-system, sans-serif';
       ctx.fillText('This certifies that', canvas.width / 2, 340);
 
-      // User name
+      // User name (extract username from email)
+      const username = user?.email ? user.email.split('@')[0] : 'Chess Player';
       ctx.fillStyle = '#1e293b';
       ctx.font = 'bold 72px system-ui, -apple-system, sans-serif';
-      ctx.fillText(user?.email || 'Chess Player', canvas.width / 2, 460);
+      ctx.fillText(username, canvas.width / 2, 460);
 
-      // Has successfully defeated
+      // Has won the
       ctx.fillStyle = '#64748b';
       ctx.font = '40px system-ui, -apple-system, sans-serif';
-      ctx.fillText('has successfully defeated', canvas.width / 2, 580);
+      ctx.fillText('has won the', canvas.width / 2, 580);
 
-      // Bot name
+      // Event name
       ctx.fillStyle = '#3b82f6';
       ctx.font = 'bold 64px system-ui, -apple-system, sans-serif';
-      ctx.fillText(cert.bot_defeated, canvas.width / 2, 700);
+      ctx.fillText('Winter ARC Chess event', canvas.width / 2, 700);
 
       // Rating
       ctx.fillStyle = '#64748b';
