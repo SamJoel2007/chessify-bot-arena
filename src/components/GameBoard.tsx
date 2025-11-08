@@ -1122,7 +1122,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
             </Button>
           </div>
         </div>
-        <div className="w-full max-w-[min(100vh-200px,600px,100vw-1rem)] mx-auto">
+        <div className="w-full max-w-[min(100vh-120px,700px,calc(100vw-2rem))] mx-auto">
           <div 
             className="grid grid-cols-8 border border-border md:border-2 lg:border-4 rounded-md md:rounded-lg overflow-hidden shadow-glow relative"
             style={{ aspectRatio: "1/1", maxWidth: "100%" }}
@@ -1224,42 +1224,44 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
 
       {/* Game Info & Actions */}
       <div className="space-y-4">
-        <Card className="p-6 bg-gradient-card border-border/50">
-          <h3 className="text-xl font-bold mb-4">Game Mode</h3>
-          <div className="space-y-3">
-            <Button 
-              className="w-full gap-2 shadow-glow" 
-              onClick={async () => {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) {
-                  toast.error("Please sign in to play online");
-                  navigate("/auth");
-                  return;
-                }
-                setShowMatchmaking(true);
-              }}
-            >
-              <Zap className="w-5 h-5" />
-              Find Opponent
-            </Button>
-            <Button 
-              className="w-full gap-2" 
-              variant={gameMode === "friend" ? "default" : "outline"}
-              onClick={startFriendGame}
-            >
-              <Users className="w-5 h-5" />
-              Play vs Friend
-            </Button>
-            <Button 
-              className="w-full gap-2" 
-              variant={gameMode === "bot" ? "default" : "outline"}
-              onClick={startBotGame}
-            >
-              <Bot className="w-5 h-5" />
-              Play vs Bot
-            </Button>
-          </div>
-        </Card>
+        {!selectedBot && (
+          <Card className="p-6 bg-gradient-card border-border/50">
+            <h3 className="text-xl font-bold mb-4">Game Mode</h3>
+            <div className="space-y-3">
+              <Button 
+                className="w-full gap-2 shadow-glow" 
+                onClick={async () => {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) {
+                    toast.error("Please sign in to play online");
+                    navigate("/auth");
+                    return;
+                  }
+                  setShowMatchmaking(true);
+                }}
+              >
+                <Zap className="w-5 h-5" />
+                Find Opponent
+              </Button>
+              <Button 
+                className="w-full gap-2" 
+                variant={gameMode === "friend" ? "default" : "outline"}
+                onClick={startFriendGame}
+              >
+                <Users className="w-5 h-5" />
+                Play vs Friend
+              </Button>
+              <Button 
+                className="w-full gap-2" 
+                variant={gameMode === "bot" ? "default" : "outline"}
+                onClick={startBotGame}
+              >
+                <Bot className="w-5 h-5" />
+                Play vs Bot
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Matchmaking Dialog */}
         <Dialog open={showMatchmaking} onOpenChange={setShowMatchmaking}>
