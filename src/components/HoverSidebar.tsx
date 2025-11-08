@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Users, Store, Puzzle, MessageSquare, User, Trophy, Award } from "lucide-react";
+import { Bell, Users, Store, Puzzle, MessageSquare, User, Trophy, Award, Bot, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getAvatarIcon } from "@/lib/avatarUtils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface HoverSidebarProps {
   user: any;
@@ -16,6 +18,17 @@ interface HoverSidebarProps {
 
 export function HoverSidebar({ user, currentAvatar, isOpen, onClose }: HoverSidebarProps) {
   const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Signed out successfully");
+      navigate('/auth');
+      onClose();
+    } catch (error: any) {
+      toast.error("Failed to sign out");
+    }
+  };
 
   if (!user) return null;
 
@@ -147,6 +160,27 @@ export function HoverSidebar({ user, currentAvatar, isOpen, onClose }: HoverSide
                 >
                   <Puzzle className="w-5 h-5" />
                   <span>Puzzles</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 h-12"
+                  onClick={() => {
+                    navigate('/bots');
+                    onClose();
+                  }}
+                >
+                  <Bot className="w-5 h-5" />
+                  <span>Bots</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 h-12 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span>Sign Out</span>
                 </Button>
               </div>
             </div>
