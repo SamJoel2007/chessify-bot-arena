@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown } from "lucide-react";
+import { Crown, User } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -107,6 +107,21 @@ const Auth = () => {
     }
   };
 
+  const handleGuestSignIn = async () => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInAnonymously();
+      
+      if (error) throw error;
+      
+      toast.success("Signed in as guest! You can explore the platform.");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to sign in as guest");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -187,6 +202,26 @@ const Auth = () => {
                 <FcGoogle className="w-5 h-5" />
                 Sign in with Google
               </Button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full gap-2 border border-dashed border-muted-foreground/50 hover:border-primary/50"
+                onClick={handleGuestSignIn}
+                disabled={loading}
+              >
+                <User className="w-5 h-5" />
+                Continue as Guest
+              </Button>
             </TabsContent>
 
             <TabsContent value="signup">
@@ -233,6 +268,26 @@ const Auth = () => {
               >
                 <FcGoogle className="w-5 h-5" />
                 Sign up with Google
+              </Button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full gap-2 border border-dashed border-muted-foreground/50 hover:border-primary/50"
+                onClick={handleGuestSignIn}
+                disabled={loading}
+              >
+                <User className="w-5 h-5" />
+                Continue as Guest
               </Button>
 
               <div className="text-center mt-4">
