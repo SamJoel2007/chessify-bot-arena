@@ -58,6 +58,13 @@ const PuzzleGame = () => {
       try {
         const move = currentGameState.move(opponentMove);
         if (move) {
+          // Play sound effect
+          if (move.captured) {
+            playCaptureSound();
+          } else {
+            playMoveSound();
+          }
+          
           setGame(new Chess(currentGameState.fen()));
           setMoveHistory(prev => [...prev, move.san]);
           setCurrentMoveIndex(nextMoveIndex + 1);

@@ -111,6 +111,23 @@ export default function OnlineGame() {
         },
         (payload) => {
           const newData = payload.new as any;
+          const oldData = payload.old as any;
+          
+          // Detect if opponent made a move (FEN changed)
+          if (oldData.current_fen !== newData.current_fen) {
+            // Check if it was a capture by comparing piece counts
+            const oldPieceCount = oldData.current_fen.split(' ')[0].replace(/[^a-zA-Z]/g, '').length;
+            const newPieceCount = newData.current_fen.split(' ')[0].replace(/[^a-zA-Z]/g, '').length;
+            const wasCapture = newPieceCount < oldPieceCount;
+            
+            // Play sound effect for opponent's move
+            if (wasCapture) {
+              playCaptureSound();
+            } else {
+              playMoveSound();
+            }
+          }
+          
           setGameData(newData);
           setWhiteTime(newData.white_time_remaining);
           setBlackTime(newData.black_time_remaining);

@@ -550,6 +550,13 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
             }, 400);
           }
 
+          // Play sound effect
+          if (isCapture) {
+            playCaptureSound();
+          } else {
+            playMoveSound();
+          }
+
           // Complete move after animation
           setTimeout(() => {
             setGame(gameCopy);
@@ -714,6 +721,13 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         setTimeout(() => {
           setCapturedSquare(move.to);
         }, 400); // 80% of 500ms
+      }
+
+      // Play sound effect
+      if (isCapture) {
+        playCaptureSound();
+      } else {
+        playMoveSound();
       }
 
       // Complete move after animation
