@@ -15,6 +15,7 @@ interface OnlineMatchmakingProps {
 export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMatchmakingProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [timeControl, setTimeControl] = useState<number>(600);
   const navigate = useNavigate();
 
   // Subscribe to realtime game creation
@@ -73,17 +74,20 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
     toast.error("No player found. Try again later.");
   };
 
-  const joinQueue = async () => {
+  const joinQueue = async (selectedTimeControl: number) => {
     try {
       setIsSearching(true);
       setTimeElapsed(0);
-      toast.success("Searching for opponent...");
+      setTimeControl(selectedTimeControl);
+      const gameMode = selectedTimeControl === 60 ? "1-min" : "10-min";
+      toast.success(`Searching for ${gameMode} opponent...`);
 
       // Call the server-side matchmaking function
       const { data, error } = await supabase.functions.invoke('matchmaking', {
         body: {
           username,
           currentAvatar,
+          timeControl: selectedTimeControl,
         },
       });
 
@@ -127,20 +131,25 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
     <Card className="p-6 bg-gradient-card border-border/50">
       <div className="flex flex-col items-center gap-4">
         <Users className="w-12 h-12 text-primary" />
-        <h3 className="text-xl font-bold">Random 10 Min Match</h3>
+        <h3 className="text-xl font-bold">Random Online Match</h3>
         <p className="text-sm text-muted-foreground text-center">
-          Get matched with a random player for a 10-minute chess game
+          Get matched with a random player for a timed chess game
         </p>
 
         {!isSearching ? (
-          <Button onClick={joinQueue} className="w-full">
-            Find Opponent
-          </Button>
+          <div className="flex flex-col gap-2 w-full">
+            <Button onClick={() => joinQueue(600)} className="w-full">
+              Find Opponent (10 min)
+            </Button>
+            <Button onClick={() => joinQueue(60)} variant="secondary" className="w-full">
+              Bullet (1 min)
+            </Button>
+          </div>
         ) : (
           <div className="flex flex-col items-center gap-4 w-full">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">
-              Searching for opponent... {timeElapsed}s
+              Searching for {timeControl === 60 ? "1-min" : "10-min"} opponent... {timeElapsed}s
             </p>
             <Button onClick={leaveQueue} variant="outline" className="w-full">
               Cancel

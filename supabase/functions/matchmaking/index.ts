@@ -40,11 +40,18 @@ Deno.serve(async (req) => {
     }
 
     // Get user info from request
-    const { username, currentAvatar } = await req.json();
+    const { username, currentAvatar, timeControl = 600 } = await req.json();
 
     if (!username) {
       return new Response(
         JSON.stringify({ error: 'Username is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof timeControl !== 'number' || timeControl <= 0) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid time control' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -62,6 +69,7 @@ Deno.serve(async (req) => {
       p_user_id: user.id,
       p_username: username,
       p_current_avatar: currentAvatar || null,
+      p_time_control: timeControl,
     });
 
     if (error) {

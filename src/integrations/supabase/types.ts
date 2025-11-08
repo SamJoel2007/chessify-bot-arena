@@ -342,6 +342,7 @@ export type Database = {
           current_avatar: string | null
           expires_at: string
           id: string
+          time_control: number
           user_id: string
           username: string
         }
@@ -350,6 +351,7 @@ export type Database = {
           current_avatar?: string | null
           expires_at?: string
           id?: string
+          time_control?: number
           user_id: string
           username: string
         }
@@ -358,6 +360,7 @@ export type Database = {
           current_avatar?: string | null
           expires_at?: string
           id?: string
+          time_control?: number
           user_id?: string
           username?: string
         }
@@ -610,6 +613,7 @@ export type Database = {
       find_match: {
         Args: {
           p_current_avatar: string
+          p_time_control?: number
           p_user_id: string
           p_username: string
         }
