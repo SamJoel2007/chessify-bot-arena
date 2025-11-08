@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Award, Trophy, ArrowLeft, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import chessifyLogo from "@/assets/chessify-logo.png";
+import chessifyLogo from "@/assets/chessify-logo-actual.png";
 
 
 interface Certificate {
