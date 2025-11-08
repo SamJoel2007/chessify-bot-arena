@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Award, Trophy, ArrowLeft, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import chessifyLogo from "@/assets/chessify-logo.png";
 
 
 interface Certificate {
@@ -69,67 +70,77 @@ const Certificates = () => {
       
       if (!ctx) throw new Error('Could not get canvas context');
 
-      // Background with gradient
+      // Background with purple gradient (theme colors)
       const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, '#f8fafc');
-      gradient.addColorStop(1, '#e2e8f0');
+      gradient.addColorStop(0, '#1a0a2e'); // Dark purple background
+      gradient.addColorStop(1, '#0f051d'); // Darker purple
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Border
-      ctx.strokeStyle = '#3b82f6';
+      // Load and draw logo
+      const logo = new Image();
+      logo.src = chessifyLogo;
+      await new Promise((resolve) => {
+        logo.onload = resolve;
+      });
+      
+      const logoSize = 180;
+      ctx.drawImage(logo, (canvas.width - logoSize) / 2, 60, logoSize, logoSize);
+
+      // Border with gold color
+      ctx.strokeStyle = '#f9b942'; // Gold
       ctx.lineWidth = 16;
       ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
 
       // Title
-      ctx.fillStyle = '#3b82f6';
+      ctx.fillStyle = '#9959d6'; // Primary purple
       ctx.font = 'bold 96px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Certificate of Achievement', canvas.width / 2, 220);
+      ctx.fillText('Certificate of Achievement', canvas.width / 2, 300);
 
       // This certifies that
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#c4b5d8'; // Light purple
       ctx.font = '40px system-ui, -apple-system, sans-serif';
-      ctx.fillText('This certifies that', canvas.width / 2, 340);
+      ctx.fillText('This certifies that', canvas.width / 2, 420);
 
       // User name (extract username from email)
       const username = user?.email ? user.email.split('@')[0] : 'Chess Player';
-      ctx.fillStyle = '#1e293b';
+      ctx.fillStyle = '#f9b942'; // Gold
       ctx.font = 'bold 72px system-ui, -apple-system, sans-serif';
-      ctx.fillText(username, canvas.width / 2, 460);
+      ctx.fillText(username, canvas.width / 2, 540);
 
       // Has won the
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#c4b5d8'; // Light purple
       ctx.font = '40px system-ui, -apple-system, sans-serif';
-      ctx.fillText('has won the', canvas.width / 2, 580);
+      ctx.fillText('has won the', canvas.width / 2, 660);
 
       // Event name
-      ctx.fillStyle = '#3b82f6';
+      ctx.fillStyle = '#9959d6'; // Primary purple
       ctx.font = 'bold 64px system-ui, -apple-system, sans-serif';
-      ctx.fillText('Winter ARC Chess event', canvas.width / 2, 700);
+      ctx.fillText('Winter ARC Chess event', canvas.width / 2, 780);
 
       // Rating
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#c4b5d8'; // Light purple
       ctx.font = '36px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`Rating: ${cert.bot_rating} ELO`, canvas.width / 2, 780);
+      ctx.fillText(`Rating: ${cert.bot_rating} ELO`, canvas.width / 2, 860);
 
       // Divider line
-      ctx.strokeStyle = '#cbd5e1';
+      ctx.strokeStyle = '#9959d6'; // Primary purple
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo(300, 880);
-      ctx.lineTo(canvas.width - 300, 880);
+      ctx.moveTo(300, 960);
+      ctx.lineTo(canvas.width - 300, 960);
       ctx.stroke();
 
       // Certificate name
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#c4b5d8'; // Light purple
       ctx.font = '32px system-ui, -apple-system, sans-serif';
-      ctx.fillText(cert.certificate_name, canvas.width / 2, 970);
+      ctx.fillText(cert.certificate_name, canvas.width / 2, 1050);
 
       // Date
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#c4b5d8'; // Light purple
       ctx.font = '28px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`Earned on ${formatDate(cert.earned_at)}`, canvas.width / 2, 1040);
+      ctx.fillText(`Earned on ${formatDate(cert.earned_at)}`, canvas.width / 2, 1120);
 
       // Download
       const link = document.createElement('a');
