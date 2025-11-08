@@ -51,44 +51,56 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         .eq("bot_defeated", "Ayanokoji")
         .maybeSingle();
 
-      if (existing) {
-        toast.info("You already have this certificate!");
-        return;
-      }
+      const isFirstWin = !existing;
 
-      // Create certificate
-      const { error: certError } = await supabase
-        .from("certificates")
-        .insert({
-          user_id: userId,
-          certificate_name: "Winter ARC Chess Champion",
-          bot_defeated: "Ayanokoji",
-          bot_rating: 400,
-          certificate_data: {
-            achievement: "Defeated the legendary Ayanokoji",
-            date: new Date().toISOString()
-          }
-        });
+      if (isFirstWin) {
+        // Create certificate
+        const { error: certError } = await supabase
+          .from("certificates")
+          .insert({
+            user_id: userId,
+            certificate_name: "Winter ARC Chess Champion",
+            bot_defeated: "Ayanokoji",
+            bot_rating: 2500,
+            certificate_data: {
+              achievement: "Defeated the legendary Ayanokoji",
+              date: new Date().toISOString()
+            }
+          });
 
-      if (certError) throw certError;
+        if (certError) throw certError;
 
-      // Award 1000 coins
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("coins")
-        .eq("id", userId)
-        .single();
-
-      if (profile) {
-        const { error: coinsError } = await supabase
+        // Award 1000 coins
+        const { data: profile } = await supabase
           .from("profiles")
-          .update({ coins: profile.coins + 1000 })
-          .eq("id", userId);
+          .select("coins")
+          .eq("id", userId)
+          .single();
 
-        if (coinsError) throw coinsError;
+        if (profile) {
+          const { error: coinsError } = await supabase
+            .from("profiles")
+            .update({ coins: profile.coins + 1000 })
+            .eq("id", userId);
+
+          if (coinsError) throw coinsError;
+        }
+
+        toast.success("🏆 Certificate earned! +1000 coins awarded!");
+      } else {
+        toast.info("Congratulations! You've already earned this certificate.");
       }
 
-      toast.success("🏆 Certificate earned! +1000 coins awarded!");
+      // Navigate to victory showcase
+      navigate("/victory-showcase", {
+        state: {
+          username,
+          eventName: "Winter ARC Chess",
+          botName: "Ayanokoji",
+          botRating: 2500,
+          isFirstWin,
+        },
+      });
     } catch (error) {
       console.error("Error awarding certificate:", error);
       toast.error("Failed to award certificate");

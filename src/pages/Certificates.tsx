@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Award, Trophy, ArrowLeft, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import html2canvas from "html2canvas";
 
 interface Certificate {
   id: string;
@@ -57,6 +58,83 @@ const Certificates = () => {
       month: "long",
       day: "numeric",
     });
+  };
+
+  const downloadCertificate = async (cert: Certificate) => {
+    try {
+      // Create a temporary certificate element
+      const certElement = document.createElement("div");
+      certElement.style.width = "800px";
+      certElement.style.padding = "60px";
+      certElement.style.background = "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.1))";
+      certElement.style.border = "8px solid hsl(var(--primary))";
+      certElement.style.fontFamily = "system-ui, -apple-system, sans-serif";
+      certElement.style.position = "absolute";
+      certElement.style.left = "-9999px";
+      
+      certElement.innerHTML = `
+        <div style="text-align: center; color: hsl(var(--foreground));">
+          <div style="margin-bottom: 30px;">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="2">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+              <path d="M4 22h16"></path>
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+            </svg>
+          </div>
+          <h1 style="font-size: 48px; font-weight: bold; margin-bottom: 20px; color: hsl(var(--primary));">
+            Certificate of Achievement
+          </h1>
+          <div style="font-size: 20px; margin-bottom: 40px; color: hsl(var(--muted-foreground));">
+            This certifies that
+          </div>
+          <div style="font-size: 36px; font-weight: bold; margin-bottom: 40px; color: hsl(var(--foreground));">
+            ${user?.email || 'Chess Player'}
+          </div>
+          <div style="font-size: 20px; margin-bottom: 20px; line-height: 1.6; color: hsl(var(--muted-foreground));">
+            has successfully defeated
+          </div>
+          <div style="font-size: 32px; font-weight: bold; margin-bottom: 10px; color: hsl(var(--primary));">
+            ${cert.bot_defeated}
+          </div>
+          <div style="font-size: 18px; margin-bottom: 40px; color: hsl(var(--muted-foreground));">
+            Rating: ${cert.bot_rating} ELO
+          </div>
+          <div style="border-top: 2px solid hsl(var(--border)); padding-top: 30px; margin-top: 40px;">
+            <div style="font-size: 16px; color: hsl(var(--muted-foreground));">
+              ${cert.certificate_name}
+            </div>
+            <div style="font-size: 14px; margin-top: 10px; color: hsl(var(--muted-foreground));">
+              Earned on ${formatDate(cert.earned_at)}
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(certElement);
+      
+      // Generate canvas
+      const canvas = await html2canvas(certElement, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+      });
+      
+      // Remove temporary element
+      document.body.removeChild(certElement);
+      
+      // Download
+      const link = document.createElement("a");
+      link.download = `certificate-${cert.bot_defeated}-${Date.now()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+      
+      toast.success("Certificate downloaded!");
+    } catch (error) {
+      console.error("Error downloading certificate:", error);
+      toast.error("Failed to download certificate");
+    }
   };
 
   return (
@@ -130,7 +208,7 @@ const Certificates = () => {
                       size="sm"
                       variant="outline"
                       className="flex-1 gap-2"
-                      onClick={() => toast.info("Download feature coming soon!")}
+                      onClick={() => downloadCertificate(cert)}
                     >
                       <Download className="w-4 h-4" />
                       Download
