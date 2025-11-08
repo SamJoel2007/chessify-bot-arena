@@ -1052,13 +1052,13 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
             onDrop={(e) => handleDrop(square, e)}
             onClick={() => handleSquareClick(square)}
             className={`
-              aspect-square flex items-center justify-center text-5xl font-bold 
+              aspect-square flex items-center justify-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold 
               transition-all duration-500 ease-in-out relative cursor-pointer
               ${isLight ? "bg-[#EEEED2]" : "bg-[#769656]"}
               ${isSelected ? "ring-4 ring-primary ring-inset" : ""}
               ${hasLegalMove?.isCapture ? "bg-red-500/30" : ""}
               hover:brightness-95
-              ${piece?.color === 'w' ? 'text-[#F0D9B5] drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]' : 'text-[#1a1a1a] drop-shadow-[0_3px_6px_rgba(255,255,255,0.4)] [text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]'}
+              ${piece?.color === 'w' ? 'text-[#F0D9B5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] sm:drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] lg:drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] [text-shadow:_-0.5px_-0.5px_0_#000,_0.5px_-0.5px_0_#000,_-0.5px_0.5px_0_#000,_0.5px_0.5px_0_#000] sm:[text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]' : 'text-[#1a1a1a] drop-shadow-[0_1px_2px_rgba(255,255,255,0.4)] sm:drop-shadow-[0_2px_4px_rgba(255,255,255,0.4)] lg:drop-shadow-[0_3px_6px_rgba(255,255,255,0.4)] [text-shadow:_-0.5px_-0.5px_0_#fff,_0.5px_-0.5px_0_#fff,_-0.5px_0.5px_0_#fff,_0.5px_0.5px_0_#fff] sm:[text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]'}
             `}
           >
             {piece && !isCaptured && !isMovingFrom && (
@@ -1072,7 +1072,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
               </span>
             )}
             {hasLegalMove && !piece && !hasLegalMove.isCapture && (
-              <div className="absolute w-8 h-8 rounded-full bg-black/40 border-2 border-black/60 animate-pulse" />
+              <div className="absolute w-3 h-3 sm:w-4 sm:h-4 md:w-6 md:h-6 lg:w-8 lg:h-8 rounded-full bg-black/40 border border-black/60 sm:border-2 animate-pulse" />
             )}
             {hasLegalMove && piece && moveFrom !== square && hasLegalMove.isCapture && (
               <div className="absolute inset-0 bg-red-500/40 animate-pulse" />
@@ -1094,38 +1094,37 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   };
 
   return (
-    <div className="grid lg:grid-cols-[1fr,400px] gap-4 md:gap-6">
+    <div className="flex flex-col lg:grid lg:grid-cols-[1fr,400px] gap-4 md:gap-6 min-h-screen lg:min-h-0">
       {/* Chess Board */}
-      <Card className="p-3 md:p-6 bg-gradient-card border-border/50">
-        <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold">Game Board</h2>
+      <Card className="p-2 md:p-6 bg-gradient-card border-border/50 flex-1 flex flex-col justify-center">
+        <div className="sticky top-0 z-10 mb-3 md:mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 md:gap-3 bg-card/95 backdrop-blur-sm p-2 md:p-0 rounded-lg md:bg-transparent">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base md:text-xl lg:text-2xl font-bold truncate">Game Board</h2>
             {selectedBot && (
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs md:text-sm text-muted-foreground">Playing against:</span>
-                <span className="text-sm md:text-base font-semibold">{selectedBot.name}</span>
-                <Badge variant="outline" className="text-xs">{selectedBot.rating} ELO</Badge>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-muted-foreground">vs:</span>
+                <span className="text-xs md:text-sm font-semibold truncate">{selectedBot.name}</span>
+                <Badge variant="outline" className="text-xs">{selectedBot.rating}</Badge>
               </div>
             )}
             {isThinking && (
-              <p className="text-xs md:text-sm text-muted-foreground mt-1">Bot is thinking...</p>
+              <p className="text-xs text-muted-foreground mt-1">Thinking...</p>
             )}
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <Button variant="outline" size="sm" onClick={handleDraw} className="text-xs">
-              <Handshake className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">Draw (20 coins)</span>
-              <span className="sm:hidden">Draw</span>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" size="sm" onClick={handleDraw} className="text-xs flex-1 sm:flex-none h-8">
+              <Handshake className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+              <span className="hidden xs:inline">Draw</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={resetGame} className="text-xs">
-              <Flag className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-              Resign
+            <Button variant="outline" size="sm" onClick={resetGame} className="text-xs flex-1 sm:flex-none h-8">
+              <Flag className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+              <span className="hidden xs:inline">Resign</span>
             </Button>
           </div>
         </div>
-        <div className="w-full max-w-[min(600px,100vw-2rem)] mx-auto">
+        <div className="w-full max-w-[min(100vh-200px,600px,100vw-1rem)] mx-auto">
           <div 
-            className="grid grid-cols-8 border-2 md:border-4 border-border rounded-lg overflow-hidden shadow-glow relative"
+            className="grid grid-cols-8 border border-border md:border-2 lg:border-4 rounded-md md:rounded-lg overflow-hidden shadow-glow relative"
             style={{ aspectRatio: "1/1", maxWidth: "100%" }}
           >
             {renderBoard()}
@@ -1144,7 +1143,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
                   
                   return (
                     <div
-                      className="absolute text-5xl font-bold animate-piece-slide"
+                      className="absolute text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold animate-piece-slide"
                       style={{
                         left: `${fromPos.x * 12.5}%`,
                         top: `${fromPos.y * 12.5}%`,
@@ -1159,11 +1158,11 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
                         '--tw-slide-to-y': `${deltaY}%`,
                         color: movingPiece.color === 'w' ? '#F0D9B5' : '#1a1a1a',
                         filter: movingPiece.color === 'w' 
-                          ? 'drop-shadow(0 6px 12px rgba(0,0,0,0.9))' 
-                          : 'drop-shadow(0 6px 12px rgba(255,255,255,0.4))',
+                          ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' 
+                          : 'drop-shadow(0 2px 4px rgba(255,255,255,0.4))',
                         textShadow: movingPiece.color === 'w'
-                          ? '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
-                          : '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff',
+                          ? '-0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0.5px 0.5px 0 #000'
+                          : '-0.5px -0.5px 0 #fff, 0.5px -0.5px 0 #fff, -0.5px 0.5px 0 #fff, 0.5px 0.5px 0 #fff',
                       } as React.CSSProperties}
                     >
                       {getPieceSymbol(movingPiece.piece, movingPiece.color)}
