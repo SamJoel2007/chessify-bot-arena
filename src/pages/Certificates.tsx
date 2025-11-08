@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Award, Trophy, ArrowLeft, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import html2canvas from "html2canvas";
+
 
 interface Certificate {
   id: string;
@@ -62,72 +62,78 @@ const Certificates = () => {
 
   const downloadCertificate = async (cert: Certificate) => {
     try {
-      // Create a temporary certificate element
-      const certElement = document.createElement("div");
-      certElement.style.width = "800px";
-      certElement.style.padding = "60px";
-      certElement.style.background = "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.1))";
-      certElement.style.border = "8px solid hsl(var(--primary))";
-      certElement.style.fontFamily = "system-ui, -apple-system, sans-serif";
-      certElement.style.position = "absolute";
-      certElement.style.left = "-9999px";
+      const canvas = document.createElement('canvas');
+      canvas.width = 1600;
+      canvas.height = 1200;
+      const ctx = canvas.getContext('2d');
       
-      certElement.innerHTML = `
-        <div style="text-align: center; color: hsl(var(--foreground));">
-          <div style="margin-bottom: 30px;">
-            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="2">
-              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-              <path d="M4 22h16"></path>
-              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-            </svg>
-          </div>
-          <h1 style="font-size: 48px; font-weight: bold; margin-bottom: 20px; color: hsl(var(--primary));">
-            Certificate of Achievement
-          </h1>
-          <div style="font-size: 20px; margin-bottom: 40px; color: hsl(var(--muted-foreground));">
-            This certifies that
-          </div>
-          <div style="font-size: 36px; font-weight: bold; margin-bottom: 40px; color: hsl(var(--foreground));">
-            ${user?.email || 'Chess Player'}
-          </div>
-          <div style="font-size: 20px; margin-bottom: 20px; line-height: 1.6; color: hsl(var(--muted-foreground));">
-            has successfully defeated
-          </div>
-          <div style="font-size: 32px; font-weight: bold; margin-bottom: 10px; color: hsl(var(--primary));">
-            ${cert.bot_defeated}
-          </div>
-          <div style="font-size: 18px; margin-bottom: 40px; color: hsl(var(--muted-foreground));">
-            Rating: ${cert.bot_rating} ELO
-          </div>
-          <div style="border-top: 2px solid hsl(var(--border)); padding-top: 30px; margin-top: 40px;">
-            <div style="font-size: 16px; color: hsl(var(--muted-foreground));">
-              ${cert.certificate_name}
-            </div>
-            <div style="font-size: 14px; margin-top: 10px; color: hsl(var(--muted-foreground));">
-              Earned on ${formatDate(cert.earned_at)}
-            </div>
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(certElement);
-      
-      // Generate canvas
-      const canvas = await html2canvas(certElement, {
-        backgroundColor: "#ffffff",
-        scale: 2,
-      });
-      
-      // Remove temporary element
-      document.body.removeChild(certElement);
-      
+      if (!ctx) throw new Error('Could not get canvas context');
+
+      // Background with gradient
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      gradient.addColorStop(0, '#f8fafc');
+      gradient.addColorStop(1, '#e2e8f0');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Border
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 16;
+      ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+
+      // Title
+      ctx.fillStyle = '#3b82f6';
+      ctx.font = 'bold 96px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Certificate of Achievement', canvas.width / 2, 220);
+
+      // This certifies that
+      ctx.fillStyle = '#64748b';
+      ctx.font = '40px system-ui, -apple-system, sans-serif';
+      ctx.fillText('This certifies that', canvas.width / 2, 340);
+
+      // User name
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 72px system-ui, -apple-system, sans-serif';
+      ctx.fillText(user?.email || 'Chess Player', canvas.width / 2, 460);
+
+      // Has successfully defeated
+      ctx.fillStyle = '#64748b';
+      ctx.font = '40px system-ui, -apple-system, sans-serif';
+      ctx.fillText('has successfully defeated', canvas.width / 2, 580);
+
+      // Bot name
+      ctx.fillStyle = '#3b82f6';
+      ctx.font = 'bold 64px system-ui, -apple-system, sans-serif';
+      ctx.fillText(cert.bot_defeated, canvas.width / 2, 700);
+
+      // Rating
+      ctx.fillStyle = '#64748b';
+      ctx.font = '36px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`Rating: ${cert.bot_rating} ELO`, canvas.width / 2, 780);
+
+      // Divider line
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(300, 880);
+      ctx.lineTo(canvas.width - 300, 880);
+      ctx.stroke();
+
+      // Certificate name
+      ctx.fillStyle = '#64748b';
+      ctx.font = '32px system-ui, -apple-system, sans-serif';
+      ctx.fillText(cert.certificate_name, canvas.width / 2, 970);
+
+      // Date
+      ctx.fillStyle = '#64748b';
+      ctx.font = '28px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`Earned on ${formatDate(cert.earned_at)}`, canvas.width / 2, 1040);
+
       // Download
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.download = `certificate-${cert.bot_defeated}-${Date.now()}.png`;
-      link.href = canvas.toDataURL();
+      link.href = canvas.toDataURL('image/png');
       link.click();
       
       toast.success("Certificate downloaded!");

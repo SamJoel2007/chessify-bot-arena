@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { getAvatarIcon } from "@/lib/avatarUtils";
+import { playMoveSound, playCaptureSound } from "@/lib/soundUtils";
 import { VoiceChat } from "@/components/VoiceChat";
 import { GameChat } from "@/components/GameChat";
 
@@ -177,6 +178,7 @@ export default function OnlineGame() {
 
     try {
       const gameCopy = new Chess(game.fen());
+      const capturedPiece = gameCopy.get(to);
       const move = gameCopy.move({
         from,
         to,
@@ -184,6 +186,13 @@ export default function OnlineGame() {
       });
 
       if (move === null) return false;
+
+      // Play sound effect
+      if (capturedPiece) {
+        playCaptureSound();
+      } else {
+        playMoveSound();
+      }
 
       const newTime = game.turn() === "w" ? whiteTime : blackTime;
 

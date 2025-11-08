@@ -8,6 +8,7 @@ import { OnlineMatchmaking } from "@/components/OnlineMatchmaking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { playMoveSound, playCaptureSound } from "@/lib/soundUtils";
 import { supabase } from "@/integrations/supabase/client";
 import FriendChallengeDialog from "@/components/FriendChallengeDialog";
 
@@ -781,6 +782,13 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         setTimeout(() => {
           setCapturedSquare(to);
         }, 400); // 80% of 500ms
+      }
+
+      // Play sound effect
+      if (isCapture) {
+        playCaptureSound();
+      } else {
+        playMoveSound();
       }
 
       // Complete move after animation

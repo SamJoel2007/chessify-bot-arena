@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Crown, Trophy, X, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { playMoveSound, playCaptureSound } from "@/lib/soundUtils";
 
 const PuzzleGame = () => {
   const location = useLocation();
@@ -106,6 +107,7 @@ const PuzzleGame = () => {
   const makeMove = (from: Square, to: Square) => {
     try {
       const gameCopy = new Chess(game.fen());
+      const capturedPiece = gameCopy.get(to);
       const move = gameCopy.move({
         from,
         to,
@@ -113,6 +115,13 @@ const PuzzleGame = () => {
       });
 
       if (move === null) return false;
+
+      // Play sound effect
+      if (capturedPiece) {
+        playCaptureSound();
+      } else {
+        playMoveSound();
+      }
 
       const isCorrect = checkSolution(move.san, gameCopy);
       
