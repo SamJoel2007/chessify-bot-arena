@@ -113,7 +113,7 @@ const Index = () => {
     const ayanokojiBot = {
       id: "special-ayanokoji",
       name: "Ayanokoji",
-      rating: 2500,
+      rating: 400,
       description: "A chess prodigy with unmatched strategic thinking",
       difficulty: "Elite",
       image: null,
@@ -327,7 +327,7 @@ const Index = () => {
                   </h2>
                 </div>
                 <p className="text-muted-foreground text-lg mb-6">
-                  Face the ultimate challenge against Ayanokoji, a legendary chess prodigy with a 2500 ELO rating. 
+                  Face the ultimate challenge against Ayanokoji, a legendary chess prodigy with a 400 ELO rating. 
                   Defeat this formidable opponent to earn an exclusive Winter ARC Chess certificate and 1000 bonus coins. 
                   Only the most skilled players will prevail in this elite battle of wits and strategy!
                 </p>

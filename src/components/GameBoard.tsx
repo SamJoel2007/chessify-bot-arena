@@ -63,7 +63,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           user_id: userId,
           certificate_name: "Winter ARC Chess Champion",
           bot_defeated: "Ayanokoji",
-          bot_rating: 2500,
+          bot_rating: 400,
           certificate_data: {
             achievement: "Defeated the legendary Ayanokoji",
             date: new Date().toISOString()
