@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { UserPlus, Users } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { UserPlus, Users, Search } from "lucide-react";
 import { toast } from "sonner";
 import { getAvatarIcon } from "@/lib/avatarUtils";
 
@@ -23,24 +24,31 @@ export const FindPeople = ({ userId }: FindPeopleProps) => {
   const [randomUsers, setRandomUsers] = useState<RandomUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendingTo, setSendingTo] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (userId) {
       loadRandomUsers();
     }
-  }, [userId]);
+  }, [userId, searchQuery]);
 
   const loadRandomUsers = async () => {
     if (!userId) return;
 
     setLoading(true);
     try {
-      // Get random users excluding current user
-      const { data: users, error } = await supabase
+      // Build query based on search
+      let query = supabase
         .from("profiles")
         .select("id, username, current_avatar")
-        .neq("id", userId)
-        .limit(6);
+        .neq("id", userId);
+
+      // Add search filter if search query exists
+      if (searchQuery.trim()) {
+        query = query.ilike("username", `%${searchQuery.trim()}%`);
+      }
+
+      const { data: users, error } = await query.limit(12);
 
       if (error) throw error;
 
@@ -119,9 +127,21 @@ export const FindPeople = ({ userId }: FindPeopleProps) => {
 
   return (
     <div className="mt-8">
-      <div className="flex items-center gap-2 mb-6">
-        <Users className="w-6 h-6 text-primary" />
-        <h3 className="text-2xl font-bold">Find People</h3>
+      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Users className="w-6 h-6 text-primary" />
+          <h3 className="text-2xl font-bold">Find People</h3>
+        </div>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search by username..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
       </div>
 
       {loading ? (
@@ -136,7 +156,11 @@ export const FindPeople = ({ userId }: FindPeopleProps) => {
         </div>
       ) : randomUsers.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-muted-foreground">No users found at the moment.</p>
+          <p className="text-muted-foreground">
+            {searchQuery.trim() 
+              ? `No users found matching "${searchQuery}"`
+              : "No users found at the moment."}
+          </p>
         </Card>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
