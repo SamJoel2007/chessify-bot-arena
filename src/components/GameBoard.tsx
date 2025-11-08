@@ -38,6 +38,63 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   const [movingPiece, setMovingPiece] = useState<{ piece: string; color: string; from: Square; to: Square } | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // Function to award certificate for special bot wins
+  const awardCertificate = async () => {
+    if (!userId || !username) return;
+
+    try {
+      // Check if certificate already exists
+      const { data: existing } = await supabase
+        .from("certificates")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("bot_defeated", "Ayanokoji")
+        .single();
+
+      if (existing) {
+        toast.info("You already have this certificate!");
+        return;
+      }
+
+      // Create certificate
+      const { error: certError } = await supabase
+        .from("certificates")
+        .insert({
+          user_id: userId,
+          certificate_name: "Winter ARC Chess Champion",
+          bot_defeated: "Ayanokoji",
+          bot_rating: 2500,
+          certificate_data: {
+            achievement: "Defeated the legendary Ayanokoji",
+            date: new Date().toISOString()
+          }
+        });
+
+      if (certError) throw certError;
+
+      // Award 1000 coins
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("coins")
+        .eq("id", userId)
+        .single();
+
+      if (profile) {
+        const { error: coinsError } = await supabase
+          .from("profiles")
+          .update({ coins: profile.coins + 1000 })
+          .eq("id", userId);
+
+        if (coinsError) throw coinsError;
+      }
+
+      toast.success("🏆 Certificate earned! +1000 coins awarded!");
+    } catch (error) {
+      console.error("Error awarding certificate:", error);
+      toast.error("Failed to award certificate");
+    }
+  };
+
   useEffect(() => {
     if (selectedBot) {
       setGameMode("bot");
@@ -730,6 +787,11 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         if (gameCopy.isCheckmate()) {
           setGameResult("win");
           setShowGameEndModal(true);
+          
+          // Check if this is the special Ayanokoji bot
+          if (selectedBot?.isSpecialEvent && selectedBot?.id === "special-ayanokoji" && userId) {
+            awardCertificate();
+          }
         } else if (gameCopy.isCheck()) {
           toast("Check!");
           if (gameMode === "bot") {
@@ -1087,7 +1149,9 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
               </h2>
               <p className="text-muted-foreground mb-6">
                 {gameResult === "win" 
-                  ? "Congratulations! You've won the game!" 
+                  ? selectedBot?.isSpecialEvent 
+                    ? "🏆 Congratulations! You defeated Ayanokoji and earned the Winter ARC Chess Champion certificate!" 
+                    : "Congratulations! You've won the game!"
                   : "Better luck next time!"}
               </p>
               <div className="flex gap-3">

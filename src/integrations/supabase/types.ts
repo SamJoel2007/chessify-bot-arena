@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      certificates: {
+        Row: {
+          bot_defeated: string
+          bot_rating: number
+          certificate_data: Json | null
+          certificate_name: string
+          created_at: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          bot_defeated: string
+          bot_rating: number
+          certificate_data?: Json | null
+          certificate_name: string
+          created_at?: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          bot_defeated?: string
+          bot_rating?: number
+          certificate_data?: Json | null
+          certificate_name?: string
+          created_at?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           created_at: string
