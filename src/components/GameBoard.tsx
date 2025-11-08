@@ -49,7 +49,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         .select("id")
         .eq("user_id", userId)
         .eq("bot_defeated", "Ayanokoji")
-        .single();
+        .maybeSingle();
 
       if (existing) {
         toast.info("You already have this certificate!");
