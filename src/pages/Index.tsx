@@ -14,6 +14,7 @@ import { RecentPosts } from "@/components/RecentPosts";
 import { AdminPostCreator } from "@/components/AdminPostCreator";
 import { OnlineMatchmaking } from "@/components/OnlineMatchmaking";
 import { HoverSidebar } from "@/components/HoverSidebar";
+import { FindPeople } from "@/components/FindPeople";
 import winterArcImage from "@/assets/winter-arc-hero.jpg";
 import puzzleBeginner from "@/assets/puzzles/puzzle-beginner.jpg";
 import puzzleIntermediate from "@/assets/puzzles/puzzle-intermediate.jpg";
@@ -530,6 +531,7 @@ const Index = () => {
             </p>
           </div>
           <CommunityChat />
+          <FindPeople userId={user?.id || null} />
         </section>
       </main>
 
