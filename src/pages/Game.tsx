@@ -3,17 +3,42 @@ import { ArrowLeft, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GameBoard } from "@/components/GameBoard";
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Game = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedBot, setSelectedBot] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
+  const [username, setUsername] = useState<string>("");
+  const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     if (location.state?.selectedBot) {
       setSelectedBot(location.state.selectedBot);
     }
   }, [location.state]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser(user);
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username, current_avatar")
+          .eq("id", user.id)
+          .single();
+        
+        if (profile) {
+          setUsername(profile.username || "");
+          setCurrentAvatar(profile.current_avatar);
+        }
+      }
+    };
+    
+    fetchUserData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -45,7 +70,13 @@ const Game = () => {
 
       {/* Game Section */}
       <main className="container mx-auto px-4 py-12">
-        <GameBoard selectedBot={selectedBot} onBotChange={setSelectedBot} />
+        <GameBoard 
+          selectedBot={selectedBot} 
+          onBotChange={setSelectedBot}
+          userId={user?.id}
+          username={username}
+          currentAvatar={currentAvatar}
+        />
       </main>
     </div>
   );
