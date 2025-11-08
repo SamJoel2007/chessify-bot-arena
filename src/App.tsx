@@ -22,6 +22,7 @@ import Notifications from "./pages/Notifications";
 import MyProfile from "./pages/MyProfile";
 import Leaderboards from "./pages/Leaderboards";
 import Certificates from "./pages/Certificates";
+import VictoryShowcase from "./pages/VictoryShowcase";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => (
           <Route path="/my-profile" element={<MyProfile />} />
           <Route path="/leaderboards" element={<Leaderboards />} />
           <Route path="/certificates" element={<Certificates />} />
+          <Route path="/victory" element={<VictoryShowcase />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

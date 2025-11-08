@@ -785,12 +785,22 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         }
         
         if (gameCopy.isCheckmate()) {
-          setGameResult("win");
-          setShowGameEndModal(true);
-          
           // Check if this is the special Ayanokoji bot
-          if (selectedBot?.isSpecialEvent && selectedBot?.id === "special-ayanokoji" && userId) {
+          if (selectedBot?.isSpecialEvent && selectedBot?.id === "special-ayanokoji" && userId && username) {
+            // Award certificate in background
             awardCertificate();
+            // Navigate to victory showcase page
+            navigate("/victory", {
+              state: {
+                username: username,
+                eventName: "Winter ARC Chess Challenge",
+                botName: selectedBot.name,
+                botRating: selectedBot.rating
+              }
+            });
+          } else {
+            setGameResult("win");
+            setShowGameEndModal(true);
           }
         } else if (gameCopy.isCheck()) {
           toast("Check!");
