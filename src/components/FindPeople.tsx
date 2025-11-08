@@ -45,10 +45,13 @@ export const FindPeople = ({ userId }: FindPeopleProps) => {
 
       // Add search filter if search query exists
       if (searchQuery.trim()) {
-        query = query.ilike("username", `%${searchQuery.trim()}%`);
+        query = query.ilike("username", `%${searchQuery.trim()}%`).limit(6);
+      } else {
+        // Fetch more users to randomize from
+        query = query.limit(50);
       }
 
-      const { data: users, error } = await query.limit(12);
+      const { data: users, error } = await query;
 
       if (error) throw error;
 
@@ -58,13 +61,18 @@ export const FindPeople = ({ userId }: FindPeopleProps) => {
         return;
       }
 
+      // Shuffle and limit to 6 users when not searching
+      const selectedUsers = searchQuery.trim() 
+        ? users 
+        : users.sort(() => Math.random() - 0.5).slice(0, 6);
+
       // Check existing friend requests and friendships
       const { data: friendRequests } = await supabase
         .from("friend_requests")
         .select("sender_id, receiver_id, status")
         .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
 
-      const usersWithStatus = users.map(user => {
+      const usersWithStatus = selectedUsers.map(user => {
         const request = friendRequests?.find(
           req => 
             (req.sender_id === userId && req.receiver_id === user.id) ||
