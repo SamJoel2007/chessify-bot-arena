@@ -10,7 +10,6 @@ import botBeginner from "@/assets/bot-beginner.jpg";
 import botIntermediate from "@/assets/bot-intermediate.jpg";
 import botAdvanced from "@/assets/bot-advanced.jpg";
 import botGrandmaster from "@/assets/bot-grandmaster.jpg";
-import botAnime from "@/assets/bot-anime.jpg";
 import advancedMagnus from "@/assets/bots/advanced-01-magnus.jpg";
 import advancedAlexander from "@/assets/bots/advanced-02-alexander.jpg";
 import advancedVictor from "@/assets/bots/advanced-03-victor.jpg";
@@ -41,16 +40,6 @@ import intermediateGambitGary from "@/assets/bots/intermediate-07-gambit-gary.jp
 import intermediateCounterCarl from "@/assets/bots/intermediate-08-counter-carl.jpg";
 import intermediatePatternPaul from "@/assets/bots/intermediate-09-pattern-paul.jpg";
 import intermediateTempoTerry from "@/assets/bots/intermediate-10-tempo-terry.jpg";
-import animeHikaru from "@/assets/bots/anime-01-hikaru.jpg";
-import animeCodeGeass from "@/assets/bots/anime-02-code-geass.jpg";
-import animeLightYagami from "@/assets/bots/anime-03-light-yagami.jpg";
-import animeLDetective from "@/assets/bots/anime-04-l-detective.jpg";
-import animeSenku from "@/assets/bots/anime-05-senku.jpg";
-import animeLelouch from "@/assets/bots/anime-06-lelouch.jpg";
-import animeEdward from "@/assets/bots/anime-07-edward.jpg";
-import animeShikamaru from "@/assets/bots/anime-08-shikamaru.jpg";
-import animeSaitama from "@/assets/bots/anime-09-saitama.jpg";
-import animeGoku from "@/assets/bots/anime-10-goku.jpg";
 import expertEva from "@/assets/bots/expert-01-eva.jpg";
 import expertChristopher from "@/assets/bots/expert-02-christopher.jpg";
 import expertBenjamin from "@/assets/bots/expert-03-benjamin.jpg";
@@ -614,93 +603,6 @@ const botCategories = {
       },
     ],
   },
-  anime: {
-    icon: Sparkles,
-    color: "text-secondary",
-    image: botAnime,
-    bots: [
-      {
-        id: "an1",
-        name: "Hikaru",
-        rating: 2000,
-        description: "Strategic anime spirit",
-        difficulty: "Anime",
-        image: animeHikaru,
-      },
-      {
-        id: "an2",
-        name: "Lelouch",
-        rating: 2100,
-        description: "Strategic mastermind",
-        difficulty: "Anime",
-        image: animeCodeGeass,
-      },
-      {
-        id: "an3",
-        name: "Light",
-        rating: 2200,
-        description: "Mind games master",
-        difficulty: "Anime",
-        image: animeLightYagami,
-      },
-      {
-        id: "an4",
-        name: "Lawliet",
-        rating: 2300,
-        description: "Analytical genius",
-        difficulty: "Anime",
-        image: animeLDetective,
-      },
-      {
-        id: "an5",
-        name: "Senku",
-        rating: 2400,
-        description: "Scientific approach",
-        difficulty: "Anime",
-        image: animeSenku,
-      },
-      {
-        id: "an6",
-        name: "Suzaku",
-        rating: 2500,
-        description: "Zero strategy",
-        difficulty: "Anime",
-        image: animeLelouch,
-      },
-      {
-        id: "an7",
-        name: "Edward",
-        rating: 2600,
-        description: "Alchemist tactician",
-        difficulty: "Anime",
-        image: animeEdward,
-      },
-      {
-        id: "an8",
-        name: "Shikamaru",
-        rating: 2700,
-        description: "200 IQ plays",
-        difficulty: "Anime",
-        image: animeShikamaru,
-      },
-      {
-        id: "an9",
-        name: "Saitama",
-        rating: 2800,
-        description: "One move victory",
-        difficulty: "Anime",
-        image: animeSaitama,
-      },
-      {
-        id: "an10",
-        name: "Goku",
-        rating: 2900,
-        description: "Ultra instinct moves",
-        difficulty: "Anime",
-        image: animeGoku,
-      },
-    ],
-  },
 };
 
 const Bots = () => {
@@ -770,14 +672,13 @@ const Bots = () => {
       {/* Bots Grid */}
       <main className="container mx-auto px-4 py-12">
         <Tabs defaultValue="beginner" className="w-full" onValueChange={setActiveCategory}>
-          <TabsList className="grid w-full grid-cols-7 mb-8">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="beginner">Beginner</TabsTrigger>
             <TabsTrigger value="intermediate">Intermediate</TabsTrigger>
             <TabsTrigger value="advanced">Advanced</TabsTrigger>
             <TabsTrigger value="expert">Expert</TabsTrigger>
             <TabsTrigger value="master">Master</TabsTrigger>
             <TabsTrigger value="grandmaster">GM</TabsTrigger>
-            <TabsTrigger value="anime">Anime</TabsTrigger>
           </TabsList>
 
           {Object.entries(botCategories).map(([category, { icon: Icon, color, image, bots }]) => (

@@ -7,8 +7,6 @@ import { useNavigate } from "react-router-dom";
 import beginnerCenterControl from "@/assets/bots/beginner-09-center-control.jpg";
 import intermediateStrategicSam from "@/assets/bots/intermediate-02-strategic-sam.jpg";
 import intermediateGambitGary from "@/assets/bots/intermediate-07-gambit-gary.jpg";
-import animeLight from "@/assets/bots/anime-03-light-yagami.jpg";
-import animeLelouch from "@/assets/bots/anime-06-lelouch.jpg";
 
 interface BotSelectionProps {
   coins: number;
@@ -40,24 +38,6 @@ const bots = [
     category: "Intermediate",
     rating: 1500,
     image: intermediateGambitGary,
-    owned: true,
-    price: 0,
-  },
-  {
-    id: 4,
-    name: "Light",
-    category: "Anime",
-    rating: 2200,
-    image: animeLight,
-    owned: true,
-    price: 0,
-  },
-  {
-    id: 5,
-    name: "Suzaku",
-    category: "Anime",
-    rating: 2500,
-    image: animeLelouch,
     owned: true,
     price: 0,
   },
