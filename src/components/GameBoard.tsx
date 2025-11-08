@@ -38,6 +38,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   const [draggedPiece, setDraggedPiece] = useState<{ square: Square; element: HTMLElement } | null>(null);
   const [movingPiece, setMovingPiece] = useState<{ piece: string; color: string; from: Square; to: Square } | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [capturedByWhite, setCapturedByWhite] = useState<string[]>([]);
+  const [capturedByBlack, setCapturedByBlack] = useState<string[]>([]);
 
   // Function to award certificate for special bot wins
   const awardCertificate = async () => {
@@ -117,6 +119,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       setMoveHistory([]);
       setSelectedSquare(null);
       setIsThinking(false);
+      setCapturedByWhite([]);
+      setCapturedByBlack([]);
     }
   }, [selectedBot]);
 
@@ -530,6 +534,15 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           const targetPiece = currentGame.get(mateMove.move.to);
           const isCapture = !!targetPiece;
 
+          // Track captured piece for mate move
+          if (isCapture && targetPiece) {
+            if (movingPieceData.color === 'b') {
+              setCapturedByBlack(prev => [...prev, targetPiece.type]);
+            } else {
+              setCapturedByWhite(prev => [...prev, targetPiece.type]);
+            }
+          }
+
           // Execute the move
           const gameCopy = new Chess(currentGame.fen());
           gameCopy.move(mateMove.move);
@@ -703,6 +716,15 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       const targetPiece = currentGame.get(move.to);
       const isCapture = !!targetPiece;
 
+      // Track captured piece for bot
+      if (isCapture && targetPiece) {
+        if (movingPieceData.color === 'b') {
+          setCapturedByBlack(prev => [...prev, targetPiece.type]);
+        } else {
+          setCapturedByWhite(prev => [...prev, targetPiece.type]);
+        }
+      }
+
       // Execute the move
       const gameCopy = new Chess(currentGame.fen());
       gameCopy.move(move);
@@ -781,6 +803,15 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       });
 
       if (move === null) return false;
+
+      // Track captured piece
+      if (isCapture && targetPiece) {
+        if (movingPieceData.color === 'w') {
+          setCapturedByWhite(prev => [...prev, targetPiece.type]);
+        } else {
+          setCapturedByBlack(prev => [...prev, targetPiece.type]);
+        }
+      }
 
       // Start animation
       setIsAnimating(true);
@@ -961,6 +992,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     setShowGameEndModal(false);
     setGameResult(null);
     setGameMode(null);
+    setCapturedByWhite([]);
+    setCapturedByBlack([]);
     if (onBotChange) onBotChange(null);
     toast("Game resigned!");
   };
@@ -1122,7 +1155,25 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
             </Button>
           </div>
         </div>
-        <div className="w-full max-w-[min(100vh-120px,700px,calc(100vw-2rem))] mx-auto">
+        <div className="w-full max-w-[min(100vh-120px,700px,calc(100vw-2rem))] mx-auto space-y-3">
+          {/* Captured by Black (shown on top) */}
+          {capturedByBlack.length > 0 && (
+            <div className="bg-muted/30 rounded-lg p-2 border border-border/50">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-semibold text-muted-foreground">Captured:</span>
+                {capturedByBlack.map((piece, idx) => (
+                  <span key={idx} className="text-lg" style={{ 
+                    color: '#F0D9B5',
+                    filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))',
+                    textShadow: '-0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0.5px 0.5px 0 #000'
+                  }}>
+                    {getPieceSymbol(piece, 'w')}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <div 
             className="grid grid-cols-8 border border-border md:border-2 lg:border-4 rounded-md md:rounded-lg overflow-hidden shadow-glow relative"
             style={{ aspectRatio: "1/1", maxWidth: "100%" }}
@@ -1172,6 +1223,24 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
               </div>
             )}
           </div>
+          
+          {/* Captured by White (shown on bottom) */}
+          {capturedByWhite.length > 0 && (
+            <div className="bg-muted/30 rounded-lg p-2 border border-border/50">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-semibold text-muted-foreground">Captured:</span>
+                {capturedByWhite.map((piece, idx) => (
+                  <span key={idx} className="text-lg" style={{ 
+                    color: '#1a1a1a',
+                    filter: 'drop-shadow(0 1px 2px rgba(255,255,255,0.3))',
+                    textShadow: '-0.5px -0.5px 0 #fff, 0.5px -0.5px 0 #fff, -0.5px 0.5px 0 #fff, 0.5px 0.5px 0 #fff'
+                  }}>
+                    {getPieceSymbol(piece, 'b')}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 
