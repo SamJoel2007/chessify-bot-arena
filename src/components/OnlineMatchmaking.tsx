@@ -12,11 +12,74 @@ interface OnlineMatchmakingProps {
   currentAvatar?: string;
 }
 
+// Define bot pools by skill level
+const botPools = {
+  beginner: [
+    { name: "Emma", avatar: "👤", rating: 400 },
+    { name: "Noah", avatar: "🧑", rating: 500 },
+    { name: "Olivia", avatar: "👩", rating: 600 },
+    { name: "Liam", avatar: "👨", rating: 700 },
+    { name: "Sophia", avatar: "👱", rating: 800 },
+  ],
+  intermediate: [
+    { name: "Lucas", avatar: "👨‍🦰", rating: 1000 },
+    { name: "Mia", avatar: "👩‍🦱", rating: 1200 },
+    { name: "Ethan", avatar: "🧔", rating: 1400 },
+    { name: "Isabella", avatar: "👩‍🦳", rating: 1500 },
+    { name: "Mason", avatar: "👨‍🦲", rating: 1650 },
+  ],
+  advanced: [
+    { name: "Charlotte", avatar: "👩‍💼", rating: 1800 },
+    { name: "James", avatar: "👨‍💼", rating: 1900 },
+    { name: "Amelia", avatar: "👩‍🔬", rating: 2000 },
+    { name: "Benjamin", avatar: "👨‍🔬", rating: 2100 },
+    { name: "Harper", avatar: "👩‍🎓", rating: 2250 },
+  ],
+  expert: [
+    { name: "Michael", avatar: "👨‍🎓", rating: 2300 },
+    { name: "Evelyn", avatar: "👩‍⚕️", rating: 2400 },
+    { name: "Alexander", avatar: "👨‍⚕️", rating: 2500 },
+    { name: "Abigail", avatar: "👩‍🏫", rating: 2600 },
+    { name: "Daniel", avatar: "👨‍🏫", rating: 2750 },
+  ],
+  master: [
+    { name: "Elizabeth", avatar: "👩‍⚖️", rating: 2800 },
+    { name: "Matthew", avatar: "👨‍⚖️", rating: 2900 },
+    { name: "Sofia", avatar: "👩‍💻", rating: 3000 },
+    { name: "Jackson", avatar: "👨‍💻", rating: 3100 },
+    { name: "Avery", avatar: "👩‍🎨", rating: 3250 },
+  ],
+  grandmaster: [
+    { name: "Scarlett", avatar: "👩‍🚀", rating: 3300 },
+    { name: "Sebastian", avatar: "👨‍🚀", rating: 3400 },
+    { name: "Victoria", avatar: "👸", rating: 3500 },
+    { name: "William", avatar: "🤴", rating: 3600 },
+    { name: "Aria", avatar: "👑", rating: 3750 },
+  ],
+};
+
 export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMatchmakingProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [timeControl, setTimeControl] = useState<number>(600);
+  const [userPoints, setUserPoints] = useState<number>(0);
   const navigate = useNavigate();
+
+  // Fetch user points on mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("points")
+        .eq("id", userId)
+        .single();
+      
+      if (data) {
+        setUserPoints(data.points);
+      }
+    };
+    fetchUserProfile();
+  }, [userId]);
 
   // Subscribe to realtime game creation
   useEffect(() => {
@@ -68,24 +131,25 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
     };
   }, [isSearching]);
 
+  // Select bot based on user's skill level (points)
+  const selectBotBySkill = (points: number) => {
+    let pool;
+    if (points < 500) pool = botPools.beginner;
+    else if (points < 1000) pool = botPools.intermediate;
+    else if (points < 1500) pool = botPools.advanced;
+    else if (points < 2000) pool = botPools.expert;
+    else if (points < 2500) pool = botPools.master;
+    else pool = botPools.grandmaster;
+
+    return pool[Math.floor(Math.random() * pool.length)];
+  };
+
   const handleBotMatch = async () => {
     try {
       setIsSearching(false);
       await leaveQueue();
       
-      // Create bot profiles that look realistic
-      const botProfiles = [
-        { name: "Alex", avatar: "👤" },
-        { name: "Jordan", avatar: "🧑" },
-        { name: "Sam", avatar: "👨" },
-        { name: "Taylor", avatar: "👩" },
-        { name: "Morgan", avatar: "🧔" },
-        { name: "Casey", avatar: "👱" },
-        { name: "Riley", avatar: "👨‍🦰" },
-        { name: "Quinn", avatar: "👩‍🦱" },
-      ];
-      
-      const randomBot = botProfiles[Math.floor(Math.random() * botProfiles.length)];
+      const selectedBot = selectBotBySkill(userPoints);
       const botUserId = crypto.randomUUID();
       const isPlayerWhite = Math.random() < 0.5;
       
@@ -95,10 +159,10 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
         .insert({
           white_player_id: isPlayerWhite ? userId : botUserId,
           black_player_id: isPlayerWhite ? botUserId : userId,
-          white_username: isPlayerWhite ? username : randomBot.name,
-          black_username: isPlayerWhite ? randomBot.name : username,
-          white_avatar: isPlayerWhite ? currentAvatar : randomBot.avatar,
-          black_avatar: isPlayerWhite ? randomBot.avatar : currentAvatar,
+          white_username: isPlayerWhite ? username : selectedBot.name,
+          black_username: isPlayerWhite ? selectedBot.name : username,
+          white_avatar: isPlayerWhite ? currentAvatar : selectedBot.avatar,
+          black_avatar: isPlayerWhite ? selectedBot.avatar : currentAvatar,
           white_time_remaining: timeControl,
           black_time_remaining: timeControl,
           status: "active",

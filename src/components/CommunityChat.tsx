@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, UserPlus, Check, MessageCircle } from "lucide-react";
+import { Send, UserPlus, Check, MessageCircle, Image, X, Loader2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getAvatarIcon } from "@/lib/avatarUtils";
@@ -16,6 +16,11 @@ interface Message {
   message: string;
   created_at: string;
   user_id: string;
+  image_url?: string;
+  link_url?: string;
+  link_title?: string;
+  link_description?: string;
+  link_image?: string;
 }
 
 export const CommunityChat = () => {
@@ -28,7 +33,11 @@ export const CommunityChat = () => {
   const [userAvatars, setUserAvatars] = useState<Record<string, string>>({});
   const [friendRequests, setFriendRequests] = useState<any[]>([]);
   const [friends, setFriends] = useState<any[]>([]);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const channelRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Check authentication
@@ -239,39 +248,104 @@ export const CommunityChat = () => {
     }
   };
 
-  const handleSend = async () => {
-    if (!message.trim() || !currentUser) return;
+  const handleImageSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    const messageText = message.trim();
-    const username = currentUser.email.split("@")[0];
-
-    const { error } = await supabase.from("chat_messages").insert({
-      user_id: currentUser.id,
-      username: username,
-      message: messageText,
-    });
-
-    if (error) {
-      console.error("Error sending message:", error);
-      toast.error("Failed to send message");
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please select a valid image file (JPG, PNG, GIF, or WEBP)");
       return;
     }
 
-    setMessage("");
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
 
-    // Trigger bot response only if user is alone
-    if (activeUsers === 1) {
-      try {
-        await supabase.functions.invoke('chat-bot-response', {
-          body: { 
-            message: messageText, 
-            username: username,
-            activeUserCount: activeUsers 
-          }
-        });
-      } catch (error) {
-        console.error("Error triggering bot response:", error);
+    setSelectedImage(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreviewUrl(previewUrl);
+  };
+
+  const uploadImage = async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${currentUser!.id}/${Date.now()}.${fileExt}`;
+    
+    const { error: uploadError, data } = await supabase.storage
+      .from('chat-images')
+      .upload(fileName, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('chat-images')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  };
+
+  const detectLinks = (text: string): string | null => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const matches = text.match(urlRegex);
+    return matches ? matches[0] : null;
+  };
+
+  const handleSend = async () => {
+    if ((!message.trim() && !selectedImage) || !currentUser) return;
+
+    setIsUploadingImage(true);
+    const messageText = message.trim();
+    const username = currentUser.email.split("@")[0];
+
+    try {
+      let imageUrl: string | undefined;
+      if (selectedImage) {
+        imageUrl = await uploadImage(selectedImage);
       }
+
+      const linkUrl = detectLinks(messageText);
+      
+      const { error } = await supabase.from("chat_messages").insert({
+        user_id: currentUser.id,
+        username: username,
+        message: messageText || "(image)",
+        image_url: imageUrl,
+        link_url: linkUrl,
+      });
+
+      if (error) {
+        console.error("Error sending message:", error);
+        toast.error("Failed to send message");
+        return;
+      }
+
+      setMessage("");
+      setSelectedImage(null);
+      setImagePreviewUrl(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      // Trigger bot response only if user is alone
+      if (activeUsers === 1 && messageText) {
+        try {
+          await supabase.functions.invoke('chat-bot-response', {
+            body: { 
+              message: messageText, 
+              username: username,
+              activeUserCount: activeUsers 
+            }
+          });
+        } catch (error) {
+          console.error("Error triggering bot response:", error);
+        }
+      }
+    } catch (error) {
+      console.error("Error in handleSend:", error);
+      toast.error("Failed to send message");
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -377,10 +451,35 @@ export const CommunityChat = () => {
                             )}
                           </>
                         )}
+                       </div>
+                      <div className="space-y-2">
+                        <p className="text-sm bg-muted/30 rounded-lg p-3 break-words">
+                          {msg.message}
+                        </p>
+                        
+                        {msg.image_url && (
+                          <div className="rounded-lg overflow-hidden max-w-md">
+                            <img 
+                              src={msg.image_url} 
+                              alt="Shared image" 
+                              className="w-full h-auto object-cover hover:scale-105 transition-transform cursor-pointer"
+                              onClick={() => window.open(msg.image_url, '_blank')}
+                            />
+                          </div>
+                        )}
+                        
+                        {msg.link_url && (
+                          <a 
+                            href={msg.link_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-xs text-primary hover:underline bg-primary/10 rounded p-2 max-w-md"
+                          >
+                            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{msg.link_url}</span>
+                          </a>
+                        )}
                       </div>
-                      <p className="text-sm bg-muted/30 rounded-lg p-3 break-words">
-                        {msg.message}
-                      </p>
                     </div>
                   </div>
                 );
@@ -390,16 +489,64 @@ export const CommunityChat = () => {
         </ScrollArea>
 
         <div className="p-4 border-t border-border bg-card/50">
+          {imagePreviewUrl && (
+            <div className="mb-2 relative inline-block">
+              <img 
+                src={imagePreviewUrl} 
+                alt="Preview" 
+                className="h-20 w-20 object-cover rounded-lg border-2 border-primary"
+              />
+              <Button
+                size="icon"
+                variant="destructive"
+                className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                onClick={() => {
+                  setSelectedImage(null);
+                  setImagePreviewUrl(null);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
+          
           <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              size="icon"
+              variant="outline"
+              disabled={isUploadingImage}
+            >
+              <Image className="w-4 h-4" />
+            </Button>
+            
             <Input
-              placeholder="Type your message..."
+              placeholder="Type your message or add an image..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
+              onKeyPress={(e) => e.key === "Enter" && !isUploadingImage && handleSend()}
               className="flex-1"
+              disabled={isUploadingImage}
             />
-            <Button onClick={handleSend} size="icon">
-              <Send className="w-4 h-4" />
+            
+            <Button 
+              onClick={handleSend} 
+              size="icon"
+              disabled={isUploadingImage || (!message.trim() && !selectedImage)}
+            >
+              {isUploadingImage ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
             </Button>
           </div>
         </div>

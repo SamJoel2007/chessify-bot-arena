@@ -51,6 +51,11 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          image_url: string | null
+          link_description: string | null
+          link_image: string | null
+          link_title: string | null
+          link_url: string | null
           message: string
           user_id: string
           username: string
@@ -58,6 +63,11 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          image_url?: string | null
+          link_description?: string | null
+          link_image?: string | null
+          link_title?: string | null
+          link_url?: string | null
           message: string
           user_id: string
           username: string
@@ -65,6 +75,11 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          image_url?: string | null
+          link_description?: string | null
+          link_image?: string | null
+          link_title?: string | null
+          link_url?: string | null
           message?: string
           user_id?: string
           username?: string
