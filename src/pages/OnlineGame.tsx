@@ -39,8 +39,21 @@ export default function OnlineGame() {
   const [isGuest, setIsGuest] = useState(false);
   const [opponentIsGuest, setOpponentIsGuest] = useState(false);
   
-  // Bot names used for detection
-  const botNames = ["Alex", "Jordan", "Sam", "Taylor", "Morgan", "Casey", "Riley", "Quinn"];
+  // Bot names used for detection - must match OnlineMatchmaking bot pools
+  const botNames = [
+    // Beginner bots
+    "Emma", "Noah", "Olivia", "Liam", "Ava", "Oliver", "Sophia", "Elijah",
+    // Intermediate bots
+    "Charlotte", "James", "Amelia", "Benjamin", "Isabella", "Lucas", "Mia", "Henry",
+    // Advanced bots
+    "Harper", "Alexander", "Evelyn", "Michael", "Abigail", "Daniel", "Emily", "Matthew",
+    // Expert bots
+    "Elizabeth", "Jackson", "Sofia", "Sebastian", "Avery", "David", "Ella", "Joseph",
+    // Master bots
+    "Scarlett", "Carter", "Victoria", "Owen", "Aria", "Wyatt", "Grace", "John",
+    // Grandmaster bots
+    "Chloe", "Luke", "Camila", "Julian", "Penelope", "Grayson", "Layla", "Jack"
+  ];
 
   const getPlayerInfo = async () => {
     // Check if authenticated user
