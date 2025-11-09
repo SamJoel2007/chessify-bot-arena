@@ -14,10 +14,17 @@ serve(async (req) => {
   try {
     console.log('Fetching chess memes from Reddit...');
     
-    // Fetch from Reddit API
+    // Fetch from Reddit API with proper headers
+    // Note: Reddit requires a descriptive User-Agent and may still block automated requests
     const response = await fetch('https://www.reddit.com/r/AnarchyChess+chess+ChessMemes/hot.json?limit=50', {
       headers: {
-        'User-Agent': 'ChessApp/1.0'
+        'User-Agent': 'web:chess-community-app:v1.0.0 (by /u/chesscommunity)',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
       }
     });
 

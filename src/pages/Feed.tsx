@@ -110,17 +110,24 @@ export default function Feed() {
       
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: `Fetched ${data.processedCount} new chess memes!`,
-      });
+      if (data.processedCount === 0) {
+        toast({
+          title: "No New Posts",
+          description: "No new chess memes found. Reddit may be rate limiting requests. Try again later or create your own posts!",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `Fetched ${data.processedCount} new chess memes!`,
+        });
+      }
       
       fetchPosts();
     } catch (error) {
       console.error('Error fetching Reddit posts:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch Reddit posts",
+        title: "Reddit Unavailable",
+        description: "Unable to fetch from Reddit at this time. Reddit may be blocking automated requests. You can still create your own posts!",
         variant: "destructive",
       });
     } finally {
