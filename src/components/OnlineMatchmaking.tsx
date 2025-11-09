@@ -86,7 +86,7 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
       ];
       
       const randomBot = botProfiles[Math.floor(Math.random() * botProfiles.length)];
-      const botUserId = `bot-${crypto.randomUUID()}`;
+      const botUserId = crypto.randomUUID();
       const isPlayerWhite = Math.random() < 0.5;
       
       // Create game with bot

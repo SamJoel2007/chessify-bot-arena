@@ -27,6 +27,9 @@ export default function OnlineGame() {
   const [username, setUsername] = useState<string>("");
   const [isPlayingBot, setIsPlayingBot] = useState(false);
   const [isBotThinking, setIsBotThinking] = useState(false);
+  
+  // Bot names used for detection
+  const botNames = ["Alex", "Jordan", "Sam", "Taylor", "Morgan", "Casey", "Riley", "Quinn"];
 
   useEffect(() => {
     loadGame();
@@ -91,13 +94,14 @@ export default function OnlineGame() {
 
       setPlayerColor(data.white_player_id === user.id ? "w" : "b");
 
-      // Check if playing against a bot
-      const opponentId = data.white_player_id === user.id ? data.black_player_id : data.white_player_id;
-      setIsPlayingBot(opponentId.startsWith('bot-'));
+      // Check if playing against a bot by checking opponent's username
+      const opponentUsername = data.white_player_id === user.id ? data.black_username : data.white_username;
+      const playingBot = botNames.includes(opponentUsername);
+      setIsPlayingBot(playingBot);
 
       if (data.status !== "active") {
         setIsGameOver(true);
-      } else if (opponentId.startsWith('bot-') && chess.turn() !== (data.white_player_id === user.id ? "w" : "b")) {
+      } else if (playingBot && chess.turn() !== (data.white_player_id === user.id ? "w" : "b")) {
         // If it's bot's turn when loading, make bot move
         setTimeout(() => makeBotMove(chess), 1000);
       }
