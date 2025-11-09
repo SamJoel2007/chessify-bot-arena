@@ -187,6 +187,12 @@ const Index = () => {
               </Button>
               <Button
                 variant="ghost"
+                onClick={() => document.getElementById('coach')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                AI Coach
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() => document.getElementById('community')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Community
@@ -518,6 +524,48 @@ const Index = () => {
               </div>
             </Card>
           </div>
+        </section>
+
+        {/* AI Coach Section */}
+        <section id="coach" className="mb-16">
+          <Card className="overflow-hidden bg-gradient-card border-primary/30 shadow-glow hover:border-primary/50 transition-all">
+            <div className="p-8 md:p-12 text-center">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-4xl">🎓</span>
+                </div>
+              </div>
+              <h2 className="text-4xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
+                Meet Your AI Chess Coach
+              </h2>
+              <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto">
+                Get personalized chess lessons from ChessMentor, your AI-powered coach. 
+                Learn openings, tactics, strategy, and improve your game with interactive conversations.
+              </p>
+              <div className="flex gap-4 justify-center mb-6 flex-wrap">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">24/7</p>
+                  <p className="text-sm text-muted-foreground">Available</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-secondary">∞</p>
+                  <p className="text-sm text-muted-foreground">Patience</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-accent">Expert</p>
+                  <p className="text-sm text-muted-foreground">Knowledge</p>
+                </div>
+              </div>
+              <Button 
+                size="lg" 
+                className="gap-2 shadow-glow hover:shadow-glow-secondary transition-all"
+                onClick={() => user ? navigate('/coach') : navigate('/auth')}
+              >
+                <span className="text-xl">♟️</span>
+                Start Learning
+              </Button>
+            </div>
+          </Card>
         </section>
 
         {/* Community Section */}
