@@ -451,7 +451,7 @@ const Index = () => {
                         description: "Calculate the winning sequence in this tactical puzzle",
                         rating: 1400,
                         difficulty: "intermediate",
-                        fen: "r2qkb1r/pp2nppp/3p4/2pNN1B1/2BnP3/3P4/PPP2PPP/R2bK2R w KQkq - 1 0",
+                        fen: "r2qkb1r/pp2nppp/3p4/2pNN1B1/2BnP3/3P4/PPP2PPP/R2bK2R w KQkq - 0 1",
                         solution: ["Nf6+", "gxf6", "Bxf7#"],
                       }
                     }
