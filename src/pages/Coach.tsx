@@ -5,8 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { GraduationCap, Send, Loader2, Trash2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { GraduationCap, Send, Loader2, Trash2, Gamepad2, MessageSquare } from "lucide-react";
+import { Chessboard } from "react-chessboard";
+import { Chess } from "chess.js";
 import { toast } from "sonner";
+
+// Type workaround for react-chessboard
+const ChessboardComponent = Chessboard as any;
 
 interface Message {
   role: "user" | "assistant";
@@ -26,6 +32,14 @@ export default function Coach() {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"chat" | "play">("chat");
+  
+  // Game state
+  const [game, setGame] = useState(new Chess());
+  const [gamePosition, setGamePosition] = useState(game.fen());
+  const [isPlayerTurn, setIsPlayerTurn] = useState(true);
+  const [gameMessages, setGameMessages] = useState<Message[]>([]);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -235,9 +249,232 @@ export default function Coach() {
     }
   };
 
+  const startNewGame = () => {
+    const newGame = new Chess();
+    setGame(newGame);
+    setGamePosition(newGame.fen());
+    setIsPlayerTurn(true);
+    setGameMessages([
+      {
+        role: "assistant",
+        content: "Welcome to our practice game! I'm here to teach you as we play. You'll be playing as White. Remember the key principles: control the center, develop your pieces, and castle early for king safety. Make your first move! ♟️",
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+  };
+
+  const getCoachAnalysis = async (fen: string, lastMove: string, isPlayerMove: boolean) => {
+    try {
+      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chess-coach`;
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const analysisPrompt = isPlayerMove
+        ? `I just played ${lastMove}. The current position is: ${fen}. Please analyze my move, explain if it was good or if there was something better, and teach me about the position.`
+        : `Please analyze this position: ${fen}. I need you to make the best move for Black and explain your reasoning, teaching me why it's a good move.`;
+
+      const response = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          messages: [
+            ...gameMessages,
+            { role: "user", content: analysisPrompt, timestamp: new Date().toISOString() },
+          ],
+        }),
+      });
+
+      if (!response.ok || !response.body) {
+        toast.error("Coach couldn't analyze the position");
+        return null;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let assistantContent = "";
+      let streamDone = false;
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") {
+            streamDone = true;
+            break;
+          }
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              setGameMessages((prev) => {
+                const lastMsg = prev[prev.length - 1];
+                if (lastMsg?.role === "assistant") {
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...lastMsg, content: assistantContent },
+                  ];
+                }
+                return [
+                  ...prev,
+                  {
+                    role: "assistant",
+                    content: assistantContent,
+                    timestamp: new Date().toISOString(),
+                  },
+                ];
+              });
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      return assistantContent;
+    } catch (error) {
+      console.error("Error getting coach analysis:", error);
+      return null;
+    }
+  };
+
+  const makeCoachMove = async () => {
+    setIsLoading(true);
+    try {
+      // Get coach analysis which will include the move to make
+      const analysis = await getCoachAnalysis(game.fen(), "", false);
+      
+      if (!analysis) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Extract move from analysis (look for chess notation patterns)
+      const moveMatch = analysis.match(/\b([a-h][1-8][a-h][1-8][qrbn]?|[NBRQK]?[a-h]?[1-8]?x?[a-h][1-8]|O-O-O|O-O)\b/);
+      
+      if (moveMatch) {
+        const moveNotation = moveMatch[0];
+        try {
+          const move = game.move(moveNotation);
+          if (move) {
+            setGamePosition(game.fen());
+            setIsPlayerTurn(true);
+            
+            if (game.isGameOver()) {
+              handleGameOver();
+            }
+          }
+        } catch {
+          // If move parsing fails, make a random legal move
+          const moves = game.moves();
+          if (moves.length > 0) {
+            const randomMove = moves[Math.floor(Math.random() * moves.length)];
+            game.move(randomMove);
+            setGamePosition(game.fen());
+            setIsPlayerTurn(true);
+          }
+        }
+      } else {
+        // Fallback: make a random legal move
+        const moves = game.moves();
+        if (moves.length > 0) {
+          const randomMove = moves[Math.floor(Math.random() * moves.length)];
+          game.move(randomMove);
+          setGamePosition(game.fen());
+          setIsPlayerTurn(true);
+        }
+      }
+    } catch (error) {
+      console.error("Error making coach move:", error);
+      toast.error("Coach couldn't make a move");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGameOver = () => {
+    let result = "";
+    if (game.isCheckmate()) {
+      result = game.turn() === "w" ? "Black wins by checkmate!" : "White wins by checkmate!";
+    } else if (game.isDraw()) {
+      result = "Game drawn!";
+    } else if (game.isStalemate()) {
+      result = "Game drawn by stalemate!";
+    }
+    
+    setGameMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content: `${result} Great game! Would you like to discuss what we learned or start a new game?`,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+  };
+
+  const onDrop = async (sourceSquare: string, targetSquare: string) => {
+    if (!isPlayerTurn || isLoading) return false;
+
+    try {
+      const move = game.move({
+        from: sourceSquare,
+        to: targetSquare,
+        promotion: "q",
+      });
+
+      if (move === null) return false;
+
+      setGamePosition(game.fen());
+      setIsPlayerTurn(false);
+
+      // Add player move to messages
+      setGameMessages((prev) => [
+        ...prev,
+        {
+          role: "user",
+          content: `I played ${move.san}`,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+
+      if (game.isGameOver()) {
+        handleGameOver();
+        return true;
+      }
+
+      // Get coach analysis of player's move
+      await getCoachAnalysis(game.fen(), move.san, true);
+      
+      // Coach makes its move
+      setTimeout(() => {
+        makeCoachMove();
+      }, 1000);
+
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container max-w-4xl mx-auto p-4 h-screen flex flex-col">
+      <div className="container max-w-6xl mx-auto p-4 h-screen flex flex-col">
         {/* Header */}
         <Card className="mb-4 p-6 border-primary/20 bg-card/80 backdrop-blur">
           <div className="flex items-center justify-between">
@@ -254,21 +491,49 @@ export default function Coach() {
                 </p>
               </div>
             </div>
-            {messages.length > 0 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={clearConversation}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {activeTab === "chat" && messages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={clearConversation}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
+              {activeTab === "play" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={startNewGame}
+                  className="gap-2"
+                >
+                  <Gamepad2 className="w-4 h-4" />
+                  New Game
+                </Button>
+              )}
+            </div>
           </div>
         </Card>
 
-        {/* Messages Area */}
-        <Card className="flex-1 flex flex-col overflow-hidden border-primary/20 bg-card/80 backdrop-blur">
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "chat" | "play")} className="flex-1 flex flex-col">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-4">
+            <TabsTrigger value="chat" className="gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Chat Mode
+            </TabsTrigger>
+            <TabsTrigger value="play" className="gap-2">
+              <Gamepad2 className="w-4 h-4" />
+              Play with Coach
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Chat Mode */}
+          <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
+
+            <Card className="flex-1 flex flex-col overflow-hidden border-primary/20 bg-card/80 backdrop-blur">
           <ScrollArea className="flex-1 p-6" ref={scrollRef}>
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full gap-6">
@@ -352,8 +617,85 @@ export default function Coach() {
                 )}
               </Button>
             </div>
-          </div>
-        </Card>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* Play Mode */}
+          <TabsContent value="play" className="flex-1 flex flex-col mt-0">
+            <div className="flex-1 grid md:grid-cols-2 gap-4">
+              {/* Chess Board */}
+              <Card className="p-4 border-primary/20 bg-card/80 backdrop-blur flex flex-col">
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="w-full max-w-[500px] aspect-square">
+                    <ChessboardComponent
+                      position={gamePosition}
+                      onPieceDrop={onDrop}
+                      boardOrientation="white"
+                      customBoardStyle={{
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="mt-4 text-center">
+                  {isPlayerTurn ? (
+                    <p className="text-sm text-muted-foreground">Your turn (White)</p>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground">Coach is thinking...</p>
+                    </div>
+                  )}
+                  {game.isCheck() && <p className="text-sm text-destructive font-bold mt-2">Check!</p>}
+                </div>
+              </Card>
+
+              {/* Coach Commentary */}
+              <Card className="p-4 border-primary/20 bg-card/80 backdrop-blur flex flex-col overflow-hidden">
+                <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-primary" />
+                  Coach Commentary
+                </h3>
+                <ScrollArea className="flex-1" ref={scrollRef}>
+                  {gameMessages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-6">
+                      <p className="text-muted-foreground">
+                        Start a new game to play with your coach and receive real-time teaching and feedback!
+                      </p>
+                      <Button onClick={startNewGame} className="gap-2">
+                        <Gamepad2 className="w-4 h-4" />
+                        Start Game
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 pr-4">
+                      {gameMessages.map((msg, idx) => (
+                        <div
+                          key={idx}
+                          className={`rounded-lg p-4 ${
+                            msg.role === "user"
+                              ? "bg-primary/10 border-l-4 border-primary"
+                              : "bg-secondary/50 border-l-4 border-secondary"
+                          }`}
+                        >
+                          <p className="text-sm font-semibold mb-2 text-muted-foreground">
+                            {msg.role === "user" ? "You" : "Coach"}
+                          </p>
+                          <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                          <p className="text-xs opacity-70 mt-2">
+                            {new Date(msg.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
