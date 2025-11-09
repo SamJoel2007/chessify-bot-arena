@@ -28,7 +28,8 @@ export default function OnlineGame() {
 
   useEffect(() => {
     loadGame();
-    setupRealtimeSubscription();
+    const cleanup = setupRealtimeSubscription();
+    return cleanup;
   }, [gameId]);
 
   useEffect(() => {
@@ -110,11 +111,15 @@ export default function OnlineGame() {
           filter: `id=eq.${gameId}`,
         },
         (payload) => {
+          console.log("[REALTIME] Received game update:", payload);
           const newData = payload.new as any;
           const oldData = payload.old as any;
           
           // Detect if opponent made a move (FEN changed)
           if (oldData.current_fen !== newData.current_fen) {
+            console.log("[REALTIME] FEN changed - opponent made a move");
+            console.log("[REALTIME] New turn:", newData.current_turn);
+            
             // Check if it was a capture by comparing piece counts
             const oldPieceCount = oldData.current_fen.split(' ')[0].replace(/[^a-zA-Z]/g, '').length;
             const newPieceCount = newData.current_fen.split(' ')[0].replace(/[^a-zA-Z]/g, '').length;
@@ -194,8 +199,14 @@ export default function OnlineGame() {
     }
 
     try {
+      console.log("[MOVE] Making move:", { from, to, currentTurn: game.turn(), playerColor });
+      
       const gameCopy = new Chess(game.fen());
       const capturedPiece = gameCopy.get(to);
+      
+      // Capture the player who is making the move BEFORE the move is made
+      const playerWhoMoved = game.turn();
+      
       const move = gameCopy.move({
         from,
         to,
@@ -211,7 +222,16 @@ export default function OnlineGame() {
         playMoveSound();
       }
 
-      const newTime = game.turn() === "w" ? whiteTime : blackTime;
+      // Calculate time for the player who just moved
+      const updatedWhiteTime = playerWhoMoved === "w" ? whiteTime : whiteTime;
+      const updatedBlackTime = playerWhoMoved === "b" ? blackTime : blackTime;
+
+      console.log("[MOVE] Updating database:", {
+        newFEN: gameCopy.fen(),
+        newTurn: gameCopy.turn(),
+        whiteTime: updatedWhiteTime,
+        blackTime: updatedBlackTime,
+      });
 
       // Update game in database
       const { error } = await supabase
@@ -219,13 +239,15 @@ export default function OnlineGame() {
         .update({
           current_fen: gameCopy.fen(),
           current_turn: gameCopy.turn(),
-          white_time_remaining: game.turn() === "w" ? newTime : whiteTime,
-          black_time_remaining: game.turn() === "b" ? newTime : blackTime,
+          white_time_remaining: updatedWhiteTime,
+          black_time_remaining: updatedBlackTime,
           updated_at: new Date().toISOString(),
         })
         .eq("id", gameId);
 
       if (error) throw error;
+      
+      console.log("[MOVE] Database updated successfully");
 
       // Insert move history
       await supabase.from("game_moves").insert({
@@ -272,9 +294,13 @@ export default function OnlineGame() {
         }
       }
 
+      // Optimistic UI update - show the move immediately
       setGame(gameCopy);
       setOptionSquares({});
       setMoveFrom(null);
+      
+      console.log("[MOVE] Optimistic UI update complete, waiting for realtime confirmation");
+      
       return true;
     } catch (error) {
       console.error("Error making move:", error);
