@@ -25,6 +25,8 @@ export default function OnlineGame() {
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<Record<string, { background: string }>>({});
   const [username, setUsername] = useState<string>("");
+  const [isPlayingBot, setIsPlayingBot] = useState(false);
+  const [isBotThinking, setIsBotThinking] = useState(false);
 
   useEffect(() => {
     loadGame();
@@ -89,8 +91,15 @@ export default function OnlineGame() {
 
       setPlayerColor(data.white_player_id === user.id ? "w" : "b");
 
+      // Check if playing against a bot
+      const opponentId = data.white_player_id === user.id ? data.black_player_id : data.white_player_id;
+      setIsPlayingBot(opponentId.startsWith('bot-'));
+
       if (data.status !== "active") {
         setIsGameOver(true);
+      } else if (opponentId.startsWith('bot-') && chess.turn() !== (data.white_player_id === user.id ? "w" : "b")) {
+        // If it's bot's turn when loading, make bot move
+        setTimeout(() => makeBotMove(chess), 1000);
       }
     } catch (error) {
       console.error("Error loading game:", error);
@@ -177,18 +186,180 @@ export default function OnlineGame() {
       })
       .eq("id", gameId);
 
-    // Update points - winner gets +10, loser gets -5
-    await supabase.rpc('update_user_points', {
-      user_id: winnerId,
-      points_change: 10
-    });
+    // Update points - only for real player if playing bot
+    if (isPlayingBot) {
+      if (winnerId === userId) {
+        await supabase.rpc('update_user_points', {
+          user_id: userId,
+          points_change: 10
+        });
+      } else {
+        await supabase.rpc('update_user_points', {
+          user_id: userId,
+          points_change: -5
+        });
+      }
+    } else {
+      // Both real players
+      await supabase.rpc('update_user_points', {
+        user_id: winnerId,
+        points_change: 10
+      });
 
-    await supabase.rpc('update_user_points', {
-      user_id: loserId,
-      points_change: -5
-    });
+      await supabase.rpc('update_user_points', {
+        user_id: loserId,
+        points_change: -5
+      });
+    }
 
     setIsGameOver(true);
+  };
+
+  const evaluatePosition = (chess: Chess): number => {
+    let score = 0;
+    const pieceValues: Record<string, number> = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
+    
+    const board = chess.board();
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        const piece = board[i][j];
+        if (piece) {
+          const value = pieceValues[piece.type];
+          score += piece.color === 'w' ? value : -value;
+        }
+      }
+    }
+    return score;
+  };
+
+  const makeBotMove = async (currentGame: Chess) => {
+    if (currentGame.isGameOver() || isGameOver) return;
+    
+    setIsBotThinking(true);
+    
+    // Bot thinks for 2-4 seconds for realism
+    setTimeout(async () => {
+      const moves = currentGame.moves({ verbose: true });
+      if (moves.length === 0) {
+        setIsBotThinking(false);
+        return;
+      }
+
+      // Evaluate all moves
+      const scoredMoves = moves.map(m => {
+        const testGame = new Chess(currentGame.fen());
+        testGame.move(m);
+        const score = evaluatePosition(testGame);
+        // Adjust score based on bot's color
+        const botColor = playerColor === "w" ? "b" : "w";
+        return {
+          move: m,
+          score: botColor === "w" ? score : -score
+        };
+      }).sort((a, b) => b.score - a.score);
+
+      // Bot plays one of the top 3 moves (75% best, 20% second best, 5% third best)
+      const rand = Math.random();
+      const selectedMove = rand < 0.75 
+        ? scoredMoves[0].move 
+        : rand < 0.95 && scoredMoves.length > 1
+        ? scoredMoves[1].move
+        : scoredMoves[Math.min(2, scoredMoves.length - 1)].move;
+
+      const from = selectedMove.from as Square;
+      const to = selectedMove.to as Square;
+
+      try {
+        const gameCopy = new Chess(currentGame.fen());
+        const capturedPiece = gameCopy.get(to);
+        const playerWhoMoved = gameCopy.turn();
+        
+        const move = gameCopy.move({
+          from,
+          to,
+          promotion: "q",
+        });
+
+        if (move === null) {
+          setIsBotThinking(false);
+          return;
+        }
+
+        // Play sound effect
+        if (capturedPiece) {
+          playCaptureSound();
+        } else {
+          playMoveSound();
+        }
+
+        // Calculate time
+        const botTime = playerWhoMoved === "w" ? whiteTime : blackTime;
+        const updatedWhiteTime = playerWhoMoved === "w" ? botTime : whiteTime;
+        const updatedBlackTime = playerWhoMoved === "b" ? botTime : blackTime;
+
+        // Update game in database
+        const { error } = await supabase
+          .from("games")
+          .update({
+            current_fen: gameCopy.fen(),
+            current_turn: gameCopy.turn(),
+            white_time_remaining: updatedWhiteTime,
+            black_time_remaining: updatedBlackTime,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", gameId);
+
+        if (error) throw error;
+
+        // Insert move history
+        const botPlayerId = playerColor === "w" ? gameData.black_player_id : gameData.white_player_id;
+        await supabase.from("game_moves").insert({
+          game_id: gameId,
+          move_number: currentGame.moveNumber(),
+          move_san: move.san,
+          fen_after: gameCopy.fen(),
+          player_id: botPlayerId,
+          time_taken: 1,
+        });
+
+        // Check for game end
+        if (gameCopy.isGameOver()) {
+          let winnerId = null;
+          if (gameCopy.isCheckmate()) {
+            winnerId = playerColor === "w" ? gameData.black_player_id : gameData.white_player_id;
+          }
+
+          await supabase
+            .from("games")
+            .update({
+              status: "finished",
+              winner_id: winnerId,
+            })
+            .eq("id", gameId);
+
+          // Update points for player only (bot is fake)
+          if (winnerId) {
+            if (winnerId === userId) {
+              await supabase.rpc('update_user_points', {
+                user_id: userId,
+                points_change: 10
+              });
+            } else {
+              await supabase.rpc('update_user_points', {
+                user_id: userId,
+                points_change: -5
+              });
+            }
+          }
+        }
+
+        setGame(gameCopy);
+      } catch (error) {
+        console.error("Error making bot move:", error);
+      } finally {
+        setIsBotThinking(false);
+      }
+    }, Math.random() * 2000 + 2000);
   };
 
   const makeMove = async (from: Square, to: Square) => {
@@ -280,17 +451,31 @@ export default function OnlineGame() {
             ? gameData.black_player_id 
             : gameData.white_player_id;
 
-          // Winner gets +10 points
-          await supabase.rpc('update_user_points', {
-            user_id: winnerId,
-            points_change: 10
-          });
+          // Only update points for real player if playing bot
+          if (isPlayingBot) {
+            if (winnerId === userId) {
+              await supabase.rpc('update_user_points', {
+                user_id: userId,
+                points_change: 10
+              });
+            } else {
+              await supabase.rpc('update_user_points', {
+                user_id: userId,
+                points_change: -5
+              });
+            }
+          } else {
+            // Both are real players
+            await supabase.rpc('update_user_points', {
+              user_id: winnerId,
+              points_change: 10
+            });
 
-          // Loser gets -5 points
-          await supabase.rpc('update_user_points', {
-            user_id: loserId,
-            points_change: -5
-          });
+            await supabase.rpc('update_user_points', {
+              user_id: loserId,
+              points_change: -5
+            });
+          }
         }
       }
 
@@ -300,6 +485,11 @@ export default function OnlineGame() {
       setMoveFrom(null);
       
       console.log("[MOVE] Optimistic UI update complete, waiting for realtime confirmation");
+      
+      // Trigger bot move if playing against bot and it's bot's turn
+      if (isPlayingBot && gameCopy.turn() !== playerColor && !gameCopy.isGameOver()) {
+        makeBotMove(gameCopy);
+      }
       
       return true;
     } catch (error) {
@@ -330,7 +520,7 @@ export default function OnlineGame() {
   };
 
   const handleSquareClick = (square: Square) => {
-    if (isGameOver) return;
+    if (isGameOver || isBotThinking) return;
     if (game.turn() !== playerColor) {
       toast.error("Not your turn!");
       return;

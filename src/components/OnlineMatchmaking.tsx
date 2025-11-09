@@ -54,8 +54,8 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
       // Timer for elapsed time
       timer = setInterval(() => {
         setTimeElapsed((prev) => {
-          if (prev >= 60) {
-            handleTimeout();
+          if (prev >= 25) {
+            handleBotMatch();
             return prev;
           }
           return prev + 1;
@@ -68,10 +68,52 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
     };
   }, [isSearching]);
 
-  const handleTimeout = async () => {
-    setIsSearching(false);
-    await leaveQueue();
-    toast.error("No player found. Try again later.");
+  const handleBotMatch = async () => {
+    try {
+      setIsSearching(false);
+      await leaveQueue();
+      
+      // Create bot profiles that look realistic
+      const botProfiles = [
+        { name: "Alex", avatar: "👤" },
+        { name: "Jordan", avatar: "🧑" },
+        { name: "Sam", avatar: "👨" },
+        { name: "Taylor", avatar: "👩" },
+        { name: "Morgan", avatar: "🧔" },
+        { name: "Casey", avatar: "👱" },
+        { name: "Riley", avatar: "👨‍🦰" },
+        { name: "Quinn", avatar: "👩‍🦱" },
+      ];
+      
+      const randomBot = botProfiles[Math.floor(Math.random() * botProfiles.length)];
+      const botUserId = `bot-${crypto.randomUUID()}`;
+      const isPlayerWhite = Math.random() < 0.5;
+      
+      // Create game with bot
+      const { data: newGame, error } = await supabase
+        .from("games")
+        .insert({
+          white_player_id: isPlayerWhite ? userId : botUserId,
+          black_player_id: isPlayerWhite ? botUserId : userId,
+          white_username: isPlayerWhite ? username : randomBot.name,
+          black_username: isPlayerWhite ? randomBot.name : username,
+          white_avatar: isPlayerWhite ? currentAvatar : randomBot.avatar,
+          black_avatar: isPlayerWhite ? randomBot.avatar : currentAvatar,
+          white_time_remaining: timeControl,
+          black_time_remaining: timeControl,
+          status: "active",
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      toast.success("Match found!");
+      navigate(`/online-game/${newGame.id}`);
+    } catch (error) {
+      console.error("Error creating bot match:", error);
+      toast.error("Failed to create match");
+    }
   };
 
   const joinQueue = async (selectedTimeControl: number) => {
