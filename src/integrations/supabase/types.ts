@@ -392,6 +392,7 @@ export type Database = {
           current_turn: string
           id: string
           status: string
+          tournament_id: string | null
           updated_at: string
           white_avatar: string | null
           white_player_id: string
@@ -409,6 +410,7 @@ export type Database = {
           current_turn?: string
           id?: string
           status?: string
+          tournament_id?: string | null
           updated_at?: string
           white_avatar?: string | null
           white_player_id: string
@@ -426,6 +428,7 @@ export type Database = {
           current_turn?: string
           id?: string
           status?: string
+          tournament_id?: string | null
           updated_at?: string
           white_avatar?: string | null
           white_player_id?: string
@@ -433,7 +436,15 @@ export type Database = {
           white_username?: string
           winner_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "games_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       match_queue: {
         Row: {
@@ -622,6 +633,69 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_matches: {
+        Row: {
+          created_at: string
+          game_id: string | null
+          id: string
+          player1_id: string
+          player1_username: string
+          player2_id: string
+          player2_username: string
+          round_number: number
+          scheduled_at: string | null
+          status: string
+          tournament_id: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          game_id?: string | null
+          id?: string
+          player1_id: string
+          player1_username: string
+          player2_id: string
+          player2_username: string
+          round_number: number
+          scheduled_at?: string | null
+          status?: string
+          tournament_id: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          game_id?: string | null
+          id?: string
+          player1_id?: string
+          player1_username?: string
+          player2_id?: string
+          player2_username?: string
+          round_number?: number
+          scheduled_at?: string | null
+          status?: string
+          tournament_id?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_matches_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_participants: {
         Row: {
           id: string
@@ -654,6 +728,56 @@ export type Database = {
           },
         ]
       }
+      tournament_standings: {
+        Row: {
+          created_at: string
+          draws: number
+          id: string
+          losses: number
+          points: number
+          rank: number | null
+          tournament_id: string
+          updated_at: string
+          user_id: string
+          username: string
+          wins: number
+        }
+        Insert: {
+          created_at?: string
+          draws?: number
+          id?: string
+          losses?: number
+          points?: number
+          rank?: number | null
+          tournament_id: string
+          updated_at?: string
+          user_id: string
+          username: string
+          wins?: number
+        }
+        Update: {
+          created_at?: string
+          draws?: number
+          id?: string
+          losses?: number
+          points?: number
+          rank?: number | null
+          tournament_id?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
+          wins?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_standings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournaments: {
         Row: {
           created_at: string
@@ -662,6 +786,7 @@ export type Database = {
           id: string
           max_participants: number | null
           name: string
+          registration_slug: string | null
           start_date: string
           status: string
           updated_at: string
@@ -673,6 +798,7 @@ export type Database = {
           id?: string
           max_participants?: number | null
           name: string
+          registration_slug?: string | null
           start_date: string
           status?: string
           updated_at?: string
@@ -684,6 +810,7 @@ export type Database = {
           id?: string
           max_participants?: number | null
           name?: string
+          registration_slug?: string | null
           start_date?: string
           status?: string
           updated_at?: string

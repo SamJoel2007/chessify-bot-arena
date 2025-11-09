@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, ExternalLink, Users } from "lucide-react";
 import { format } from "date-fns";
 
 interface Tournament {
@@ -42,8 +42,17 @@ interface Tournament {
   end_date: string | null;
   max_participants: number | null;
   status: string;
+  registration_slug: string | null;
   created_at: string;
 }
+
+const generateSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .substring(0, 50);
+};
 
 export default function AdminTournaments() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -89,6 +98,8 @@ export default function AdminTournaments() {
     e.preventDefault();
 
     try {
+      const slug = editingTournament?.registration_slug || generateSlug(formData.name);
+      
       const tournamentData = {
         name: formData.name,
         description: formData.description || null,
@@ -96,6 +107,7 @@ export default function AdminTournaments() {
         end_date: formData.end_date || null,
         max_participants: formData.max_participants ? parseInt(formData.max_participants) : null,
         status: formData.status,
+        registration_slug: slug,
       };
 
       if (editingTournament) {
@@ -125,6 +137,16 @@ export default function AdminTournaments() {
         variant: "destructive",
       });
     }
+  };
+
+  const copyRegistrationLink = (slug: string) => {
+    const link = `${window.location.origin}/tournament/${slug}`;
+    navigator.clipboard.writeText(link);
+    toast({ title: "Registration link copied to clipboard!" });
+  };
+
+  const viewParticipants = (tournamentId: string) => {
+    window.open(`/admin/tournaments/${tournamentId}/participants`, '_blank');
   };
 
   const handleDelete = async (id: string) => {
@@ -293,9 +315,9 @@ export default function AdminTournaments() {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Start Date</TableHead>
-                      <TableHead>End Date</TableHead>
                       <TableHead>Max Participants</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Registration Link</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -304,11 +326,6 @@ export default function AdminTournaments() {
                       <TableRow key={tournament.id}>
                         <TableCell className="font-medium">{tournament.name}</TableCell>
                         <TableCell>{format(new Date(tournament.start_date), "MMM dd, yyyy")}</TableCell>
-                        <TableCell>
-                          {tournament.end_date
-                            ? format(new Date(tournament.end_date), "MMM dd, yyyy")
-                            : "N/A"}
-                        </TableCell>
                         <TableCell>{tournament.max_participants || "Unlimited"}</TableCell>
                         <TableCell>
                           <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
@@ -319,6 +336,27 @@ export default function AdminTournaments() {
                           }`}>
                             {tournament.status}
                           </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copyRegistrationLink(tournament.registration_slug!)}
+                              disabled={!tournament.registration_slug}
+                            >
+                              <Copy className="h-3 w-3 mr-1" />
+                              Copy Link
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(`/tournament/${tournament.registration_slug}`, '_blank')}
+                              disabled={!tournament.registration_slug}
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
