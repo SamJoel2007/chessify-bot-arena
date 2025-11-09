@@ -663,25 +663,37 @@ export type Database = {
       posts: {
         Row: {
           author_id: string
+          author_username: string | null
           content: string
           created_at: string
+          external_url: string | null
           id: string
+          image_url: string | null
+          source: string | null
           title: string
           updated_at: string
         }
         Insert: {
           author_id: string
+          author_username?: string | null
           content: string
           created_at?: string
+          external_url?: string | null
           id?: string
+          image_url?: string | null
+          source?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           author_id?: string
+          author_username?: string | null
           content?: string
           created_at?: string
+          external_url?: string | null
           id?: string
+          image_url?: string | null
+          source?: string | null
           title?: string
           updated_at?: string
         }

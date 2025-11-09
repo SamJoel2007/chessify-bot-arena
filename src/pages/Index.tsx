@@ -191,6 +191,12 @@ const Index = () => {
               >
                 Community
               </Button>
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/feed')}
+              >
+                Feed
+              </Button>
             </nav>
           </div>
 

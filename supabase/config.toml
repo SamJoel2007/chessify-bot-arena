@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.join-game-invite]
 verify_jwt = false
+
+[functions.fetch-reddit-posts]
+verify_jwt = false
