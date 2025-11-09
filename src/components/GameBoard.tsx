@@ -479,7 +479,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     if (checkMateInThree(testGame)) return true;
     
     const opponentMoves = testGame.moves({ verbose: true });
-    for (const oppMove of opponentMoves.slice(0, 6)) {
+    for (const oppMove of opponentMoves.slice(0, 4)) {
       const oppTest = new Chess(testGame.fen());
       oppTest.move(oppMove);
       
@@ -493,7 +493,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     if (checkMateInFour(testGame)) return true;
     
     const opponentMoves = testGame.moves({ verbose: true });
-    for (const oppMove of opponentMoves.slice(0, 5)) {
+    for (const oppMove of opponentMoves.slice(0, 3)) {
       const oppTest = new Chess(testGame.fen());
       oppTest.move(oppMove);
       
@@ -557,6 +557,10 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         move: m,
         score: evaluateMove(m, currentGame, isAyanokojiBot ? 3500 : rating)
       })).sort((a, b) => b.score - a.score);
+      
+      // Limit filtering to top moves for performance
+      const MAX_MOVES_TO_FILTER = 40;
+      const movesToFilter = scoredMoves.slice(0, MAX_MOVES_TO_FILTER);
       
       // Check for forced mate for advanced/master/GM bots
       if (isAdvancedBot || isMasterBot || isGrandmasterBot) {
@@ -628,7 +632,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       // Filter out bad moves for intermediate+ bots (stricter for expert)
       let filteredMoves = scoredMoves;
       if (rating >= 1000 || isAyanokojiBot) {
-        filteredMoves = scoredMoves.filter(sm => {
+        filteredMoves = movesToFilter.filter(sm => {
           const testGame = new Chess(currentGame.fen());
           testGame.move(sm.move);
           
@@ -638,8 +642,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           const hangingValue = hanging.reduce((sum, h) => sum + h.value, 0);
           if (hangingValue >= hangThreshold) return false;
           
-          // Ayanokoji checks mate-in-5 for maximum threat detection
-          const allowsMate = isAyanokojiBot ? checkMateInFive(testGame) :
+          // Ayanokoji uses mate-in-2 checking for performance (still legendary strength)
+          const allowsMate = isAyanokojiBot ? checkMateInTwo(testGame) :
                             isMasterBot ? checkMateInThree(testGame) :
                             isExpertBot ? checkMateInTwo(testGame) : 
                             checkMateInOne(testGame);
