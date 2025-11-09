@@ -269,8 +269,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       }
     }
     
-    // Enhanced look-ahead depth for Master/GM bots
-    const lookAheadDepth = isGrandmasterBot ? 25 : 
+    // Enhanced look-ahead depth for Master/GM bots (Ayanokoji gets maximum depth)
+    const lookAheadDepth = isGrandmasterBot ? 30 : 
                            isMasterBot ? 20 :           // 5-ply for Master
                            isExpertBot ? 15 :           // 3-ply for Expert
                            isAdvancedBot ? 15 : 
@@ -474,17 +474,50 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
     return false;
   };
 
+  // Helper to check mate in four for Ayanokoji bot
+  const checkMateInFour = (testGame: Chess) => {
+    if (checkMateInThree(testGame)) return true;
+    
+    const opponentMoves = testGame.moves({ verbose: true });
+    for (const oppMove of opponentMoves.slice(0, 6)) {
+      const oppTest = new Chess(testGame.fen());
+      oppTest.move(oppMove);
+      
+      if (checkMateInThree(oppTest)) return true;
+    }
+    return false;
+  };
+
+  // Helper to check mate in five for Ayanokoji bot
+  const checkMateInFive = (testGame: Chess) => {
+    if (checkMateInFour(testGame)) return true;
+    
+    const opponentMoves = testGame.moves({ verbose: true });
+    for (const oppMove of opponentMoves.slice(0, 5)) {
+      const oppTest = new Chess(testGame.fen());
+      oppTest.move(oppMove);
+      
+      if (checkMateInFour(oppTest)) return true;
+    }
+    return false;
+  };
+
   const makeBotMove = (currentGame: Chess) => {
     if (currentGame.isGameOver()) return;
 
+    // Special handling for Ayanokoji bot - legendary difficulty
+    const isAyanokojiBot = selectedBot?.id === "special-ayanokoji" || selectedBot?.isSpecialEvent === true;
+    
     const rating = selectedBot?.rating || 1000;
-    const isAdvancedBot = rating >= 1800;
-    const isExpertBot = rating >= 2300;
-    const isMasterBot = rating >= 2800;
-    const isGrandmasterBot = rating >= 3300;
+    const isAdvancedBot = isAyanokojiBot || rating >= 1800;
+    const isExpertBot = isAyanokojiBot || rating >= 2300;
+    const isMasterBot = isAyanokojiBot || rating >= 2800;
+    const isGrandmasterBot = isAyanokojiBot || rating >= 3300;
     
     // Master bots think even longer for more realistic play
-    const thinkingTime = isGrandmasterBot
+    const thinkingTime = isAyanokojiBot
+      ? Math.random() * 6000 + 6000  // 6-12 seconds for Ayanokoji (legendary)
+      : isGrandmasterBot
       ? Math.random() * 4000 + 6000  // 6-10 seconds for GM
       : isMasterBot
       ? Math.random() * 3000 + 5000  // 5-8 seconds for Master
@@ -519,10 +552,10 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         blunderRate = 0; // Expert bots absolutely never blunder
       }
       
-      // Evaluate all moves
+      // Evaluate all moves (use enhanced rating for Ayanokoji)
       const scoredMoves = moves.map(m => ({
         move: m,
-        score: evaluateMove(m, currentGame, rating)
+        score: evaluateMove(m, currentGame, isAyanokojiBot ? 3500 : rating)
       })).sort((a, b) => b.score - a.score);
       
       // Check for forced mate for advanced/master/GM bots
@@ -594,24 +627,26 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       
       // Filter out bad moves for intermediate+ bots (stricter for expert)
       let filteredMoves = scoredMoves;
-      if (rating >= 1000) {
+      if (rating >= 1000 || isAyanokojiBot) {
         filteredMoves = scoredMoves.filter(sm => {
           const testGame = new Chess(currentGame.fen());
           testGame.move(sm.move);
           
-          // Master bots reject moves that hang even half a pawn, Expert: full pawn
-          const hangThreshold = isMasterBot ? 0.5 : (isExpertBot ? 1 : 3);
+          // Ayanokoji rejects moves that hang even 1/3 of a pawn
+          const hangThreshold = isAyanokojiBot ? 0.3 : (isMasterBot ? 0.5 : (isExpertBot ? 1 : 3));
           const hanging = detectHangingPieces(testGame, currentGame.turn());
           const hangingValue = hanging.reduce((sum, h) => sum + h.value, 0);
           if (hangingValue >= hangThreshold) return false;
           
-          // Master bots check mate-in-3, Expert checks mate-in-2, others check mate-in-1
-          const allowsMate = isMasterBot ? checkMateInThree(testGame) :
+          // Ayanokoji checks mate-in-5 for maximum threat detection
+          const allowsMate = isAyanokojiBot ? checkMateInFive(testGame) :
+                            isMasterBot ? checkMateInThree(testGame) :
                             isExpertBot ? checkMateInTwo(testGame) : 
                             checkMateInOne(testGame);
           if (allowsMate) return false;
           
-          // Master bots avoid smaller positional loss than Expert bots
+          // Ayanokoji avoids even tiny positional losses
+          if (isAyanokojiBot && sm.score < scoredMoves[0].score - 5) return false;
           if (isMasterBot && sm.score < scoredMoves[0].score - 15) return false;
           if (isExpertBot && sm.score < scoredMoves[0].score - 30) return false;
           
@@ -625,8 +660,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       
       let move;
       
-      // Smarter blunder selection
-      if (Math.random() < blunderRate) {
+      // Smarter blunder selection (Ayanokoji NEVER blunders)
+      if (!isAyanokojiBot && Math.random() < blunderRate) {
         let blunderRange: { start: number; end: number };
         if (rating < 1200) {
           blunderRange = { 
@@ -652,7 +687,9 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       } else {
         // Good move: tighter selection pools for advanced bots
         let selectionPoolSize: number;
-        if (rating < 600) {
+        if (isAyanokojiBot) {
+          selectionPoolSize = 1; // Ayanokoji: ALWAYS absolute best move
+        } else if (rating < 600) {
           selectionPoolSize = filteredMoves.length;
         } else if (rating < 900) {
           selectionPoolSize = Math.ceil(filteredMoves.length * 0.6);
@@ -678,7 +715,9 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         
         // Higher best move chance for advanced bots
         let bestMoveChance: number;
-        if (rating < 600) {
+        if (isAyanokojiBot) {
+          bestMoveChance = 0.9999; // Ayanokoji: 99.99% accuracy
+        } else if (rating < 600) {
           bestMoveChance = 0.2;
         } else if (rating < 900) {
           bestMoveChance = 0.4;
