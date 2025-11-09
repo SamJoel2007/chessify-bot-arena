@@ -545,7 +545,7 @@ export default function Coach() {
 
     return (
       <div className="relative">
-        <div className="grid grid-cols-8 aspect-square w-full max-w-[500px] border-4 border-border rounded-lg overflow-hidden shadow-lg">
+        <div className="grid grid-cols-8 w-[640px] h-[640px] border-4 border-border rounded-lg overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.3)] mx-auto">
           {ranks.map((rank, rankIndex) =>
             files.map((file, fileIndex) => {
               const square = `${file}${rank}` as Square;
@@ -561,18 +561,18 @@ export default function Coach() {
                   key={square}
                   onClick={() => handleSquareClick(square)}
                   className={`
-                    relative flex items-center justify-center cursor-pointer
+                    relative w-[80px] h-[80px] flex items-center justify-center cursor-pointer
                     transition-all duration-200 hover:brightness-110
-                    ${isLight ? "bg-[#f0d9b5]" : "bg-[#b58863]"}
+                    ${isLight ? "bg-[#f0d9b5] shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]" : "bg-[#b58863] shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)]"}
                     ${isSelected ? "ring-4 ring-primary ring-inset animate-pulse" : ""}
                     ${isLastMoveSquare ? "bg-yellow-400/30" : ""}
-                    ${isPossibleMove ? "after:content-[''] after:absolute after:w-4 after:h-4 after:rounded-full after:bg-primary/50 after:shadow-lg" : ""}
+                    ${isPossibleMove ? "after:content-[''] after:absolute after:w-6 after:h-6 after:rounded-full after:bg-primary/70 after:shadow-lg" : ""}
                   `}
                 >
                   {piece && !isMovingFrom && (
                     <span 
                       className={`
-                        text-5xl select-none transition-transform duration-200 hover:scale-110
+                        text-[60px] leading-none select-none transition-transform duration-200 hover:scale-110
                         ${piece.color === "w" 
                           ? "text-gray-100 drop-shadow-[0_0_3px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]" 
                           : "text-gray-900 drop-shadow-[0_0_3px_rgba(255,255,255,0.9)] [text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]"
@@ -591,20 +591,18 @@ export default function Coach() {
         {/* Moving piece overlay */}
         {movingPiece && (
           <div
-            className="absolute pointer-events-none z-50 text-5xl select-none transition-all duration-300 ease-out"
+            className="absolute pointer-events-none z-50 flex items-center justify-center transition-all duration-300 ease-out"
             style={{
-              left: `${(getSquareCoordinates(movingPiece.to).file / 8) * 100}%`,
-              top: `${(getSquareCoordinates(movingPiece.to).rank / 8) * 100}%`,
-              width: '12.5%',
-              height: '12.5%',
+              left: `${(getSquareCoordinates(movingPiece.to).file * 80)}px`,
+              top: `${(getSquareCoordinates(movingPiece.to).rank * 80)}px`,
+              width: '80px',
+              height: '80px',
               transform: 'translate(0, 0)',
             }}
           >
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="text-gray-100 drop-shadow-[0_0_3px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000] animate-pulse">
-                {movingPiece.piece}
-              </span>
-            </div>
+            <span className={`text-[60px] leading-none ${movingPiece.piece.includes('♙') || movingPiece.piece.includes('♖') || movingPiece.piece.includes('♘') || movingPiece.piece.includes('♗') || movingPiece.piece.includes('♕') || movingPiece.piece.includes('♔') ? 'text-gray-100' : 'text-gray-900'} drop-shadow-[0_0_3px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]`}>
+              {movingPiece.piece}
+            </span>
           </div>
         )}
       </div>
