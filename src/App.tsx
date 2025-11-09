@@ -27,6 +27,8 @@ import Coach from "./pages/Coach";
 import Community from "./pages/Community";
 import TournamentRegistration from "./pages/TournamentRegistration";
 import TournamentLobby from "./pages/TournamentLobby";
+import JoinGame from "./pages/JoinGame";
+import GameLobby from "./pages/GameLobby";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +64,8 @@ const App = () => (
           <Route path="/community" element={<Community />} />
           <Route path="/tournament/:slug" element={<TournamentRegistration />} />
           <Route path="/tournament/:slug/lobby" element={<TournamentLobby />} />
+          <Route path="/join/:inviteCode" element={<JoinGame />} />
+          <Route path="/lobby/:inviteCode" element={<GameLobby />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

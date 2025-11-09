@@ -36,9 +36,53 @@ export default function OnlineGame() {
   const [isBotThinking, setIsBotThinking] = useState(false);
   const [showResultDialog, setShowResultDialog] = useState(false);
   const [gameResult, setGameResult] = useState<"win" | "loss" | "draw" | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
+  const [opponentIsGuest, setOpponentIsGuest] = useState(false);
   
   // Bot names used for detection
   const botNames = ["Alex", "Jordan", "Sam", "Taylor", "Morgan", "Casey", "Riley", "Quinn"];
+
+  const getPlayerInfo = async () => {
+    // Check if authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .single();
+      
+      return { 
+        type: 'user', 
+        id: user.id, 
+        username: profile?.username || 'Player'
+      };
+    }
+    
+    // Check for guest session
+    const guestToken = localStorage.getItem('guest_session_token');
+    const guestId = localStorage.getItem('guest_player_id');
+    const guestName = localStorage.getItem('guest_display_name');
+    
+    if (guestToken && guestId) {
+      const { data } = await supabase
+        .from('guest_players')
+        .select('*')
+        .eq('id', guestId)
+        .eq('session_token', guestToken)
+        .single();
+      
+      if (data && new Date(data.expires_at) > new Date()) {
+        return { 
+          type: 'guest', 
+          id: data.id, 
+          username: guestName || data.display_name
+        };
+      }
+    }
+    
+    return null;
+  };
 
   useEffect(() => {
     loadGame();
@@ -68,23 +112,15 @@ export default function OnlineGame() {
 
   const loadGame = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const playerInfo = await getPlayerInfo();
+      if (!playerInfo) {
         navigate("/auth");
         return;
       }
-      setUserId(user.id);
-
-      // Get user profile for username
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("id", user.id)
-        .single();
       
-      if (profile) {
-        setUsername(profile.username || "Player");
-      }
+      setUserId(playerInfo.id);
+      setUsername(playerInfo.username);
+      setIsGuest(playerInfo.type === 'guest');
 
       const { data, error } = await supabase
         .from("games")
@@ -101,16 +137,21 @@ export default function OnlineGame() {
       const chess = new Chess(data.current_fen);
       setGame(chess);
 
-      setPlayerColor(data.white_player_id === user.id ? "w" : "b");
+      setPlayerColor(data.white_player_id === playerInfo.id ? "w" : "b");
+
+      // Check if opponent is guest
+      const isWhitePlayer = data.white_player_id === playerInfo.id;
+      const opponentType = isWhitePlayer ? data.black_player_type : data.white_player_type;
+      setOpponentIsGuest(opponentType === 'guest');
 
       // Check if playing against a bot by checking opponent's username
-      const opponentUsername = data.white_player_id === user.id ? data.black_username : data.white_username;
+      const opponentUsername = isWhitePlayer ? data.black_username : data.white_username;
       const playingBot = botNames.includes(opponentUsername);
       setIsPlayingBot(playingBot);
 
       if (data.status !== "active") {
         setIsGameOver(true);
-      } else if (playingBot && chess.turn() !== (data.white_player_id === user.id ? "w" : "b")) {
+      } else if (playingBot && chess.turn() !== (isWhitePlayer ? "w" : "b")) {
         // If it's bot's turn when loading, make bot move
         setTimeout(() => makeBotMove(chess), 1000);
       }
@@ -712,7 +753,15 @@ export default function OnlineGame() {
                         {BlackAvatar}
                       </div>
                     )}
+                    {!BlackAvatar && (playerColor === 'w' ? gameData.black_player_type === 'guest' : isGuest) && (
+                      <div className="w-8 h-8 flex items-center justify-center text-2xl">
+                        👤
+                      </div>
+                    )}
                     <span className="font-bold">{gameData.black_username}</span>
+                    {(playerColor === 'w' ? gameData.black_player_type === 'guest' : isGuest) && (
+                      <Badge variant="secondary" className="text-xs">Guest</Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
@@ -738,7 +787,15 @@ export default function OnlineGame() {
                         {WhiteAvatar}
                       </div>
                     )}
+                    {!WhiteAvatar && (playerColor === 'b' ? gameData.white_player_type === 'guest' : isGuest) && (
+                      <div className="w-8 h-8 flex items-center justify-center text-2xl">
+                        👤
+                      </div>
+                    )}
                     <span className="font-bold">{gameData.white_username}</span>
+                    {(playerColor === 'b' ? gameData.white_player_type === 'guest' : isGuest) && (
+                      <Badge variant="secondary" className="text-xs">Guest</Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
@@ -753,9 +810,18 @@ export default function OnlineGame() {
             <div className="space-y-4">
               <Card className="p-6 bg-gradient-card">
                 <h3 className="font-bold mb-4">Game Info</h3>
-                <div className="mb-4">
-                  <VoiceChat gameId={gameId || ""} userId={userId} />
-                </div>
+                {isGuest && (
+                  <div className="mb-4 p-3 bg-muted rounded-lg text-sm">
+                    <p className="text-muted-foreground">
+                      🎮 Playing as guest. This game won't affect ratings.
+                    </p>
+                  </div>
+                )}
+                {!isGuest && (
+                  <div className="mb-4">
+                    <VoiceChat gameId={gameId || ""} userId={userId} />
+                  </div>
+                )}
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Your Color:</span>

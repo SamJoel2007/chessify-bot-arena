@@ -340,6 +340,63 @@ export type Database = {
         }
         Relationships: []
       }
+      game_invites: {
+        Row: {
+          created_at: string
+          expires_at: string
+          game_id: string | null
+          guest_player_id: string | null
+          host_avatar: string | null
+          host_user_id: string
+          host_username: string
+          id: string
+          invite_code: string
+          status: string
+          time_control: number
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          game_id?: string | null
+          guest_player_id?: string | null
+          host_avatar?: string | null
+          host_user_id: string
+          host_username: string
+          id?: string
+          invite_code: string
+          status?: string
+          time_control?: number
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          game_id?: string | null
+          guest_player_id?: string | null
+          host_avatar?: string | null
+          host_user_id?: string
+          host_username?: string
+          id?: string
+          invite_code?: string
+          status?: string
+          time_control?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_invites_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_invites_guest_player_id_fkey"
+            columns: ["guest_player_id"]
+            isOneToOne: false
+            referencedRelation: "guest_players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_moves: {
         Row: {
           created_at: string
@@ -385,17 +442,20 @@ export type Database = {
         Row: {
           black_avatar: string | null
           black_player_id: string
+          black_player_type: string | null
           black_time_remaining: number
           black_username: string
           created_at: string
           current_fen: string
           current_turn: string
           id: string
+          invite_code: string | null
           status: string
           tournament_id: string | null
           updated_at: string
           white_avatar: string | null
           white_player_id: string
+          white_player_type: string | null
           white_time_remaining: number
           white_username: string
           winner_id: string | null
@@ -403,17 +463,20 @@ export type Database = {
         Insert: {
           black_avatar?: string | null
           black_player_id: string
+          black_player_type?: string | null
           black_time_remaining?: number
           black_username: string
           created_at?: string
           current_fen?: string
           current_turn?: string
           id?: string
+          invite_code?: string | null
           status?: string
           tournament_id?: string | null
           updated_at?: string
           white_avatar?: string | null
           white_player_id: string
+          white_player_type?: string | null
           white_time_remaining?: number
           white_username: string
           winner_id?: string | null
@@ -421,17 +484,20 @@ export type Database = {
         Update: {
           black_avatar?: string | null
           black_player_id?: string
+          black_player_type?: string | null
           black_time_remaining?: number
           black_username?: string
           created_at?: string
           current_fen?: string
           current_turn?: string
           id?: string
+          invite_code?: string | null
           status?: string
           tournament_id?: string | null
           updated_at?: string
           white_avatar?: string | null
           white_player_id?: string
+          white_player_type?: string | null
           white_time_remaining?: number
           white_username?: string
           winner_id?: string | null
@@ -445,6 +511,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      guest_players: {
+        Row: {
+          created_at: string
+          display_name: string
+          expires_at: string
+          id: string
+          session_token: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          expires_at?: string
+          id?: string
+          session_token: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          expires_at?: string
+          id?: string
+          session_token?: string
+        }
+        Relationships: []
       }
       match_queue: {
         Row: {

@@ -11,3 +11,9 @@ verify_jwt = true
 
 [functions.matchmaking]
 verify_jwt = true
+
+[functions.create-guest-session]
+verify_jwt = false
+
+[functions.join-game-invite]
+verify_jwt = false
