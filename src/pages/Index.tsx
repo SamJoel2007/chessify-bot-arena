@@ -187,12 +187,6 @@ const Index = () => {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => document.getElementById('coach')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                AI Coach
-              </Button>
-              <Button
-                variant="ghost"
                 onClick={() => navigate('/community')}
               >
                 Community

@@ -109,12 +109,6 @@ const Community = () => {
                 Puzzles
               </Button>
               <Button
-                variant="ghost"
-                onClick={() => navigate('/coach')}
-              >
-                AI Coach
-              </Button>
-              <Button
                 variant="default"
               >
                 Community
