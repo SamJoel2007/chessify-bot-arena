@@ -642,12 +642,13 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           const hangingValue = hanging.reduce((sum, h) => sum + h.value, 0);
           if (hangingValue >= hangThreshold) return false;
           
-          // Ayanokoji uses mate-in-2 checking for performance (still legendary strength)
-          const allowsMate = isAyanokojiBot ? checkMateInTwo(testGame) :
-                            isMasterBot ? checkMateInThree(testGame) :
-                            isExpertBot ? checkMateInTwo(testGame) : 
-                            checkMateInOne(testGame);
-          if (allowsMate) return false;
+          // Ayanokoji skips mate-checking for speed, relies on 3500 rating + strict hanging detection
+          if (!isAyanokojiBot) {
+            const allowsMate = isMasterBot ? checkMateInThree(testGame) :
+                              isExpertBot ? checkMateInTwo(testGame) : 
+                              checkMateInOne(testGame);
+            if (allowsMate) return false;
+          }
           
           // Ayanokoji avoids even tiny positional losses
           if (isAyanokojiBot && sm.score < scoredMoves[0].score - 5) return false;
