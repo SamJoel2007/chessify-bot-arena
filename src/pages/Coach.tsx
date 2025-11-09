@@ -37,6 +37,12 @@ export default function Coach() {
   const [gameMessages, setGameMessages] = useState<Message[]>([]);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
+  const [movingPiece, setMovingPiece] = useState<{
+    from: Square;
+    to: Square;
+    piece: string;
+  } | null>(null);
+  const [lastMove, setLastMove] = useState<{ from: Square; to: Square } | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -426,6 +432,17 @@ export default function Coach() {
     ]);
   };
 
+  const animateMove = (from: Square, to: Square, piece: string): Promise<void> => {
+    return new Promise((resolve) => {
+      setMovingPiece({ from, to, piece });
+      setTimeout(() => {
+        setMovingPiece(null);
+        setLastMove({ from, to });
+        resolve();
+      }, 300);
+    });
+  };
+
   const handleSquareClick = async (square: Square) => {
     if (!isPlayerTurn || isLoading) return;
 
@@ -469,6 +486,13 @@ export default function Coach() {
         return;
       }
 
+      // Animate the move
+      const pieceSymbols: Record<string, string> = {
+        p: "♟", r: "♜", n: "♞", b: "♝", q: "♛", k: "♚",
+        P: "♙", R: "♖", N: "♘", B: "♗", Q: "♕", K: "♔",
+      };
+      await animateMove(selectedSquare, square, pieceSymbols[move.piece.toUpperCase()]);
+
       // Move was successful
       setSelectedSquare(null);
       setPossibleMoves([]);
@@ -503,6 +527,12 @@ export default function Coach() {
     }
   };
 
+  const getSquareCoordinates = (square: Square) => {
+    const file = square.charCodeAt(0) - 97; // 'a' = 0, 'b' = 1, etc.
+    const rank = 8 - parseInt(square[1]); // '8' = 0, '7' = 1, etc.
+    return { file, rank };
+  };
+
   const renderBoard = () => {
     const board = game.board();
     const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -514,35 +544,68 @@ export default function Coach() {
     };
 
     return (
-      <div className="grid grid-cols-8 aspect-square w-full max-w-[500px] border-4 border-border rounded-lg overflow-hidden shadow-lg">
-        {ranks.map((rank, rankIndex) =>
-          files.map((file, fileIndex) => {
-            const square = `${file}${rank}` as Square;
-            const piece = board[rankIndex][fileIndex];
-            const isLight = (rankIndex + fileIndex) % 2 === 0;
-            const isSelected = selectedSquare === square;
-            const isPossibleMove = possibleMoves.includes(square);
+      <div className="relative">
+        <div className="grid grid-cols-8 aspect-square w-full max-w-[500px] border-4 border-border rounded-lg overflow-hidden shadow-lg">
+          {ranks.map((rank, rankIndex) =>
+            files.map((file, fileIndex) => {
+              const square = `${file}${rank}` as Square;
+              const piece = board[rankIndex][fileIndex];
+              const isLight = (rankIndex + fileIndex) % 2 === 0;
+              const isSelected = selectedSquare === square;
+              const isPossibleMove = possibleMoves.includes(square);
+              const isLastMoveSquare = lastMove && (lastMove.from === square || lastMove.to === square);
+              const isMovingFrom = movingPiece?.from === square;
 
-            return (
-              <div
-                key={square}
-                onClick={() => handleSquareClick(square)}
-                className={`
-                  relative flex items-center justify-center cursor-pointer
-                  transition-all duration-200 hover:brightness-110
-                  ${isLight ? "bg-[#f0d9b5]" : "bg-[#b58863]"}
-                  ${isSelected ? "ring-4 ring-primary ring-inset" : ""}
-                  ${isPossibleMove ? "after:content-[''] after:absolute after:w-3 after:h-3 after:rounded-full after:bg-primary/40" : ""}
-                `}
-              >
-                {piece && (
-                  <span className={`text-4xl select-none ${piece.color === "w" ? "text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" : "text-black"}`}>
-                    {pieceSymbols[piece.type.toUpperCase()]}
-                  </span>
-                )}
-              </div>
-            );
-          })
+              return (
+                <div
+                  key={square}
+                  onClick={() => handleSquareClick(square)}
+                  className={`
+                    relative flex items-center justify-center cursor-pointer
+                    transition-all duration-200 hover:brightness-110
+                    ${isLight ? "bg-[#f0d9b5]" : "bg-[#b58863]"}
+                    ${isSelected ? "ring-4 ring-primary ring-inset animate-pulse" : ""}
+                    ${isLastMoveSquare ? "bg-yellow-400/30" : ""}
+                    ${isPossibleMove ? "after:content-[''] after:absolute after:w-4 after:h-4 after:rounded-full after:bg-primary/50 after:shadow-lg" : ""}
+                  `}
+                >
+                  {piece && !isMovingFrom && (
+                    <span 
+                      className={`
+                        text-5xl select-none transition-transform duration-200 hover:scale-110
+                        ${piece.color === "w" 
+                          ? "text-gray-100 drop-shadow-[0_0_3px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]" 
+                          : "text-gray-900 drop-shadow-[0_0_3px_rgba(255,255,255,0.9)] [text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]"
+                        }
+                      `}
+                    >
+                      {pieceSymbols[piece.type.toUpperCase()]}
+                    </span>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Moving piece overlay */}
+        {movingPiece && (
+          <div
+            className="absolute pointer-events-none z-50 text-5xl select-none transition-all duration-300 ease-out"
+            style={{
+              left: `${(getSquareCoordinates(movingPiece.to).file / 8) * 100}%`,
+              top: `${(getSquareCoordinates(movingPiece.to).rank / 8) * 100}%`,
+              width: '12.5%',
+              height: '12.5%',
+              transform: 'translate(0, 0)',
+            }}
+          >
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-gray-100 drop-shadow-[0_0_3px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000] animate-pulse">
+                {movingPiece.piece}
+              </span>
+            </div>
+          </div>
         )}
       </div>
     );
@@ -736,25 +799,26 @@ export default function Coach() {
                       </Button>
                     </div>
                   ) : (
-                    <div className="space-y-4 pr-4">
-                      {gameMessages.map((msg, idx) => (
-                        <div
-                          key={idx}
-                          className={`rounded-lg p-4 ${
-                            msg.role === "user"
-                              ? "bg-primary/10 border-l-4 border-primary"
-                              : "bg-secondary/50 border-l-4 border-secondary"
-                          }`}
-                        >
-                          <p className="text-sm font-semibold mb-2 text-muted-foreground">
-                            {msg.role === "user" ? "You" : "Coach"}
+                    <div className="pr-4">
+                      {(() => {
+                        const latestCoachMessage = gameMessages
+                          .filter(msg => msg.role === "assistant")
+                          .slice(-1)[0];
+                        
+                        return latestCoachMessage ? (
+                          <div className="animate-fade-in rounded-lg p-4 bg-secondary/50 border-l-4 border-secondary">
+                            <p className="text-sm font-semibold mb-2 text-muted-foreground">Coach</p>
+                            <p className="whitespace-pre-wrap break-words">{latestCoachMessage.content}</p>
+                            <p className="text-xs opacity-70 mt-2">
+                              {new Date(latestCoachMessage.timestamp).toLocaleTimeString()}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground text-center">
+                            Coach will provide feedback here as you play
                           </p>
-                          <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                          <p className="text-xs opacity-70 mt-2">
-                            {new Date(msg.timestamp).toLocaleTimeString()}
-                          </p>
-                        </div>
-                      ))}
+                        );
+                      })()}
                     </div>
                   )}
                 </ScrollArea>
