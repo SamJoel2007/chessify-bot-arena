@@ -41,16 +41,26 @@ const Index = () => {
     script.setAttribute("data-cfasync", "false");
     document.body.appendChild(script);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
       if (session?.user) {
+        setUser(session.user);
         fetchUserProfile(session.user.id);
+      } else {
+        // Automatically sign in as guest if no session exists
+        const { data, error } = await supabase.auth.signInAnonymously();
+        if (data?.user && !error) {
+          setUser(data.user);
+        }
       }
-    });
+    };
+
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null);
-      if (session?.user) {
+      if (session?.user && !session.user.is_anonymous) {
         fetchUserProfile(session.user.id);
       }
     });
@@ -106,11 +116,6 @@ const Index = () => {
   }, []);
 
   const handlePlayAyanokoji = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
     const ayanokojiBot = {
       id: "special-ayanokoji",
       name: "Ayanokoji",
@@ -205,7 +210,7 @@ const Index = () => {
               variant="outline"
               className="gap-1 md:gap-2 px-2 md:px-4"
               size="sm"
-              onClick={() => user ? setShowShop(true) : navigate('/auth')}
+              onClick={() => setShowShop(true)}
             >
               <Store className="w-4 h-4 md:w-5 md:h-5 text-primary" />
               <span className="hidden md:inline">Shop</span>
@@ -219,24 +224,18 @@ const Index = () => {
               <Coins className="w-4 h-4 md:w-5 md:h-5 text-gold" />
               <span className="font-bold text-gold text-xs md:text-sm">{coins}</span>
             </Button>
-            {user ? (
+            {user?.is_anonymous ? (
+              <Button variant="default" onClick={() => navigate("/auth")} size="sm" className="px-2 md:px-4 text-xs md:text-sm">
+                Sign Up
+              </Button>
+            ) : (
               <Button variant="outline" onClick={handleSignOut} size="sm" className="px-2 md:px-4 text-xs md:text-sm hidden sm:flex">
                 Sign Out
               </Button>
-            ) : (
-              <>
-                <Button variant="outline" onClick={() => navigate("/auth")} size="sm" className="px-2 md:px-4 text-xs md:text-sm">
-                  <span className="hidden sm:inline">Sign In</span>
-                  <span className="sm:hidden">In</span>
-                </Button>
-                <Button variant="default" onClick={() => navigate("/auth")} size="sm" className="px-2 md:px-4 text-xs md:text-sm hidden md:flex">
-                  Sign Up
-                </Button>
-              </>
             )}
             <Avatar 
               className="cursor-pointer hover:ring-2 hover:ring-primary transition-all w-8 h-8 md:w-10 md:h-10" 
-              onClick={() => user && setShowAvatarSelector(true)}
+              onClick={() => setShowAvatarSelector(true)}
             >
               <AvatarFallback className="bg-gradient-primary text-2xl md:text-3xl">
                 {getAvatarIcon(currentAvatar)}

@@ -23,13 +23,15 @@ const Auth = () => {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      // Redirect only if user has a registered account (not anonymous)
+      if (session && !session.user.is_anonymous) {
         navigate("/");
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      // Redirect only if user has a registered account (not anonymous)
+      if (session && !session.user.is_anonymous) {
         navigate("/");
       }
     });
@@ -107,20 +109,6 @@ const Auth = () => {
     }
   };
 
-  const handleGuestSignIn = async () => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signInAnonymously();
-      
-      if (error) throw error;
-      
-      toast.success("Signed in as guest! You can explore the platform.");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to sign in as guest");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -144,17 +132,17 @@ const Auth = () => {
         <Card className="w-full max-w-md p-8 bg-card/50 border-border/50">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-              Welcome Back
+              Create Account
             </h2>
             <p className="text-muted-foreground">
-              Sign in to continue your chess journey
+              Sign up to save your progress and unlock all features
             </p>
           </div>
 
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs defaultValue="signup" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
@@ -202,26 +190,6 @@ const Auth = () => {
                 <FcGoogle className="w-5 h-5" />
                 Sign in with Google
               </Button>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full gap-2 border border-dashed border-muted-foreground/50 hover:border-primary/50"
-                onClick={handleGuestSignIn}
-                disabled={loading}
-              >
-                <User className="w-5 h-5" />
-                Continue as Guest
-              </Button>
             </TabsContent>
 
             <TabsContent value="signup">
@@ -268,26 +236,6 @@ const Auth = () => {
               >
                 <FcGoogle className="w-5 h-5" />
                 Sign up with Google
-              </Button>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full gap-2 border border-dashed border-muted-foreground/50 hover:border-primary/50"
-                onClick={handleGuestSignIn}
-                disabled={loading}
-              >
-                <User className="w-5 h-5" />
-                Continue as Guest
               </Button>
 
               <div className="text-center mt-4">
