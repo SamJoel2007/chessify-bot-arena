@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Users, Store, Puzzle, MessageSquare, User, Trophy, Award, Bot, LogOut } from "lucide-react";
+import { Bell, Users, Store, Puzzle, MessageSquare, User, Trophy, Award, Bot, LogOut, MessagesSquare } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -112,6 +112,18 @@ export function HoverSidebar({ user, currentAvatar, isOpen, onClose }: HoverSide
                 >
                   <MessageSquare className="w-5 h-5" />
                   <span>Messages</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 h-12"
+                  onClick={() => {
+                    navigate('/community');
+                    onClose();
+                  }}
+                >
+                  <MessagesSquare className="w-5 h-5" />
+                  <span>Community</span>
                 </Button>
 
                 <Button
