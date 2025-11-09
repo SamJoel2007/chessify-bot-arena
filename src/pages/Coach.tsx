@@ -7,12 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GraduationCap, Send, Loader2, Trash2, Gamepad2, MessageSquare } from "lucide-react";
-import { Chessboard } from "react-chessboard";
-import { Chess } from "chess.js";
+import { Chess, Square } from "chess.js";
 import { toast } from "sonner";
-
-// Type workaround for react-chessboard
-const ChessboardComponent = Chessboard as any;
 
 interface Message {
   role: "user" | "assistant";
@@ -39,6 +35,8 @@ export default function Coach() {
   const [gamePosition, setGamePosition] = useState(game.fen());
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
   const [gameMessages, setGameMessages] = useState<Message[]>([]);
+  const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
+  const [possibleMoves, setPossibleMoves] = useState<string[]>([]);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -428,18 +426,52 @@ export default function Coach() {
     ]);
   };
 
-  const onDrop = async (sourceSquare: string, targetSquare: string) => {
-    if (!isPlayerTurn || isLoading) return false;
+  const handleSquareClick = async (square: Square) => {
+    if (!isPlayerTurn || isLoading) return;
 
+    const piece = game.get(square);
+
+    // If no square is selected, select this square if it has a white piece
+    if (!selectedSquare) {
+      if (piece && piece.color === "w") {
+        setSelectedSquare(square);
+        const moves = game.moves({ square, verbose: true });
+        setPossibleMoves(moves.map((m) => m.to));
+      }
+      return;
+    }
+
+    // If the same square is clicked, deselect it
+    if (selectedSquare === square) {
+      setSelectedSquare(null);
+      setPossibleMoves([]);
+      return;
+    }
+
+    // Try to make the move
     try {
       const move = game.move({
-        from: sourceSquare,
-        to: targetSquare,
+        from: selectedSquare,
+        to: square,
         promotion: "q",
       });
 
-      if (move === null) return false;
+      if (move === null) {
+        // If move is invalid, check if clicking on another white piece
+        if (piece && piece.color === "w") {
+          setSelectedSquare(square);
+          const moves = game.moves({ square, verbose: true });
+          setPossibleMoves(moves.map((m) => m.to));
+        } else {
+          setSelectedSquare(null);
+          setPossibleMoves([]);
+        }
+        return;
+      }
 
+      // Move was successful
+      setSelectedSquare(null);
+      setPossibleMoves([]);
       setGamePosition(game.fen());
       setIsPlayerTurn(false);
 
@@ -455,7 +487,7 @@ export default function Coach() {
 
       if (game.isGameOver()) {
         handleGameOver();
-        return true;
+        return;
       }
 
       // Get coach analysis of player's move
@@ -465,11 +497,55 @@ export default function Coach() {
       setTimeout(() => {
         makeCoachMove();
       }, 1000);
-
-      return true;
     } catch (error) {
-      return false;
+      setSelectedSquare(null);
+      setPossibleMoves([]);
     }
+  };
+
+  const renderBoard = () => {
+    const board = game.board();
+    const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+    const ranks = [8, 7, 6, 5, 4, 3, 2, 1];
+
+    const pieceSymbols: Record<string, string> = {
+      p: "♟", r: "♜", n: "♞", b: "♝", q: "♛", k: "♚",
+      P: "♙", R: "♖", N: "♘", B: "♗", Q: "♕", K: "♔",
+    };
+
+    return (
+      <div className="grid grid-cols-8 aspect-square w-full max-w-[500px] border-4 border-border rounded-lg overflow-hidden shadow-lg">
+        {ranks.map((rank, rankIndex) =>
+          files.map((file, fileIndex) => {
+            const square = `${file}${rank}` as Square;
+            const piece = board[rankIndex][fileIndex];
+            const isLight = (rankIndex + fileIndex) % 2 === 0;
+            const isSelected = selectedSquare === square;
+            const isPossibleMove = possibleMoves.includes(square);
+
+            return (
+              <div
+                key={square}
+                onClick={() => handleSquareClick(square)}
+                className={`
+                  relative flex items-center justify-center cursor-pointer
+                  transition-all duration-200 hover:brightness-110
+                  ${isLight ? "bg-[#f0d9b5]" : "bg-[#b58863]"}
+                  ${isSelected ? "ring-4 ring-primary ring-inset" : ""}
+                  ${isPossibleMove ? "after:content-[''] after:absolute after:w-3 after:h-3 after:rounded-full after:bg-primary/40" : ""}
+                `}
+              >
+                {piece && (
+                  <span className={`text-4xl select-none ${piece.color === "w" ? "text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" : "text-black"}`}>
+                    {pieceSymbols[piece.type.toUpperCase()]}
+                  </span>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+    );
   };
 
   return (
@@ -627,17 +703,7 @@ export default function Coach() {
               {/* Chess Board */}
               <Card className="p-4 border-primary/20 bg-card/80 backdrop-blur flex flex-col">
                 <div className="flex-1 flex items-center justify-center">
-                  <div className="w-full max-w-[500px] aspect-square">
-                    <ChessboardComponent
-                      position={gamePosition}
-                      onPieceDrop={onDrop}
-                      boardOrientation="white"
-                      customBoardStyle={{
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                      }}
-                    />
-                  </div>
+                  {renderBoard()}
                 </div>
                 <div className="mt-4 text-center">
                   {isPlayerTurn ? (
