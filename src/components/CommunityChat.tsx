@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, UserPlus, Check, MessageCircle, Image, X, Loader2, ExternalLink } from "lucide-react";
+import { Send, UserPlus, Check, MessageCircle, Paperclip, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getAvatarIcon } from "@/lib/avatarUtils";
@@ -253,15 +253,15 @@ export const CommunityChat = () => {
     if (!file) return;
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
     if (!validTypes.includes(file.type)) {
-      toast.error("Please select a valid image file (JPG, PNG, GIF, or WEBP)");
+      toast.error("Please select a valid image file (jpg, png, gif, webp)");
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size must be less than 5MB");
+      toast.error("Image must be less than 5MB");
       return;
     }
 
@@ -270,44 +270,69 @@ export const CommunityChat = () => {
     setImagePreviewUrl(previewUrl);
   };
 
-  const uploadImage = async (file: File): Promise<string> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${currentUser!.id}/${Date.now()}.${fileExt}`;
-    
-    const { error: uploadError, data } = await supabase.storage
-      .from('chat-images')
-      .upload(fileName, file);
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${currentUser?.id}/${crypto.randomUUID()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from("chat-images")
+        .upload(fileName, file);
 
-    if (uploadError) throw uploadError;
+      if (error) throw error;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('chat-images')
-      .getPublicUrl(fileName);
+      const { data: { publicUrl } } = supabase.storage
+        .from("chat-images")
+        .getPublicUrl(fileName);
 
-    return publicUrl;
+      return publicUrl;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image");
+      return null;
+    }
   };
 
   const detectLinks = (text: string): string | null => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const matches = text.match(urlRegex);
-    return matches ? matches[0] : null;
+    const match = text.match(urlRegex);
+    return match ? match[0] : null;
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+      setImagePreviewUrl(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleSend = async () => {
     if ((!message.trim() && !selectedImage) || !currentUser) return;
 
-    setIsUploadingImage(true);
     const messageText = message.trim();
     const username = currentUser.email.split("@")[0];
 
+    setIsUploadingImage(true);
+
     try {
-      let imageUrl: string | undefined;
+      let imageUrl: string | null = null;
+      
+      // Upload image if selected
       if (selectedImage) {
         imageUrl = await uploadImage(selectedImage);
+        if (!imageUrl) {
+          setIsUploadingImage(false);
+          return;
+        }
       }
 
-      const linkUrl = detectLinks(messageText);
-      
+      // Detect links in message
+      const linkUrl = messageText ? detectLinks(messageText) : null;
+
       const { error } = await supabase.from("chat_messages").insert({
         user_id: currentUser.id,
         username: username,
@@ -319,20 +344,20 @@ export const CommunityChat = () => {
       if (error) {
         console.error("Error sending message:", error);
         toast.error("Failed to send message");
+        setIsUploadingImage(false);
         return;
       }
 
       setMessage("");
-      setSelectedImage(null);
-      setImagePreviewUrl(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      removeImage();
+      setIsUploadingImage(false);
 
       // Trigger bot response only if user is alone
-      if (activeUsers === 1 && messageText) {
+      if (activeUsers === 1) {
         try {
           await supabase.functions.invoke('chat-bot-response', {
             body: { 
-              message: messageText, 
+              message: messageText || "(sent an image)", 
               username: username,
               activeUserCount: activeUsers 
             }
@@ -344,7 +369,6 @@ export const CommunityChat = () => {
     } catch (error) {
       console.error("Error in handleSend:", error);
       toast.error("Failed to send message");
-    } finally {
       setIsUploadingImage(false);
     }
   };
@@ -451,18 +475,20 @@ export const CommunityChat = () => {
                             )}
                           </>
                         )}
-                       </div>
-                      <div className="space-y-2">
-                        <p className="text-sm bg-muted/30 rounded-lg p-3 break-words">
-                          {msg.message}
-                        </p>
+                      </div>
+                      <div className="text-sm space-y-2">
+                        {msg.message && (
+                          <p className="bg-muted/30 rounded-lg p-3 break-words">
+                            {msg.message}
+                          </p>
+                        )}
                         
                         {msg.image_url && (
-                          <div className="rounded-lg overflow-hidden max-w-md">
+                          <div className="relative rounded-lg overflow-hidden max-w-sm">
                             <img 
                               src={msg.image_url} 
                               alt="Shared image" 
-                              className="w-full h-auto object-cover hover:scale-105 transition-transform cursor-pointer"
+                              className="w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
                               onClick={() => window.open(msg.image_url, '_blank')}
                             />
                           </div>
@@ -473,10 +499,18 @@ export const CommunityChat = () => {
                             href={msg.link_url} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-xs text-primary hover:underline bg-primary/10 rounded p-2 max-w-md"
+                            className="block bg-muted/50 rounded-lg p-3 hover:bg-muted/70 transition-colors border border-border"
                           >
-                            <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">{msg.link_url}</span>
+                            <div className="flex items-start gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-primary font-medium truncate">
+                                  {msg.link_url}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Click to open link
+                                </p>
+                              </div>
+                            </div>
                           </a>
                         )}
                       </div>
@@ -490,21 +524,17 @@ export const CommunityChat = () => {
 
         <div className="p-4 border-t border-border bg-card/50">
           {imagePreviewUrl && (
-            <div className="mb-2 relative inline-block">
+            <div className="mb-3 relative inline-block">
               <img 
                 src={imagePreviewUrl} 
                 alt="Preview" 
-                className="h-20 w-20 object-cover rounded-lg border-2 border-primary"
+                className="h-20 w-20 object-cover rounded-lg border border-border"
               />
               <Button
                 size="icon"
                 variant="destructive"
                 className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                onClick={() => {
-                  setSelectedImage(null);
-                  setImagePreviewUrl(null);
-                  if (fileInputRef.current) fileInputRef.current.value = "";
-                }}
+                onClick={removeImage}
               >
                 <X className="w-3 h-3" />
               </Button>
@@ -515,9 +545,9 @@ export const CommunityChat = () => {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-              onChange={handleImageSelect}
+              accept="image/*"
               className="hidden"
+              onChange={handleImageSelect}
             />
             <Button
               onClick={() => fileInputRef.current?.click()}
@@ -525,18 +555,16 @@ export const CommunityChat = () => {
               variant="outline"
               disabled={isUploadingImage}
             >
-              <Image className="w-4 h-4" />
+              <Paperclip className="w-4 h-4" />
             </Button>
-            
             <Input
-              placeholder="Type your message or add an image..."
+              placeholder="Type your message..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && !isUploadingImage && handleSend()}
+              onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
               className="flex-1"
               disabled={isUploadingImage}
             />
-            
             <Button 
               onClick={handleSend} 
               size="icon"

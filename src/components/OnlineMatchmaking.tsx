@@ -12,52 +12,6 @@ interface OnlineMatchmakingProps {
   currentAvatar?: string;
 }
 
-// Define bot pools by skill level
-const botPools = {
-  beginner: [
-    { name: "Emma", avatar: "👤", rating: 400 },
-    { name: "Noah", avatar: "🧑", rating: 500 },
-    { name: "Olivia", avatar: "👩", rating: 600 },
-    { name: "Liam", avatar: "👨", rating: 700 },
-    { name: "Sophia", avatar: "👱", rating: 800 },
-  ],
-  intermediate: [
-    { name: "Lucas", avatar: "👨‍🦰", rating: 1000 },
-    { name: "Mia", avatar: "👩‍🦱", rating: 1200 },
-    { name: "Ethan", avatar: "🧔", rating: 1400 },
-    { name: "Isabella", avatar: "👩‍🦳", rating: 1500 },
-    { name: "Mason", avatar: "👨‍🦲", rating: 1650 },
-  ],
-  advanced: [
-    { name: "Charlotte", avatar: "👩‍💼", rating: 1800 },
-    { name: "James", avatar: "👨‍💼", rating: 1900 },
-    { name: "Amelia", avatar: "👩‍🔬", rating: 2000 },
-    { name: "Benjamin", avatar: "👨‍🔬", rating: 2100 },
-    { name: "Harper", avatar: "👩‍🎓", rating: 2250 },
-  ],
-  expert: [
-    { name: "Michael", avatar: "👨‍🎓", rating: 2300 },
-    { name: "Evelyn", avatar: "👩‍⚕️", rating: 2400 },
-    { name: "Alexander", avatar: "👨‍⚕️", rating: 2500 },
-    { name: "Abigail", avatar: "👩‍🏫", rating: 2600 },
-    { name: "Daniel", avatar: "👨‍🏫", rating: 2750 },
-  ],
-  master: [
-    { name: "Elizabeth", avatar: "👩‍⚖️", rating: 2800 },
-    { name: "Matthew", avatar: "👨‍⚖️", rating: 2900 },
-    { name: "Sofia", avatar: "👩‍💻", rating: 3000 },
-    { name: "Jackson", avatar: "👨‍💻", rating: 3100 },
-    { name: "Avery", avatar: "👩‍🎨", rating: 3250 },
-  ],
-  grandmaster: [
-    { name: "Scarlett", avatar: "👩‍🚀", rating: 3300 },
-    { name: "Sebastian", avatar: "👨‍🚀", rating: 3400 },
-    { name: "Victoria", avatar: "👸", rating: 3500 },
-    { name: "William", avatar: "🤴", rating: 3600 },
-    { name: "Aria", avatar: "👑", rating: 3750 },
-  ],
-};
-
 export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMatchmakingProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
@@ -65,7 +19,7 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
   const [userPoints, setUserPoints] = useState<number>(0);
   const navigate = useNavigate();
 
-  // Fetch user points on mount
+  // Fetch user profile to get points
   useEffect(() => {
     const fetchUserProfile = async () => {
       const { data } = await supabase
@@ -78,6 +32,7 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
         setUserPoints(data.points);
       }
     };
+
     fetchUserProfile();
   }, [userId]);
 
@@ -131,17 +86,58 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
     };
   }, [isSearching]);
 
-  // Select bot based on user's skill level (points)
+  // Bot pools organized by skill level
   const selectBotBySkill = (points: number) => {
-    let pool;
-    if (points < 500) pool = botPools.beginner;
-    else if (points < 1000) pool = botPools.intermediate;
-    else if (points < 1500) pool = botPools.advanced;
-    else if (points < 2000) pool = botPools.expert;
-    else if (points < 2500) pool = botPools.master;
-    else pool = botPools.grandmaster;
+    const beginnerBots = [
+      { name: "Emma", avatar: "👤" }, { name: "Noah", avatar: "🧑" },
+      { name: "Olivia", avatar: "👩" }, { name: "Liam", avatar: "👨" },
+      { name: "Ava", avatar: "👱‍♀️" }, { name: "Oliver", avatar: "👨‍🦰" },
+      { name: "Sophia", avatar: "👩‍🦱" }, { name: "Elijah", avatar: "🧔" },
+    ];
 
-    return pool[Math.floor(Math.random() * pool.length)];
+    const intermediateBots = [
+      { name: "Charlotte", avatar: "👤" }, { name: "James", avatar: "🧑" },
+      { name: "Amelia", avatar: "👩" }, { name: "Benjamin", avatar: "👨" },
+      { name: "Isabella", avatar: "👱‍♀️" }, { name: "Lucas", avatar: "👨‍🦰" },
+      { name: "Mia", avatar: "👩‍🦱" }, { name: "Henry", avatar: "🧔" },
+    ];
+
+    const advancedBots = [
+      { name: "Harper", avatar: "👤" }, { name: "Alexander", avatar: "🧑" },
+      { name: "Evelyn", avatar: "👩" }, { name: "Michael", avatar: "👨" },
+      { name: "Abigail", avatar: "👱‍♀️" }, { name: "Daniel", avatar: "👨‍🦰" },
+      { name: "Emily", avatar: "👩‍🦱" }, { name: "Matthew", avatar: "🧔" },
+    ];
+
+    const expertBots = [
+      { name: "Elizabeth", avatar: "👤" }, { name: "Jackson", avatar: "🧑" },
+      { name: "Sofia", avatar: "👩" }, { name: "Sebastian", avatar: "👨" },
+      { name: "Avery", avatar: "👱‍♀️" }, { name: "David", avatar: "👨‍🦰" },
+      { name: "Ella", avatar: "👩‍🦱" }, { name: "Joseph", avatar: "🧔" },
+    ];
+
+    const masterBots = [
+      { name: "Scarlett", avatar: "👤" }, { name: "Carter", avatar: "🧑" },
+      { name: "Victoria", avatar: "👩" }, { name: "Owen", avatar: "👨" },
+      { name: "Aria", avatar: "👱‍♀️" }, { name: "Wyatt", avatar: "👨‍🦰" },
+      { name: "Grace", avatar: "👩‍🦱" }, { name: "John", avatar: "🧔" },
+    ];
+
+    const grandmasterBots = [
+      { name: "Chloe", avatar: "👤" }, { name: "Luke", avatar: "🧑" },
+      { name: "Camila", avatar: "👩" }, { name: "Julian", avatar: "👨" },
+      { name: "Penelope", avatar: "👱‍♀️" }, { name: "Grayson", avatar: "👨‍🦰" },
+      { name: "Layla", avatar: "👩‍🦱" }, { name: "Jack", avatar: "🧔" },
+    ];
+
+    let botPool = beginnerBots;
+    if (points >= 2500) botPool = grandmasterBots;
+    else if (points >= 2000) botPool = masterBots;
+    else if (points >= 1500) botPool = expertBots;
+    else if (points >= 1000) botPool = advancedBots;
+    else if (points >= 500) botPool = intermediateBots;
+
+    return botPool[Math.floor(Math.random() * botPool.length)];
   };
 
   const handleBotMatch = async () => {
@@ -239,7 +235,7 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
         <Users className="w-12 h-12 text-primary" />
         <h3 className="text-xl font-bold">Random Online Match</h3>
         <p className="text-sm text-muted-foreground text-center">
-          Get matched with a random player for a timed chess game
+          Get matched with a random player or AI opponent based on your skill level
         </p>
 
         {!isSearching ? (
