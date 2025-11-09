@@ -65,4 +65,13 @@ All colors MUST be HSL.
     overflow-x: hidden;
     max-width: 100vw;
   }
+  
+  /* Animation delay utilities */
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
 }

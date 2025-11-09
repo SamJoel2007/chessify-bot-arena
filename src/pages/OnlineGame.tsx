@@ -5,12 +5,19 @@ import { Chess, Square } from "chess.js";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, Trophy, X } from "lucide-react";
 import { toast } from "sonner";
 import { getAvatarIcon } from "@/lib/avatarUtils";
 import { playMoveSound, playCaptureSound } from "@/lib/soundUtils";
 import { VoiceChat } from "@/components/VoiceChat";
 import { GameChat } from "@/components/GameChat";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function OnlineGame() {
   const { gameId } = useParams();
@@ -27,6 +34,8 @@ export default function OnlineGame() {
   const [username, setUsername] = useState<string>("");
   const [isPlayingBot, setIsPlayingBot] = useState(false);
   const [isBotThinking, setIsBotThinking] = useState(false);
+  const [showResultDialog, setShowResultDialog] = useState(false);
+  const [gameResult, setGameResult] = useState<"win" | "loss" | "draw" | null>(null);
   
   // Bot names used for detection
   const botNames = ["Alex", "Jordan", "Sam", "Taylor", "Morgan", "Casey", "Riley", "Quinn"];
@@ -167,13 +176,17 @@ export default function OnlineGame() {
   };
 
   const handleGameEnd = (data: any) => {
+    console.log("Game ended:", { winnerId: data.winner_id, userId, isPlayingBot });
+    
     if (data.winner_id === userId) {
-      toast.success("You won!");
+      setGameResult("win");
     } else if (data.winner_id) {
-      toast.error("You lost!");
+      setGameResult("loss");
     } else {
-      toast.info("Game ended in a draw");
+      setGameResult("draw");
     }
+    
+    setShowResultDialog(true);
   };
 
   const handleTimeOut = async () => {
@@ -639,6 +652,44 @@ export default function OnlineGame() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Game Result Dialog */}
+      <Dialog open={showResultDialog} onOpenChange={setShowResultDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-3xl font-bold flex items-center justify-center gap-2 animate-fade-in">
+              {gameResult === "win" && (
+                <>
+                  <Trophy className="w-8 h-8 text-yellow-500 animate-bounce" />
+                  <span className="text-green-500">Victory!</span>
+                </>
+              )}
+              {gameResult === "loss" && (
+                <>
+                  <X className="w-8 h-8 text-red-500" />
+                  <span className="text-red-500">Defeat</span>
+                </>
+              )}
+              {gameResult === "draw" && (
+                <span className="text-muted-foreground">Draw</span>
+              )}
+            </DialogTitle>
+            <DialogDescription className="text-center text-lg animate-fade-in animation-delay-200">
+              {gameResult === "win" && "Congratulations! You've won the match! 🎉"}
+              {gameResult === "loss" && "Better luck next time! Keep practicing! 💪"}
+              {gameResult === "draw" && "Well played! The game ended in a draw."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4 animate-scale-in animation-delay-300">
+            <Button onClick={() => navigate("/")} className="w-full">
+              Back to Home
+            </Button>
+            <Button onClick={() => navigate("/leaderboards")} variant="outline" className="w-full">
+              View Leaderboards
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
