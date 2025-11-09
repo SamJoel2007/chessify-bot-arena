@@ -36,11 +36,38 @@ export const LuckyWheel = ({ onPrizeWon }: LuckyWheelProps) => {
   const [canSpin, setCanSpin] = useState(false);
   const [timeUntilNextSpin, setTimeUntilNextSpin] = useState("");
   const [selectedPrize, setSelectedPrize] = useState<Prize | null>(null);
+  const [availablePrizes, setAvailablePrizes] = useState<Prize[]>(prizes);
 
   useEffect(() => {
     checkSpinAvailability();
     const interval = setInterval(checkSpinAvailability, 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const filterAvailablePrizes = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: purchases } = await supabase
+        .from("user_purchases")
+        .select("item_id, item_type")
+        .eq("user_id", user.id);
+
+      if (purchases && purchases.length > 0) {
+        const ownedItems = new Set(
+          purchases.map(p => `${p.item_type}-${p.item_id}`)
+        );
+        
+        const available = prizes.filter(
+          prize => !ownedItems.has(`${prize.type}-${prize.id}`)
+        );
+        
+        setAvailablePrizes(available.length > 0 ? available : prizes);
+      }
+    };
+
+    filterAvailablePrizes();
   }, []);
 
   const checkSpinAvailability = async () => {
@@ -87,16 +114,22 @@ export const LuckyWheel = ({ onPrizeWon }: LuckyWheelProps) => {
       return;
     }
 
+    if (availablePrizes.length === 0) {
+      toast.info("You already own all lucky draw prizes! 🎉");
+      return;
+    }
+
     setSpinning(true);
     setSelectedPrize(null);
 
-    // Random prize selection
-    const prizeIndex = Math.floor(Math.random() * prizes.length);
-    const prize = prizes[prizeIndex];
+    // Random prize selection from available prizes
+    const prizeIndex = Math.floor(Math.random() * availablePrizes.length);
+    const prize = availablePrizes[prizeIndex];
     
     // Calculate rotation (multiple full spins + final position)
+    const wheelIndex = prizes.findIndex(p => p.id === prize.id);
     const segmentAngle = 360 / prizes.length;
-    const finalRotation = 360 * 5 + (360 - (prizeIndex * segmentAngle + segmentAngle / 2));
+    const finalRotation = 360 * 5 + (360 - (wheelIndex * segmentAngle + segmentAngle / 2));
     
     setRotation(finalRotation);
 
@@ -105,18 +138,34 @@ export const LuckyWheel = ({ onPrizeWon }: LuckyWheelProps) => {
       setSpinning(false);
       setSelectedPrize(prize);
 
-      // Award the prize
-      const { error: purchaseError } = await supabase.rpc("handle_purchase", {
-        p_item_type: prize.type,
-        p_item_id: prize.id,
-        p_item_name: prize.name,
-        p_item_data: { icon: prize.icon, color: prize.color },
-        p_price: 0, // Free from lucky draw
-      });
+      // Check if already owned
+      const { data: existingPurchase } = await supabase
+        .from("user_purchases")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("item_type", prize.type)
+        .eq("item_id", prize.id)
+        .single();
 
-      if (purchaseError && !purchaseError.message.includes("Already purchased")) {
-        toast.error("Failed to award prize");
-        return;
+      if (existingPurchase) {
+        toast.info(`You already own ${prize.name}! Better luck next time.`);
+      } else {
+        // Award the prize
+        const { error: purchaseError } = await supabase.rpc("handle_purchase", {
+          p_item_type: prize.type,
+          p_item_id: prize.id,
+          p_item_name: prize.name,
+          p_item_data: { icon: prize.icon, color: prize.color },
+          p_price: 0,
+        });
+
+        if (purchaseError) {
+          toast.error(`Failed to award prize: ${purchaseError.message}`);
+          return;
+        }
+
+        toast.success(`🎉 You won ${prize.name}!`);
+        onPrizeWon();
       }
 
       // Update spin record
@@ -137,8 +186,6 @@ export const LuckyWheel = ({ onPrizeWon }: LuckyWheelProps) => {
           .insert({ user_id: user.id, last_spin_at: new Date().toISOString() });
       }
 
-      toast.success(`🎉 You won ${prize.name}!`);
-      onPrizeWon();
       setCanSpin(false);
     }, 10000);
   };
