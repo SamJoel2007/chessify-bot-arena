@@ -103,6 +103,13 @@ export const FindPeople = ({ userId }: FindPeopleProps) => {
 
     setSendingTo(targetUserId);
     try {
+      // Get sender's username
+      const { data: senderProfile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', userId)
+        .single();
+
       const { error } = await supabase
         .from("friend_requests")
         .insert({
@@ -112,6 +119,14 @@ export const FindPeople = ({ userId }: FindPeopleProps) => {
         });
 
       if (error) throw error;
+
+      // Create notification for the receiver
+      await supabase.from('notifications').insert({
+        user_id: targetUserId,
+        type: 'friend_request',
+        content: `${senderProfile?.username || 'Someone'} sent you a friend request`,
+        related_id: userId,
+      });
 
       toast.success(`Friend request sent to ${targetUsername}!`);
       
