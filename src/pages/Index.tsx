@@ -612,6 +612,11 @@ const Index = () => {
           </div>
           <CommunityChat />
           <FindPeople userId={user?.id || null} />
+          
+          {/* Native Banner Ad */}
+          <div className="mt-8 flex justify-center">
+            <div id="container-6b73e2d7b6ada28eb7fcb5b7a7102a06"></div>
+          </div>
         </section>
       </main>
 
