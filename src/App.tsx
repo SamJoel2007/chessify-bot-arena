@@ -60,7 +60,7 @@ const App = () => (
           <Route path="/my-profile" element={<MyProfile />} />
           <Route path="/leaderboards" element={<Leaderboards />} />
           <Route path="/certificates" element={<Certificates />} />
-          <Route path="/victory" element={<VictoryShowcase />} />
+          <Route path="/victory-showcase" element={<VictoryShowcase />} />
           <Route path="/coach" element={<Coach />} />
           <Route path="/community" element={<Community />} />
           <Route path="/tournament/:slug" element={<TournamentRegistration />} />
