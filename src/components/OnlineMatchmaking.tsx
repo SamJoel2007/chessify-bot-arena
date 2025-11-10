@@ -72,7 +72,7 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
       // Timer for elapsed time
       timer = setInterval(() => {
         setTimeElapsed((prev) => {
-          if (prev >= 25) {
+          if (prev >= 15) {
             handleBotMatch();
             return prev;
           }
