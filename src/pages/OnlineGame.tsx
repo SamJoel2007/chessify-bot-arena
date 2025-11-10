@@ -55,6 +55,11 @@ export default function OnlineGame() {
     "Chloe", "Luke", "Camila", "Julian", "Penelope", "Grayson", "Layla", "Jack"
   ];
 
+  // Normalize IDs by trimming whitespace and converting to lowercase for consistent comparison
+  const normalizeId = (id: string | null | undefined): string => {
+    return (id || "").trim().toLowerCase();
+  };
+
   const getPlayerInfo = async () => {
     // Check if authenticated user
     const { data: { user } } = await supabase.auth.getUser();
@@ -131,7 +136,9 @@ export default function OnlineGame() {
         return;
       }
       
-      setUserId(playerInfo.id);
+      const currentUserId = playerInfo.id;
+      console.log("Loading game with user ID:", currentUserId);
+      setUserId(currentUserId);
       setUsername(playerInfo.username);
       setIsGuest(playerInfo.type === 'guest');
 
@@ -142,6 +149,14 @@ export default function OnlineGame() {
         .single();
 
       if (error) throw error;
+
+      console.log("Game loaded:", {
+        gameId: data.id,
+        whitePlayerId: data.white_player_id,
+        blackPlayerId: data.black_player_id,
+        currentUserId: currentUserId,
+        winnerId: data.winner_id
+      });
 
       setGameData(data);
       setWhiteTime(data.white_time_remaining);
@@ -230,13 +245,31 @@ export default function OnlineGame() {
   };
 
   const handleGameEnd = (data: any) => {
-    console.log("Game ended:", { winnerId: data.winner_id, userId, isPlayingBot });
+    console.log("=== GAME END DEBUG ===");
+    console.log("Winner ID from DB:", data.winner_id);
+    console.log("Current user ID:", userId);
+    console.log("White player ID:", data.white_player_id);
+    console.log("Black player ID:", data.black_player_id);
+    console.log("Player color:", playerColor);
+    console.log("Is playing bot:", isPlayingBot);
     
-    if (data.winner_id === userId) {
+    // Ensure userId is defined
+    if (!userId) {
+      console.error("ERROR: userId is not defined!");
+      setGameResult("draw");
+      setShowResultDialog(true);
+      return;
+    }
+    
+    // Use normalized ID comparison for accuracy
+    if (normalizeId(data.winner_id) === normalizeId(userId)) {
+      console.log("RESULT: Victory!");
       setGameResult("win");
     } else if (data.winner_id) {
+      console.log("RESULT: Defeat");
       setGameResult("loss");
     } else {
+      console.log("RESULT: Draw");
       setGameResult("draw");
     }
     
@@ -505,7 +538,8 @@ export default function OnlineGame() {
       if (gameCopy.isGameOver()) {
         let winnerId = null;
         if (gameCopy.isCheckmate()) {
-          winnerId = playerColor === "w" ? gameData.white_player_id : gameData.black_player_id;
+          // The player who just moved delivered checkmate, so they win
+          winnerId = userId;
         }
 
         await supabase

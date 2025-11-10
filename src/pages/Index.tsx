@@ -52,7 +52,25 @@ const Index = () => {
         const { data, error } = await supabase.auth.signInAnonymously();
         if (data?.user && !error) {
           setUser(data.user);
+          // Ensure profile exists for anonymous user
+          await ensureProfileExists(data.user.id);
         }
+      }
+    };
+
+    const ensureProfileExists = async (userId: string) => {
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", userId)
+        .single();
+      
+      if (!existing) {
+        await supabase.from("profiles").insert({
+          id: userId,
+          username: "Player",
+          points: 0
+        });
       }
     };
 
