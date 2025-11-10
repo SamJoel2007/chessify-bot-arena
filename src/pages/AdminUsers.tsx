@@ -22,30 +22,40 @@ const AdminUsers = () => {
   const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const usersPerPage = 20;
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const fetchUsers = async (search?: string) => {
+  const fetchUsers = async (search?: string, page: number = 1) => {
     try {
       setLoading(true);
+      
+      // Base query - only get registered users with email (not guests)
       let query = supabase
         .from("profiles")
-        .select("*")
+        .select("*", { count: "exact" })
+        .not("email", "is", null)
         .order("created_at", { ascending: false });
 
       if (search) {
         query = query.ilike("username", `%${search}%`);
-      } else {
-        query = query.limit(10);
       }
 
-      const { data, error } = await query;
+      // Add pagination
+      const from = (page - 1) * usersPerPage;
+      const to = from + usersPerPage - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
 
       setUsers(data || []);
+      setTotalUsers(count || 0);
     } catch (error: any) {
       toast({
         title: "Error fetching users",
@@ -58,7 +68,13 @@ const AdminUsers = () => {
   };
 
   const handleSearch = () => {
-    fetchUsers(searchQuery);
+    setCurrentPage(1);
+    fetchUsers(searchQuery, 1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchUsers(searchQuery, page);
   };
 
   const formatDate = (dateString: string) => {
@@ -94,7 +110,8 @@ const AdminUsers = () => {
               </Button>
               <Button variant="outline" onClick={() => {
                 setSearchQuery("");
-                fetchUsers();
+                setCurrentPage(1);
+                fetchUsers("", 1);
               }}>
                 Clear
               </Button>
@@ -129,9 +146,35 @@ const AdminUsers = () => {
               )}
             </div>
 
-            <p className="text-sm text-muted-foreground mt-4">
-              {searchQuery ? `Showing search results for "${searchQuery}"` : "Showing 10 most recent users"}
-            </p>
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-muted-foreground">
+                {searchQuery 
+                  ? `Showing ${users.length} of ${totalUsers} results for "${searchQuery}"` 
+                  : `Showing ${users.length} of ${totalUsers} registered users (page ${currentPage} of ${Math.ceil(totalUsers / usersPerPage)})`
+                }
+              </p>
+              
+              {totalUsers > usersPerPage && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage >= Math.ceil(totalUsers / usersPerPage)}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </main>
       </div>
