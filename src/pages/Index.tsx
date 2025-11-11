@@ -34,13 +34,6 @@ const Index = () => {
   const [eventData, setEventData] = useState<any>(null);
 
   useEffect(() => {
-    // Load ad script
-    const script = document.createElement("script");
-    script.src = "//pl27964518.effectivegatecpm.com/6b73e2d7b6ada28eb7fcb5b7a7102a06/invoke.js";
-    script.async = true;
-    script.setAttribute("data-cfasync", "false");
-    document.body.appendChild(script);
-
     const initAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -85,9 +78,6 @@ const Index = () => {
 
     return () => {
       subscription.unsubscribe();
-      // Cleanup ad script
-      const scripts = document.querySelectorAll('script[src*="effectivegatecpm.com"]');
-      scripts.forEach(script => script.remove());
     };
   }, []);
 
@@ -612,16 +602,6 @@ const Index = () => {
           </div>
           <CommunityChat />
           <FindPeople userId={user?.id || null} />
-          
-          {/* Native Banner Ad */}
-          <div className="mt-8 flex justify-center">
-            <div id="container-6b73e2d7b6ada28eb7fcb5b7a7102a06"></div>
-          </div>
-
-          {/* New Ad Section */}
-          <div className="mt-8 flex justify-center">
-            <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
-          </div>
         </section>
       </main>
 
