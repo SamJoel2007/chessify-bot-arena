@@ -666,6 +666,11 @@ const Index = () => {
         </div>
       </footer>
 
+      {/* Ad Section */}
+      <div className="py-8 flex justify-center bg-background">
+        <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
+      </div>
+
     </div>
   );
 };

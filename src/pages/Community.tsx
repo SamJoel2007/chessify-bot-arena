@@ -21,6 +21,13 @@ const Community = () => {
   const [showShop, setShowShop] = useState(false);
 
   useEffect(() => {
+    // Load ad script
+    const script = document.createElement("script");
+    script.src = "//pl28024731.effectivegatecpm.com/c0a3bb06ff6c9c340ac35aeec05bc748/invoke.js";
+    script.async = true;
+    script.setAttribute("data-cfasync", "false");
+    document.body.appendChild(script);
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
       if (session?.user) {
@@ -37,6 +44,9 @@ const Community = () => {
 
     return () => {
       subscription.unsubscribe();
+      // Cleanup ad script
+      const scripts = document.querySelectorAll('script[src*="pl28024731.effectivegatecpm.com"]');
+      scripts.forEach(script => script.remove());
     };
   }, []);
 
@@ -192,6 +202,11 @@ const Community = () => {
         {/* Community Chat Section */}
         <section className="max-w-5xl mx-auto">
           <CommunityChat />
+        </section>
+
+        {/* Ad Section */}
+        <section className="mt-8 flex justify-center">
+          <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
         </section>
       </main>
     </div>

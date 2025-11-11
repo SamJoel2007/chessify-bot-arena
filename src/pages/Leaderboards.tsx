@@ -23,7 +23,20 @@ export default function Leaderboards() {
   const [currentUserId, setCurrentUserId] = useState<string>("");
 
   useEffect(() => {
+    // Load ad script
+    const script = document.createElement("script");
+    script.src = "//pl28024731.effectivegatecpm.com/c0a3bb06ff6c9c340ac35aeec05bc748/invoke.js";
+    script.async = true;
+    script.setAttribute("data-cfasync", "false");
+    document.body.appendChild(script);
+
     loadLeaderboards();
+
+    return () => {
+      // Cleanup ad script
+      const scripts = document.querySelectorAll('script[src*="pl28024731.effectivegatecpm.com"]');
+      scripts.forEach(script => script.remove());
+    };
   }, []);
 
   const loadLeaderboards = async () => {
@@ -190,6 +203,11 @@ export default function Leaderboards() {
             </div>
           </div>
         </Card>
+
+        {/* Ad Section */}
+        <div className="mt-8 flex justify-center">
+          <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
+        </div>
       </main>
     </div>
   );
