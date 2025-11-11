@@ -49,10 +49,11 @@ export default function Leaderboards() {
         setCurrentUserId(session.user.id);
       }
 
-      // Fetch all users ordered by points
+      // Fetch only registered users (with email) ordered by points
       const { data, error } = await supabase
         .from('profiles')
         .select('id, username, points, current_avatar, rank')
+        .not('email', 'is', null)
         .order('points', { ascending: false })
         .limit(100);
 
