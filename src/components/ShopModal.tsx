@@ -8,7 +8,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bot, User, Palette, Coins, Check, Sparkles } from "lucide-react";
+import { Bot, User, Coins, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { LuckyWheel } from "./LuckyWheel";
@@ -85,14 +85,6 @@ const shopItems = {
     { id: "24", name: "Infinity Stone", price: 900, icon: "♾️", rarity: "legendary" as Rarity },
     { id: "25", name: "Time Master", price: 820, icon: "⏰", rarity: "legendary" as Rarity },
   ] as ShopAvatar[],
-  themes: [
-    { id: "theme-1", name: "Wood Classic", price: 250, color: "from-amber-800 to-amber-600" },
-    { id: "theme-2", name: "Crystal Ice", price: 300, color: "from-cyan-200 to-blue-300" },
-    { id: "theme-3", name: "High Contrast", price: 200, color: "from-gray-900 to-gray-100" },
-    { id: "theme-4", name: "Spooky Night", price: 350, color: "from-orange-600 to-purple-700" },
-    { id: "theme-5", name: "Royal Purple", price: 300, color: "from-purple-900 to-purple-500" },
-    { id: "theme-6", name: "Wizarding World", price: 400, color: "from-red-900 to-amber-600" },
-  ],
 };
 
 export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalProps) => {
@@ -166,7 +158,7 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
         </DialogHeader>
 
         <Tabs defaultValue="bots" className="mt-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="bots" className="gap-2">
               <Bot className="w-4 h-4" />
               Bots
@@ -174,10 +166,6 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
             <TabsTrigger value="avatars" className="gap-2">
               <User className="w-4 h-4" />
               Avatars
-            </TabsTrigger>
-            <TabsTrigger value="themes" className="gap-2">
-              <Palette className="w-4 h-4" />
-              Themes
             </TabsTrigger>
             <TabsTrigger value="luckdraw" className="gap-2">
               <Sparkles className="w-4 h-4" />
@@ -276,42 +264,6 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
                 </div>
               );
             })}
-          </TabsContent>
-
-          <TabsContent value="themes" className="mt-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              {shopItems.themes.map((theme) => {
-                const isPurchased = purchasedItems.has(theme.id);
-                return (
-                  <Card key={theme.id} className="p-4 bg-card/50 relative">
-                    {isPurchased && (
-                      <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
-                        <Check className="w-4 h-4 text-primary-foreground" />
-                      </div>
-                    )}
-                    <div
-                      className={`h-24 mb-3 rounded-lg bg-gradient-to-br ${theme.color}`}
-                    />
-                    <h3 className="font-bold text-center mb-2">{theme.name}</h3>
-                    <Button
-                      className="w-full gap-2"
-                      variant="outline"
-                      onClick={() => handlePurchase(theme, "theme")}
-                      disabled={isPurchased || loading}
-                    >
-                      {isPurchased ? (
-                        "Owned"
-                      ) : (
-                        <>
-                          <Coins className="w-4 h-4 text-gold" />
-                          {theme.price}
-                        </>
-                      )}
-                    </Button>
-                  </Card>
-                );
-              })}
-            </div>
           </TabsContent>
 
           <TabsContent value="luckdraw" className="mt-6">
