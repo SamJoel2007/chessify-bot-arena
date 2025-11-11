@@ -89,45 +89,45 @@ export const OnlineMatchmaking = ({ userId, username, currentAvatar }: OnlineMat
   // Bot pools organized by skill level
   const selectBotBySkill = (points: number) => {
     const beginnerBots = [
-      { name: "Emma", avatar: "👤" }, { name: "Noah", avatar: "🧑" },
-      { name: "Olivia", avatar: "👩" }, { name: "Liam", avatar: "👨" },
-      { name: "Ava", avatar: "👱‍♀️" }, { name: "Oliver", avatar: "👨‍🦰" },
-      { name: "Sophia", avatar: "👩‍🦱" }, { name: "Elijah", avatar: "🧔" },
+      { name: "Noob2009", avatar: "👤" }, { name: "xXSam_ProXx", avatar: "🧑" },
+      { name: "CoolGamer123", avatar: "👩" }, { name: "JakeTheBeast", avatar: "👨" },
+      { name: "PawnMaster88", avatar: "👱‍♀️" }, { name: "ChessNewbie", avatar: "👨‍🦰" },
+      { name: "KingKiller2010", avatar: "👩‍🦱" }, { name: "EpicPlayer99", avatar: "🧔" },
     ];
 
     const intermediateBots = [
-      { name: "Charlotte", avatar: "👤" }, { name: "James", avatar: "🧑" },
-      { name: "Amelia", avatar: "👩" }, { name: "Benjamin", avatar: "👨" },
-      { name: "Isabella", avatar: "👱‍♀️" }, { name: "Lucas", avatar: "👨‍🦰" },
-      { name: "Mia", avatar: "👩‍🦱" }, { name: "Henry", avatar: "🧔" },
+      { name: "ProGamer2008", avatar: "👤" }, { name: "xXDarkKnightXx", avatar: "🧑" },
+      { name: "QueenSlayer420", avatar: "👩" }, { name: "TacticalTom07", avatar: "👨" },
+      { name: "ChessMaster2k", avatar: "👱‍♀️" }, { name: "ShadowKing666", avatar: "👨‍🦰" },
+      { name: "LegendaryPlayer", avatar: "👩‍🦱" }, { name: "GrandpaChess", avatar: "🧔" },
     ];
 
     const advancedBots = [
-      { name: "Harper", avatar: "👤" }, { name: "Alexander", avatar: "🧑" },
-      { name: "Evelyn", avatar: "👩" }, { name: "Michael", avatar: "👨" },
-      { name: "Abigail", avatar: "👱‍♀️" }, { name: "Daniel", avatar: "👨‍🦰" },
-      { name: "Emily", avatar: "👩‍🦱" }, { name: "Matthew", avatar: "🧔" },
+      { name: "Suii2007", avatar: "👤" }, { name: "xXAlexTheProXx", avatar: "🧑" },
+      { name: "MikeYT_Gaming", avatar: "👩" }, { name: "DanTheChamp99", avatar: "👨" },
+      { name: "ElitePlayer2k23", avatar: "👱‍♀️" }, { name: "MattyChessGod", avatar: "👨‍🦰" },
+      { name: "StrategicEmily", avatar: "👩‍🦱" }, { name: "Matt_Pro2012", avatar: "🧔" },
     ];
 
     const expertBots = [
-      { name: "Elizabeth", avatar: "👤" }, { name: "Jackson", avatar: "🧑" },
-      { name: "Sofia", avatar: "👩" }, { name: "Sebastian", avatar: "👨" },
-      { name: "Avery", avatar: "👱‍♀️" }, { name: "David", avatar: "👨‍🦰" },
-      { name: "Ella", avatar: "👩‍🦱" }, { name: "Joseph", avatar: "🧔" },
+      { name: "SugmaBalls", avatar: "👤" }, { name: "Jack420Blaze", avatar: "🧑" },
+      { name: "SofiaGaming2k", avatar: "👩" }, { name: "BasedChessLord", avatar: "👨" },
+      { name: "xXAveryProXx", avatar: "👱‍♀️" }, { name: "D4vidTheKing", avatar: "👨‍🦰" },
+      { name: "EllaTheQueen", avatar: "👩‍🦱" }, { name: "Joe_Chess_Pro", avatar: "🧔" },
     ];
 
     const masterBots = [
-      { name: "Scarlett", avatar: "👤" }, { name: "Carter", avatar: "🧑" },
-      { name: "Victoria", avatar: "👩" }, { name: "Owen", avatar: "👨" },
-      { name: "Aria", avatar: "👱‍♀️" }, { name: "Wyatt", avatar: "👨‍🦰" },
-      { name: "Grace", avatar: "👩‍🦱" }, { name: "John", avatar: "🧔" },
+      { name: "Sam2007YT", avatar: "👤" }, { name: "CarterGaming", avatar: "🧑" },
+      { name: "VictoriaChess", avatar: "👩" }, { name: "Owen_TheBeast", avatar: "👨" },
+      { name: "AriaProPlayer", avatar: "👱‍♀️" }, { name: "WyattLegend99", avatar: "👨‍🦰" },
+      { name: "GraceTheChamp", avatar: "👩‍🦱" }, { name: "JohnnyChess2k", avatar: "🧔" },
     ];
 
     const grandmasterBots = [
-      { name: "Chloe", avatar: "👤" }, { name: "Luke", avatar: "🧑" },
-      { name: "Camila", avatar: "👩" }, { name: "Julian", avatar: "👨" },
-      { name: "Penelope", avatar: "👱‍♀️" }, { name: "Grayson", avatar: "👨‍🦰" },
-      { name: "Layla", avatar: "👩‍🦱" }, { name: "Jack", avatar: "🧔" },
+      { name: "ChloeMasterYT", avatar: "👤" }, { name: "xXLukeGodXx", avatar: "🧑" },
+      { name: "CamilaChessGM", avatar: "👩" }, { name: "JulianProGamer", avatar: "👨" },
+      { name: "PenelopeElite", avatar: "👱‍♀️" }, { name: "GraysonTheGOAT", avatar: "👨‍🦰" },
+      { name: "LaylaGrandMaster", avatar: "👩‍🦱" }, { name: "JackTheChessKing", avatar: "🧔" },
     ];
 
     let botPool = beginnerBots;
