@@ -617,6 +617,11 @@ const Index = () => {
           <div className="mt-8 flex justify-center">
             <div id="container-6b73e2d7b6ada28eb7fcb5b7a7102a06"></div>
           </div>
+
+          {/* New Ad Section */}
+          <div className="mt-8 flex justify-center">
+            <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
+          </div>
         </section>
       </main>
 
@@ -665,11 +670,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-
-      {/* Ad Section */}
-      <div className="py-8 flex justify-center bg-background">
-        <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
-      </div>
 
     </div>
   );
