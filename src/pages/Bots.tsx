@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Crown, ArrowLeft, Zap, Trophy, Star, Sparkles, Swords } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -77,9 +78,15 @@ interface Bot {
   description: string;
   difficulty: string;
   image?: string;
+  isPurchased?: boolean;
 }
 
-const botCategories = {
+const botCategories: Record<string, { 
+  icon: any; 
+  color: string; 
+  image: string; 
+  bots: Bot[] 
+}> = {
   beginner: {
     icon: Star,
     color: "text-green-500",
@@ -607,6 +614,58 @@ const botCategories = {
 const Bots = () => {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("beginner");
+  const [allBotCategories, setAllBotCategories] = useState(botCategories);
+
+  useEffect(() => {
+    fetchPurchasedBots();
+  }, []);
+
+  const fetchPurchasedBots = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setAllBotCategories(botCategories);
+      return;
+    }
+
+    const { data: purchasedBots } = await supabase
+      .from("user_purchases")
+      .select("item_id, item_name, item_data")
+      .eq("user_id", user.id)
+      .eq("item_type", "bot");
+
+    if (purchasedBots && purchasedBots.length > 0) {
+      const updatedCategories = { ...botCategories };
+      
+      // Add purchased bots to their respective categories
+      purchasedBots.forEach(pb => {
+        const botData = pb.item_data as any;
+        const categoryKey = (botData.category || "intermediate").toString();
+        const category = categoryKey as keyof typeof updatedCategories;
+        
+        if (category && updatedCategories[category]) {
+          const newBot: Bot = {
+            id: pb.item_id,
+            name: pb.item_name,
+            rating: botData.rating || 1000,
+            description: botData.description || "Purchased chess bot",
+            difficulty: categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1),
+            image: undefined,
+            isPurchased: true,
+          };
+          
+          // Check if bot doesn't already exist
+          const exists = updatedCategories[category].bots.some(b => b.id === newBot.id);
+          if (!exists) {
+            updatedCategories[category].bots.push(newBot);
+            // Sort by rating
+            updatedCategories[category].bots.sort((a, b) => a.rating - b.rating);
+          }
+        }
+      });
+      
+      setAllBotCategories(updatedCategories);
+    }
+  };
 
   const handlePlayBot = (bot: Bot) => {
     // Navigate to game page with selected bot
@@ -660,7 +719,7 @@ const Bots = () => {
             <TabsTrigger value="grandmaster">GM</TabsTrigger>
           </TabsList>
 
-          {Object.entries(botCategories).map(([category, { icon: Icon, color, image, bots }]) => (
+          {Object.entries(allBotCategories).map(([category, { icon: Icon, color, image, bots }]) => (
             <TabsContent key={category} value={category}>
               <div className="mb-6 flex items-center gap-3">
                 <Icon className={`w-8 h-8 ${color}`} />
@@ -671,10 +730,21 @@ const Bots = () => {
                 {bots.map((bot) => (
                   <Card
                     key={bot.id}
-                    className="bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow overflow-hidden"
+                    className="bg-card/50 border-border/50 hover:border-primary/50 transition-all hover:shadow-glow overflow-hidden relative"
                   >
-                    <div className="aspect-square w-full overflow-hidden">
-                      <img src={bot.image || image} alt={bot.name} className="w-full h-full object-cover" />
+                    {bot.isPurchased && (
+                      <Badge className="absolute top-2 right-2 z-10 bg-primary">
+                        Shop Bot
+                      </Badge>
+                    )}
+                    <div className="aspect-square w-full overflow-hidden bg-gradient-card">
+                      {bot.image ? (
+                        <img src={bot.image} alt={bot.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-8xl">
+                          ♟️
+                        </div>
+                      )}
                     </div>
                     <CardHeader>
                       <div className="flex items-start justify-between">

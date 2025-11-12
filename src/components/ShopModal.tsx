@@ -7,11 +7,13 @@ import {
 } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bot, User, Coins, Check, Sparkles } from "lucide-react";
+import { Bot, User, Coins, Check, Sparkles, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { LuckyWheel } from "./LuckyWheel";
+import { shopBots } from "@/lib/botUtils";
 
 interface ShopModalProps {
   isOpen: boolean;
@@ -39,16 +41,7 @@ const rarityColors = {
 };
 
 const shopItems = {
-  bots: [
-    { id: "bot-1", name: "Dragon Knight", price: 600, icon: "🐉" },
-    { id: "bot-2", name: "Cyber Warrior", price: 500, icon: "🤖" },
-    { id: "bot-3", name: "Wizard Master", price: 700, icon: "🧙‍♂️" },
-    { id: "bot-4", name: "Shadow Ninja", price: 550, icon: "🥷" },
-    { id: "bot-5", name: "Space Explorer", price: 650, icon: "🚀" },
-    { id: "bot-6", name: "Alien Master", price: 800, icon: "👽" },
-    { id: "bot-7", name: "Ancient Warrior", price: 450, icon: "⚔️" },
-    { id: "bot-8", name: "Mystic Oracle", price: 750, icon: "🔮" },
-  ],
+  bots: shopBots,
   avatars: [
     // Common
     { id: "1", name: "Knight Helmet", price: 100, icon: "⚔️", rarity: "common" as Rarity },
@@ -122,11 +115,15 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
 
     setLoading(true);
     try {
+      const itemData = category === "bot" 
+        ? { icon: item.icon, rating: item.rating, category: item.category, description: item.description }
+        : { icon: item.icon, rarity: item.rarity };
+        
       const { data, error } = await supabase.rpc("handle_purchase", {
         p_item_type: category,
         p_item_id: item.id.toString(),
         p_item_name: item.name,
-        p_item_data: { icon: item.icon, color: item.color },
+        p_item_data: itemData,
         p_price: item.price,
       });
 
@@ -178,14 +175,26 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
               {shopItems.bots.map((bot) => {
                 const isPurchased = purchasedItems.has(bot.id);
                 return (
-                  <Card key={bot.id} className="p-4 bg-card/50 relative">
+                  <Card key={bot.id} className="p-4 bg-card/50 relative hover:border-primary/50 transition-all">
                     {isPurchased && (
                       <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
                         <Check className="w-4 h-4 text-primary-foreground" />
                       </div>
                     )}
-                    <div className="text-5xl mb-3 text-center">{bot.icon}</div>
-                    <h3 className="font-bold text-center mb-2">{bot.name}</h3>
+                    <div className="text-6xl mb-3 text-center">{bot.icon}</div>
+                    <h3 className="font-bold text-center mb-1">{bot.name}</h3>
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Badge variant="outline" className="text-xs">
+                        <Zap className="w-3 h-3 mr-1" />
+                        {bot.rating} ELO
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs capitalize">
+                        {bot.category}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center mb-3 min-h-[2.5rem]">
+                      {bot.description}
+                    </p>
                     <Button
                       className="w-full gap-2"
                       variant="outline"
