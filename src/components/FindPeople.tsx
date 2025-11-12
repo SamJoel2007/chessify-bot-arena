@@ -41,7 +41,8 @@ export const FindPeople = ({ userId }: FindPeopleProps) => {
       let query = supabase
         .from("profiles")
         .select("id, username, current_avatar")
-        .neq("id", userId);
+        .neq("id", userId)
+        .not("email", "is", null); // Filter out guest accounts
 
       // Add search filter if search query exists
       if (searchQuery.trim()) {
