@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Chess, Square } from "chess.js";
@@ -38,6 +38,9 @@ export default function OnlineGame() {
   const [gameResult, setGameResult] = useState<"win" | "loss" | "draw" | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [opponentIsGuest, setOpponentIsGuest] = useState(false);
+  
+  // Use ref to store userId for immediate synchronous access in closures
+  const userIdRef = useRef<string>("");
   
   // Bot names used for detection - must match OnlineMatchmaking bot pools
   const botNames = [
@@ -139,6 +142,7 @@ export default function OnlineGame() {
       const currentUserId = playerInfo.id;
       console.log("Loading game with user ID:", currentUserId);
       setUserId(currentUserId);
+      userIdRef.current = currentUserId; // Store in ref immediately for synchronous access
       setUsername(playerInfo.username);
       setIsGuest(playerInfo.type === 'guest');
 
@@ -246,23 +250,35 @@ export default function OnlineGame() {
 
   const handleGameEnd = (data: any) => {
     console.log("=== GAME END DEBUG ===");
+    const currentUserId = userIdRef.current || userId; // Use ref first, fall back to state
     console.log("Winner ID from DB:", data.winner_id);
-    console.log("Current user ID:", userId);
+    console.log("Current user ID (ref):", userIdRef.current);
+    console.log("Current user ID (state):", userId);
+    console.log("Using ID:", currentUserId);
     console.log("White player ID:", data.white_player_id);
     console.log("Black player ID:", data.black_player_id);
     console.log("Player color:", playerColor);
-    console.log("Is playing bot:", isPlayingBot);
     
-    // Ensure userId is defined
-    if (!userId) {
-      console.error("ERROR: userId is not defined!");
-      setGameResult("draw");
+    // If we still don't have userId, determine result from player color
+    if (!currentUserId) {
+      console.warn("WARNING: userId not available, using player color to determine result");
+      if (data.winner_id) {
+        // Check if winner matches our color
+        const isWhitePlayer = playerColor === "w";
+        const weWon = isWhitePlayer 
+          ? normalizeId(data.winner_id) === normalizeId(data.white_player_id)
+          : normalizeId(data.winner_id) === normalizeId(data.black_player_id);
+        
+        setGameResult(weWon ? "win" : "loss");
+      } else {
+        setGameResult("draw");
+      }
       setShowResultDialog(true);
       return;
     }
     
-    // Use normalized ID comparison for accuracy
-    if (normalizeId(data.winner_id) === normalizeId(userId)) {
+    // Normal logic with userId available
+    if (normalizeId(data.winner_id) === normalizeId(currentUserId)) {
       console.log("RESULT: Victory!");
       setGameResult("win");
     } else if (data.winner_id) {
