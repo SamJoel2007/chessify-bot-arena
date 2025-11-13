@@ -42,6 +42,11 @@ export default function OnlineGame() {
   // Use ref to store userId for immediate synchronous access in closures
   const userIdRef = useRef<string>("");
   
+  // Animation states
+  const [movingPiece, setMovingPiece] = useState<{ piece: string; color: string; from: Square; to: Square } | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [capturedSquare, setCapturedSquare] = useState<Square | null>(null);
+  
   // Bot names used for detection - must match OnlineMatchmaking bot pools
   const botNames = [
     // Beginner bots
@@ -391,7 +396,11 @@ export default function OnlineGame() {
 
       try {
         const gameCopy = new Chess(currentGame.fen());
+        
+        // Get piece info before moving
+        const movingPieceData = currentGame.get(from);
         const capturedPiece = gameCopy.get(to);
+        const isCapture = !!capturedPiece;
         const playerWhoMoved = gameCopy.turn();
         
         const move = gameCopy.move({
@@ -405,85 +414,124 @@ export default function OnlineGame() {
           return;
         }
 
+        // Start animation
+        setIsAnimating(true);
+        setMovingPiece({
+          piece: movingPieceData.type,
+          color: movingPieceData.color,
+          from,
+          to,
+        });
+
+        // If capture, start breakdown animation at 80% of journey
+        if (isCapture) {
+          setTimeout(() => {
+            setCapturedSquare(to);
+          }, 400);
+        }
+
         // Play sound effect
-        if (capturedPiece) {
+        if (isCapture) {
           playCaptureSound();
         } else {
           playMoveSound();
         }
 
-        // Calculate time
-        const botTime = playerWhoMoved === "w" ? whiteTime : blackTime;
-        const updatedWhiteTime = playerWhoMoved === "w" ? botTime : whiteTime;
-        const updatedBlackTime = playerWhoMoved === "b" ? botTime : blackTime;
+        // Complete move after animation
+        setTimeout(async () => {
+          await completeBotMove(gameCopy, move, playerWhoMoved, from, to, isCapture);
+        }, 500);
 
-        // Update game in database
-        const { error } = await supabase
-          .from("games")
-          .update({
-            current_fen: gameCopy.fen(),
-            current_turn: gameCopy.turn(),
-            white_time_remaining: updatedWhiteTime,
-            black_time_remaining: updatedBlackTime,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", gameId);
-
-        if (error) throw error;
-
-        // Insert move history
-        const botPlayerId = playerColor === "w" ? gameData.black_player_id : gameData.white_player_id;
-        await supabase.from("game_moves").insert({
-          game_id: gameId,
-          move_number: currentGame.moveNumber(),
-          move_san: move.san,
-          fen_after: gameCopy.fen(),
-          player_id: botPlayerId,
-          time_taken: 1,
-        });
-
-        // Check for game end
-        if (gameCopy.isGameOver()) {
-          let winnerId = null;
-          if (gameCopy.isCheckmate()) {
-            winnerId = playerColor === "w" ? gameData.black_player_id : gameData.white_player_id;
-          }
-
-          await supabase
-            .from("games")
-            .update({
-              status: "finished",
-              winner_id: winnerId,
-            })
-            .eq("id", gameId);
-
-          // Update points for player only (bot is fake)
-          if (winnerId) {
-            if (winnerId === userId) {
-              await supabase.rpc('update_user_points', {
-                user_id: userId,
-                points_change: 10
-              });
-            } else {
-              await supabase.rpc('update_user_points', {
-                user_id: userId,
-                points_change: -5
-              });
-            }
-          }
-        }
-
-        setGame(gameCopy);
       } catch (error) {
         console.error("Error making bot move:", error);
-      } finally {
+        setIsAnimating(false);
+        setMovingPiece(null);
         setIsBotThinking(false);
       }
     }, Math.random() * 2000 + 2000);
   };
 
+  // Helper function to complete bot move after animation
+  const completeBotMove = async (gameCopy: Chess, move: any, playerWhoMoved: string, from: Square, to: Square, isCapture: boolean) => {
+    try {
+      // Calculate time
+      const botTime = playerWhoMoved === "w" ? whiteTime : blackTime;
+      const updatedWhiteTime = playerWhoMoved === "w" ? botTime : whiteTime;
+      const updatedBlackTime = playerWhoMoved === "b" ? botTime : blackTime;
+
+      // Update game in database
+      const { error } = await supabase
+        .from("games")
+        .update({
+          current_fen: gameCopy.fen(),
+          current_turn: gameCopy.turn(),
+          white_time_remaining: updatedWhiteTime,
+          black_time_remaining: updatedBlackTime,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", gameId);
+
+      if (error) throw error;
+
+      // Insert move history
+      const botPlayerId = playerColor === "w" ? gameData.black_player_id : gameData.white_player_id;
+      await supabase.from("game_moves").insert({
+        game_id: gameId,
+        move_number: gameCopy.moveNumber() - 1,
+        move_san: move.san,
+        fen_after: gameCopy.fen(),
+        player_id: botPlayerId,
+        time_taken: 1,
+      });
+
+      // Check for game end
+      if (gameCopy.isGameOver()) {
+        let winnerId = null;
+        if (gameCopy.isCheckmate()) {
+          winnerId = playerColor === "w" ? gameData.black_player_id : gameData.white_player_id;
+        }
+
+        await supabase
+          .from("games")
+          .update({
+            status: "finished",
+            winner_id: winnerId,
+          })
+          .eq("id", gameId);
+
+        // Update points for player only (bot is fake)
+        if (winnerId) {
+          if (winnerId === userId) {
+            await supabase.rpc('update_user_points', {
+              user_id: userId,
+              points_change: 10
+            });
+          } else {
+            await supabase.rpc('update_user_points', {
+              user_id: userId,
+              points_change: -5
+            });
+          }
+        }
+      }
+
+      setGame(gameCopy);
+      setMovingPiece(null);
+      setIsAnimating(false);
+      
+      // Clear captured square after breakdown animation
+      if (isCapture) {
+        setTimeout(() => setCapturedSquare(null), 200);
+      }
+    } catch (error) {
+      console.error("Error completing bot move:", error);
+    } finally {
+      setIsBotThinking(false);
+    }
+  };
+
   const makeMove = async (from: Square, to: Square) => {
-    if (isGameOver) return false;
+    if (isGameOver || isAnimating) return false;
     if (game.turn() !== playerColor) {
       toast.error("Not your turn!");
       return false;
@@ -493,7 +541,13 @@ export default function OnlineGame() {
       console.log("[MOVE] Making move:", { from, to, currentTurn: game.turn(), playerColor });
       
       const gameCopy = new Chess(game.fen());
+      
+      // Get piece info before moving
+      const movingPieceData = game.get(from);
+      if (!movingPieceData) return false;
+      
       const capturedPiece = gameCopy.get(to);
+      const isCapture = !!capturedPiece;
       
       // Capture the player who is making the move BEFORE the move is made
       const playerWhoMoved = game.turn();
@@ -506,13 +560,47 @@ export default function OnlineGame() {
 
       if (move === null) return false;
 
+      // Start animation
+      setIsAnimating(true);
+      setMovingPiece({
+        piece: movingPieceData.type,
+        color: movingPieceData.color,
+        from,
+        to,
+      });
+
+      // If capture, start breakdown animation at 80% of journey
+      if (isCapture) {
+        setTimeout(() => {
+          setCapturedSquare(to);
+        }, 400); // 80% of 500ms
+      }
+
       // Play sound effect
-      if (capturedPiece) {
+      if (isCapture) {
         playCaptureSound();
       } else {
         playMoveSound();
       }
 
+      // Complete move after animation
+      setTimeout(async () => {
+        await completeMove(gameCopy, move, playerWhoMoved, from, to, isCapture);
+      }, 500);
+
+      return true;
+    } catch (error) {
+      console.error("Error making move:", error);
+      toast.error("Failed to make move");
+      setIsAnimating(false);
+      setMovingPiece(null);
+      return false;
+    }
+  };
+
+  // Helper function to complete the move after animation
+  const completeMove = async (gameCopy: Chess, move: any, playerWhoMoved: string, from: Square, to: Square, isCapture: boolean) => {
+    try {
       // Calculate time for the player who just moved
       const updatedWhiteTime = playerWhoMoved === "w" ? whiteTime : whiteTime;
       const updatedBlackTime = playerWhoMoved === "b" ? blackTime : blackTime;
@@ -604,6 +692,13 @@ export default function OnlineGame() {
       setGame(gameCopy);
       setOptionSquares({});
       setMoveFrom(null);
+      setMovingPiece(null);
+      setIsAnimating(false);
+      
+      // Clear captured square after breakdown animation
+      if (isCapture) {
+        setTimeout(() => setCapturedSquare(null), 200);
+      }
       
       console.log("[MOVE] Optimistic UI update complete, waiting for realtime confirmation");
       
@@ -611,8 +706,6 @@ export default function OnlineGame() {
       if (isPlayingBot && gameCopy.turn() !== playerColor && !gameCopy.isGameOver()) {
         makeBotMove(gameCopy);
       }
-      
-      return true;
     } catch (error) {
       console.error("Error making move:", error);
       toast.error("Failed to make move");
@@ -640,8 +733,37 @@ export default function OnlineGame() {
     return true;
   };
 
+  const handleDragStart = (square: Square, e: React.DragEvent<HTMLButtonElement>) => {
+    if (isGameOver || isBotThinking || isAnimating) return;
+    if (game.turn() !== playerColor) return;
+
+    const piece = game.get(square);
+    if (piece && piece.color === playerColor) {
+      const hasMoves = getMoveOptions(square);
+      if (hasMoves) {
+        setMoveFrom(square);
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", square);
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (square: Square, e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (!moveFrom) return;
+
+    makeMove(moveFrom, square);
+    setMoveFrom(null);
+    setOptionSquares({});
+  };
+
   const handleSquareClick = (square: Square) => {
-    if (isGameOver || isBotThinking) return;
+    if (isGameOver || isBotThinking || isAnimating) return;
     if (game.turn() !== playerColor) {
       toast.error("Not your turn!");
       return;
@@ -679,6 +801,15 @@ export default function OnlineGame() {
     }
   };
 
+  const calculateSquarePosition = (square: Square): { x: number; y: number } => {
+    const file = square.charCodeAt(0) - 97; // a=0, b=1, ..., h=7
+    const rank = 8 - parseInt(square[1]); // 8=0, 7=1, ..., 1=7
+    // Flip coordinates if player is black
+    const x = playerColor === "w" ? file : 7 - file;
+    const y = playerColor === "w" ? rank : 7 - rank;
+    return { x, y };
+  };
+
   const renderBoard = () => {
     const board = game.board();
     const squares = [];
@@ -694,9 +825,16 @@ export default function OnlineGame() {
         const isSelected = moveFrom === square;
         const hasLegalMove = optionSquares[square];
 
+        const isCaptured = capturedSquare === square;
+        const isMovingFrom = movingPiece?.from === square;
+
         squares.push(
           <button
             key={square}
+            draggable={!!piece && piece.color === playerColor && !isAnimating && !isGameOver && !isBotThinking}
+            onDragStart={(e) => handleDragStart(square, e)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(square, e)}
             onClick={() => handleSquareClick(square)}
             className={`
               aspect-square flex items-center justify-center text-5xl font-bold 
@@ -710,8 +848,13 @@ export default function OnlineGame() {
               backgroundColor: hasLegalMove ? hasLegalMove.background : undefined,
             }}
           >
-            {piece && (
-              <span className="animate-scale-in">
+            {piece && !isCaptured && !isMovingFrom && (
+              <span>
+                {getPieceSymbol(piece.type, piece.color)}
+              </span>
+            )}
+            {piece && isCaptured && (
+              <span className="animate-piece-breakdown">
                 {getPieceSymbol(piece.type, piece.color)}
               </span>
             )}
@@ -836,10 +979,53 @@ export default function OnlineGame() {
               </Card>
 
               <div 
-                className="grid grid-cols-8 border-4 border-border rounded-lg overflow-hidden shadow-glow max-w-[600px] mx-auto"
+                className="grid grid-cols-8 border-4 border-border rounded-lg overflow-hidden shadow-glow max-w-[600px] mx-auto relative"
                 style={{ aspectRatio: "1/1" }}
               >
                 {renderBoard()}
+                
+                {/* Moving Piece Overlay */}
+                {movingPiece && (
+                  <div
+                    className="absolute inset-0 pointer-events-none grid grid-cols-8"
+                    style={{ aspectRatio: "1/1" }}
+                  >
+                    {(() => {
+                      const fromPos = calculateSquarePosition(movingPiece.from);
+                      const toPos = calculateSquarePosition(movingPiece.to);
+                      const deltaX = (toPos.x - fromPos.x) * 100; // percentage
+                      const deltaY = (toPos.y - fromPos.y) * 100; // percentage
+                      
+                      return (
+                        <div
+                          className="absolute text-5xl font-bold animate-piece-slide"
+                          style={{
+                            left: `${fromPos.x * 12.5}%`,
+                            top: `${fromPos.y * 12.5}%`,
+                            width: '12.5%',
+                            height: '12.5%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            '--tw-slide-from-x': '0%',
+                            '--tw-slide-from-y': '0%',
+                            '--tw-slide-to-x': `${deltaX}%`,
+                            '--tw-slide-to-y': `${deltaY}%`,
+                            color: movingPiece.color === 'w' ? '#F0D9B5' : '#1a1a1a',
+                            filter: movingPiece.color === 'w' 
+                              ? 'drop-shadow(0 3px 6px rgba(0,0,0,0.9))' 
+                              : 'drop-shadow(0 3px 6px rgba(255,255,255,0.4))',
+                            textShadow: movingPiece.color === 'w'
+                              ? '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
+                              : '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff',
+                          } as React.CSSProperties}
+                        >
+                          {getPieceSymbol(movingPiece.piece, movingPiece.color)}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
 
               <Card className="p-4 mt-4 bg-gradient-card">
