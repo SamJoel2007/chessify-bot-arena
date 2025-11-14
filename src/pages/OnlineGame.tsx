@@ -188,12 +188,18 @@ export default function OnlineGame() {
       // Check if playing against a bot by checking opponent's username
       const opponentUsername = isWhitePlayer ? data.black_username : data.white_username;
       const playingBot = botNames.includes(opponentUsername);
+      console.log("[BOT] Bot detection:", {
+        opponentUsername,
+        isBot: playingBot,
+        botNames: botNames.slice(0, 5) + '... (total: ' + botNames.length + ')'
+      });
       setIsPlayingBot(playingBot);
 
       if (data.status !== "active") {
         setIsGameOver(true);
       } else if (playingBot && chess.turn() !== (isWhitePlayer ? "w" : "b")) {
         // If it's bot's turn when loading, make bot move
+        console.log("[BOT] Bot's turn on load, triggering bot move");
         setTimeout(() => makeBotMove(chess), 1000);
       }
     } catch (error) {
@@ -725,13 +731,23 @@ export default function OnlineGame() {
       console.log("[MOVE] Optimistic UI update complete, waiting for realtime confirmation");
       
       // Trigger bot move if playing against bot and it's bot's turn
+      console.log("[BOT] Checking if bot should move:", {
+        isPlayingBot,
+        currentTurn: gameCopy.turn(),
+        playerColor,
+        isGameOver: gameCopy.isGameOver(),
+        shouldTrigger: isPlayingBot && gameCopy.turn() !== playerColor && !gameCopy.isGameOver()
+      });
+      
       if (isPlayingBot && gameCopy.turn() !== playerColor && !gameCopy.isGameOver()) {
-        makeBotMove(gameCopy);
+        console.log("[BOT] Triggering bot move");
+        setTimeout(() => makeBotMove(gameCopy), 1000);
       }
     } catch (error) {
-      console.error("Error making move:", error);
-      toast.error("Failed to make move");
-      return false;
+      console.error("Error completing move:", error);
+      toast.error("Failed to complete move");
+      setIsAnimating(false);
+      setMovingPiece(null);
     }
   };
 
