@@ -54,17 +54,23 @@ export default function OnlineGame() {
   // Bot names used for detection - must match OnlineMatchmaking bot pools
   const botNames = [
     // Beginner bots
-    "Emma", "Noah", "Olivia", "Liam", "Ava", "Oliver", "Sophia", "Elijah",
+    "Noob2009", "xXSam_ProXx", "CoolGamer123", "JakeTheBeast", 
+    "PawnMaster88", "ChessNewbie", "KingKiller2010", "EpicPlayer99",
     // Intermediate bots
-    "Charlotte", "James", "Amelia", "Benjamin", "Isabella", "Lucas", "Mia", "Henry",
+    "ProGamer2008", "xXDarkKnightXx", "QueenSlayer420", "TacticalTom07", 
+    "ChessMaster2k", "ShadowKing666", "LegendaryPlayer", "GrandpaChess",
     // Advanced bots
-    "Harper", "Alexander", "Evelyn", "Michael", "Abigail", "Daniel", "Emily", "Matthew",
+    "Suii2007", "xXAlexTheProXx", "MikeYT_Gaming", "DanTheChamp99", 
+    "ElitePlayer2k23", "MattyChessGod", "StrategicEmily", "Matt_Pro2012",
     // Expert bots
-    "Elizabeth", "Jackson", "Sofia", "Sebastian", "Avery", "David", "Ella", "Joseph",
+    "SugmaBalls", "Jack420Blaze", "SofiaGaming2k", "BasedChessLord", 
+    "xXAveryProXx", "D4vidTheKing", "EllaTheQueen", "Joe_Chess_Pro",
     // Master bots
-    "Scarlett", "Carter", "Victoria", "Owen", "Aria", "Wyatt", "Grace", "John",
+    "Sam2007YT", "CarterGaming", "VictoriaChess", "Owen_TheBeast", 
+    "AriaProPlayer", "WyattLegend99", "GraceTheChamp", "JohnnyChess2k",
     // Grandmaster bots
-    "Chloe", "Luke", "Camila", "Julian", "Penelope", "Grayson", "Layla", "Jack"
+    "ChloeMasterYT", "xXLukeGodXx", "CamilaChessGM", "JulianProGamer", 
+    "PenelopeElite", "GraysonTheGOAT", "LaylaGrandMaster", "JackTheChessKing"
   ];
 
   // Normalize IDs by trimming whitespace and converting to lowercase for consistent comparison
