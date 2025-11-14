@@ -47,6 +47,10 @@ export default function OnlineGame() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [capturedSquare, setCapturedSquare] = useState<Square | null>(null);
   
+  // Captured pieces tracking
+  const [capturedByWhite, setCapturedByWhite] = useState<string[]>([]);
+  const [capturedByBlack, setCapturedByBlack] = useState<string[]>([]);
+  
   // Bot names used for detection - must match OnlineMatchmaking bot pools
   const botNames = [
     // Beginner bots
@@ -515,6 +519,15 @@ export default function OnlineGame() {
         }
       }
 
+      // Track captured piece
+      if (isCapture && move.captured) {
+        if (playerWhoMoved === 'w') {
+          setCapturedByWhite(prev => [...prev, move.captured]);
+        } else {
+          setCapturedByBlack(prev => [...prev, move.captured]);
+        }
+      }
+      
       setGame(gameCopy);
       setMovingPiece(null);
       setIsAnimating(false);
@@ -601,6 +614,15 @@ export default function OnlineGame() {
   // Helper function to complete the move after animation
   const completeMove = async (gameCopy: Chess, move: any, playerWhoMoved: string, from: Square, to: Square, isCapture: boolean) => {
     try {
+      // Track captured piece
+      if (isCapture && move.captured) {
+        if (playerWhoMoved === 'w') {
+          setCapturedByWhite(prev => [...prev, move.captured]);
+        } else {
+          setCapturedByBlack(prev => [...prev, move.captured]);
+        }
+      }
+      
       // Calculate time for the player who just moved
       const updatedWhiteTime = playerWhoMoved === "w" ? whiteTime : whiteTime;
       const updatedBlackTime = playerWhoMoved === "b" ? blackTime : blackTime;
@@ -976,6 +998,15 @@ export default function OnlineGame() {
                     </span>
                   </div>
                 </div>
+                
+                {/* Captured pieces by black player */}
+                <div className="flex items-center gap-1 flex-wrap min-h-[24px] mt-2">
+                  {capturedByBlack.map((piece, index) => (
+                    <span key={index} className="text-lg">
+                      {getPieceSymbol(piece, 'w')}
+                    </span>
+                  ))}
+                </div>
               </Card>
 
               <div 
@@ -1052,6 +1083,15 @@ export default function OnlineGame() {
                       {formatTime(whiteTime)}
                     </span>
                   </div>
+                </div>
+                
+                {/* Captured pieces by white player */}
+                <div className="flex items-center gap-1 flex-wrap min-h-[24px] mt-2">
+                  {capturedByWhite.map((piece, index) => (
+                    <span key={index} className="text-lg">
+                      {getPieceSymbol(piece, 'b')}
+                    </span>
+                  ))}
                 </div>
               </Card>
             </div>
