@@ -39,6 +39,12 @@ export default function OnlineGame() {
   const [isGuest, setIsGuest] = useState(false);
   const [opponentIsGuest, setOpponentIsGuest] = useState(false);
   
+  // Draw and resign states
+  const [drawOffer, setDrawOffer] = useState<any>(null);
+  const [showDrawDialog, setShowDrawDialog] = useState(false);
+  const [lastMoveTime, setLastMoveTime] = useState<Date>(new Date());
+  const [afkWarning, setAfkWarning] = useState(false);
+  
   // Use ref to store userId for immediate synchronous access in closures
   const userIdRef = useRef<string>("");
   
@@ -145,6 +151,32 @@ export default function OnlineGame() {
       handleTimeOut();
     }
   }, [whiteTime, blackTime]);
+
+  // AFK detection
+  useEffect(() => {
+    if (!gameData || isGameOver || isPlayingBot) return;
+    
+    const checkAfk = setInterval(() => {
+      const now = new Date();
+      const timeSinceLastMove = (now.getTime() - lastMoveTime.getTime()) / 1000; // seconds
+      
+      // Only check if it's player's turn
+      if (game.turn() === playerColor) {
+        // Warn at 2 minutes of inactivity
+        if (timeSinceLastMove > 120 && !afkWarning) {
+          setAfkWarning(true);
+          toast.warning("⚠️ Are you still there? Make a move or you'll be auto-resigned!");
+        }
+        
+        // Auto-resign at 3 minutes of inactivity
+        if (timeSinceLastMove > 180) {
+          handleAfkResign();
+        }
+      }
+    }, 10000); // Check every 10 seconds
+    
+    return () => clearInterval(checkAfk);
+  }, [gameData, isGameOver, isPlayingBot, lastMoveTime, playerColor, afkWarning, game]);
 
   const loadGame = async () => {
     try {
@@ -264,8 +296,31 @@ export default function OnlineGame() {
       )
       .subscribe();
 
+    // Setup draw offers subscription
+    const drawChannel = supabase
+      .channel(`draw_offers:${gameId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "game_draw_offers",
+          filter: `game_id=eq.${gameId}`,
+        },
+        (payload) => {
+          const offer = payload.new as any;
+          // Only show if offered by opponent
+          if (offer.offered_by !== userId && offer.status === "pending") {
+            setDrawOffer(offer);
+            setShowDrawDialog(true);
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(drawChannel);
     };
   };
 
@@ -311,6 +366,146 @@ export default function OnlineGame() {
     }
     
     setShowResultDialog(true);
+  };
+
+  const handleResign = async () => {
+    if (!gameData || isGameOver) return;
+    
+    const confirmed = window.confirm("Are you sure you want to resign?");
+    if (!confirmed) return;
+    
+    const opponentId = playerColor === "w" ? gameData.black_player_id : gameData.white_player_id;
+    
+    await supabase
+      .from("games")
+      .update({
+        status: "finished",
+        winner_id: opponentId,
+      })
+      .eq("id", gameId);
+
+    // Update points
+    if (!isPlayingBot) {
+      if (!isGuest) {
+        await supabase.rpc('update_user_points', {
+          user_id: userId,
+          points_change: -5
+        });
+      }
+      if (!opponentIsGuest) {
+        await supabase.rpc('update_user_points', {
+          user_id: opponentId,
+          points_change: 10
+        });
+      }
+    } else if (!isGuest) {
+      await supabase.rpc('update_user_points', {
+        user_id: userId,
+        points_change: -5
+      });
+    }
+
+    setIsGameOver(true);
+    toast.success("You resigned from the game");
+  };
+
+  const handleOfferDraw = async () => {
+    if (!gameData || isGameOver || isPlayingBot) return;
+    
+    // Check if there's already a pending draw offer
+    const { data: existing } = await supabase
+      .from("game_draw_offers")
+      .select("*")
+      .eq("game_id", gameId)
+      .eq("status", "pending")
+      .maybeSingle();
+      
+    if (existing) {
+      toast.error("A draw offer is already pending");
+      return;
+    }
+    
+    const { error } = await supabase
+      .from("game_draw_offers")
+      .insert({
+        game_id: gameId,
+        offered_by: userId,
+        status: "pending"
+      });
+      
+    if (error) {
+      toast.error("Failed to offer draw");
+      return;
+    }
+    
+    toast.success("Draw offer sent to opponent");
+  };
+
+  const handleAcceptDraw = async () => {
+    if (!drawOffer) return;
+    
+    // Update game to draw
+    await supabase
+      .from("games")
+      .update({
+        status: "finished",
+        winner_id: null,
+      })
+      .eq("id", gameId);
+      
+    // Update draw offer status
+    await supabase
+      .from("game_draw_offers")
+      .update({ status: "accepted" })
+      .eq("id", drawOffer.id);
+      
+    setShowDrawDialog(false);
+    setIsGameOver(true);
+    toast.success("Draw accepted");
+  };
+
+  const handleDeclineDraw = async () => {
+    if (!drawOffer) return;
+    
+    await supabase
+      .from("game_draw_offers")
+      .update({ status: "declined" })
+      .eq("id", drawOffer.id);
+      
+    setShowDrawDialog(false);
+    setDrawOffer(null);
+    toast.info("Draw offer declined");
+  };
+
+  const handleAfkResign = async () => {
+    if (!gameData) return;
+    
+    const opponentId = playerColor === "w" ? gameData.black_player_id : gameData.white_player_id;
+    
+    await supabase
+      .from("games")
+      .update({
+        status: "finished",
+        winner_id: opponentId,
+      })
+      .eq("id", gameId);
+
+    // Update points
+    if (!isGuest) {
+      await supabase.rpc('update_user_points', {
+        user_id: userId,
+        points_change: -5
+      });
+    }
+    if (!opponentIsGuest && !isPlayingBot) {
+      await supabase.rpc('update_user_points', {
+        user_id: opponentId,
+        points_change: 10
+      });
+    }
+
+    setIsGameOver(true);
+    toast.error("You were auto-resigned due to inactivity");
   };
 
   const handleTimeOut = async () => {
@@ -475,7 +670,11 @@ export default function OnlineGame() {
       const updatedWhiteTime = playerWhoMoved === "w" ? botTime : whiteTime;
       const updatedBlackTime = playerWhoMoved === "b" ? botTime : blackTime;
 
-      // Update game in database
+      // Update game in database and track last move time
+      const now = new Date();
+      setLastMoveTime(now);
+      setAfkWarning(false);
+      
       const { error } = await supabase
         .from("games")
         .update({
@@ -483,7 +682,8 @@ export default function OnlineGame() {
           current_turn: gameCopy.turn(),
           white_time_remaining: updatedWhiteTime,
           black_time_remaining: updatedBlackTime,
-          updated_at: new Date().toISOString(),
+          updated_at: now.toISOString(),
+          last_move_at: now.toISOString(),
         })
         .eq("id", gameId);
 
@@ -646,7 +846,11 @@ export default function OnlineGame() {
         blackTime: updatedBlackTime,
       });
 
-      // Update game in database
+      // Update game in database and track last move time
+      const now = new Date();
+      setLastMoveTime(now);
+      setAfkWarning(false);
+      
       const { error } = await supabase
         .from("games")
         .update({
@@ -654,7 +858,8 @@ export default function OnlineGame() {
           current_turn: gameCopy.turn(),
           white_time_remaining: updatedWhiteTime,
           black_time_remaining: updatedBlackTime,
-          updated_at: new Date().toISOString(),
+          updated_at: now.toISOString(),
+          last_move_at: now.toISOString(),
         })
         .eq("id", gameId);
 
@@ -1147,6 +1352,34 @@ export default function OnlineGame() {
                   {game.isCheck() && (
                     <div className="text-destructive font-bold">Check!</div>
                   )}
+                  {afkWarning && game.turn() === playerColor && !isGameOver && (
+                    <Badge variant="destructive" className="animate-pulse w-full justify-center">
+                      ⚠️ Make a move! Auto-resign in {Math.max(0, 180 - Math.floor((new Date().getTime() - lastMoveTime.getTime()) / 1000))}s
+                    </Badge>
+                  )}
+                  {!isGameOver && (
+                    <div className="space-y-2 mt-4">
+                      <Button
+                        onClick={handleResign}
+                        variant="destructive"
+                        className="w-full"
+                        disabled={isAnimating || isBotThinking}
+                      >
+                        Resign Game
+                      </Button>
+                      
+                      {!isPlayingBot && (
+                        <Button
+                          onClick={handleOfferDraw}
+                          variant="outline"
+                          className="w-full"
+                          disabled={isAnimating || isBotThinking}
+                        >
+                          Offer Draw
+                        </Button>
+                      )}
+                    </div>
+                  )}
                   {isGameOver && (
                     <div className="mt-4">
                       <Button onClick={() => navigate("/")} className="w-full">
@@ -1165,6 +1398,26 @@ export default function OnlineGame() {
             </div>
           </div>
         </div>
+
+        {/* Draw Offer Dialog */}
+        <Dialog open={showDrawDialog} onOpenChange={setShowDrawDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Draw Offer</DialogTitle>
+              <DialogDescription>
+                Your opponent has offered a draw. Do you accept?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-3 mt-4">
+              <Button onClick={handleAcceptDraw} className="flex-1">
+                Accept Draw
+              </Button>
+              <Button onClick={handleDeclineDraw} variant="outline" className="flex-1">
+                Decline
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
