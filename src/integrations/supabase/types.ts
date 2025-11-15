@@ -340,6 +340,38 @@ export type Database = {
         }
         Relationships: []
       }
+      game_draw_offers: {
+        Row: {
+          created_at: string | null
+          game_id: string
+          id: string
+          offered_by: string
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          game_id: string
+          id?: string
+          offered_by: string
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          game_id?: string
+          id?: string
+          offered_by?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_draw_offers_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_invites: {
         Row: {
           created_at: string
@@ -450,6 +482,7 @@ export type Database = {
           current_turn: string
           id: string
           invite_code: string | null
+          last_move_at: string | null
           status: string
           tournament_id: string | null
           updated_at: string
@@ -471,6 +504,7 @@ export type Database = {
           current_turn?: string
           id?: string
           invite_code?: string | null
+          last_move_at?: string | null
           status?: string
           tournament_id?: string | null
           updated_at?: string
@@ -492,6 +526,7 @@ export type Database = {
           current_turn?: string
           id?: string
           invite_code?: string | null
+          last_move_at?: string | null
           status?: string
           tournament_id?: string | null
           updated_at?: string
