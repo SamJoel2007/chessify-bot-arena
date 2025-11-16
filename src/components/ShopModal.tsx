@@ -181,7 +181,13 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
                         <Check className="w-4 h-4 text-primary-foreground" />
                       </div>
                     )}
-                    <div className="text-6xl mb-3 text-center">{bot.icon}</div>
+                    <div className="mb-3 flex justify-center">
+                      <img 
+                        src={bot.image} 
+                        alt={bot.name} 
+                        className="w-24 h-24 rounded-full object-cover border-2 border-primary/30"
+                      />
+                    </div>
                     <h3 className="font-bold text-center mb-1">{bot.name}</h3>
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <Badge variant="outline" className="text-xs">
