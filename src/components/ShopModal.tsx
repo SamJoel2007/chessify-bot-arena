@@ -116,7 +116,7 @@ export const ShopModal = ({ isOpen, onClose, coins, onCoinsUpdate }: ShopModalPr
     setLoading(true);
     try {
       const itemData = category === "bot" 
-        ? { icon: item.icon, rating: item.rating, category: item.category, description: item.description }
+        ? { image: item.image, rating: item.rating, category: item.category, description: item.description }
         : { icon: item.icon, rarity: item.rarity };
         
       const { data, error } = await supabase.rpc("handle_purchase", {
