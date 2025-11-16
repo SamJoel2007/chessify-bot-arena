@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { shopBots } from "@/lib/botUtils";
 import botBeginner from "@/assets/bot-beginner.jpg";
 import botIntermediate from "@/assets/bot-intermediate.jpg";
 import botAdvanced from "@/assets/bot-advanced.jpg";
@@ -643,13 +644,16 @@ const Bots = () => {
         const category = categoryKey as keyof typeof updatedCategories;
         
         if (category && updatedCategories[category]) {
+          // Find matching shop bot to get image if not in purchase data
+          const matchingShopBot = shopBots.find(sb => sb.id === pb.item_id);
+          
           const newBot: Bot = {
             id: pb.item_id,
             name: pb.item_name,
             rating: botData.rating || 1000,
             description: botData.description || "Purchased chess bot",
             difficulty: categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1),
-            image: botData.image || undefined,
+            image: botData.image || matchingShopBot?.image || undefined,
             isPurchased: true,
           };
           
