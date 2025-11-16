@@ -649,7 +649,7 @@ const Bots = () => {
             rating: botData.rating || 1000,
             description: botData.description || "Purchased chess bot",
             difficulty: categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1),
-            image: undefined,
+            image: botData.image || undefined,
             isPurchased: true,
           };
           
