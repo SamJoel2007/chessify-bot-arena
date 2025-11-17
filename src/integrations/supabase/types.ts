@@ -742,6 +742,7 @@ export type Database = {
           email: string | null
           id: string
           points: number
+          profile_picture_url: string | null
           rank: Database["public"]["Enums"]["user_rank"]
           updated_at: string
           username: string | null
@@ -753,6 +754,7 @@ export type Database = {
           email?: string | null
           id: string
           points?: number
+          profile_picture_url?: string | null
           rank?: Database["public"]["Enums"]["user_rank"]
           updated_at?: string
           username?: string | null
@@ -764,6 +766,7 @@ export type Database = {
           email?: string | null
           id?: string
           points?: number
+          profile_picture_url?: string | null
           rank?: Database["public"]["Enums"]["user_rank"]
           updated_at?: string
           username?: string | null
