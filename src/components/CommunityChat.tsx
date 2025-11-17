@@ -9,6 +9,7 @@ import { Send, UserPlus, Check, MessageCircle, Paperclip, X, Loader2 } from "luc
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getAvatarIcon } from "@/lib/avatarUtils";
+import { z } from "zod";
 
 interface Message {
   id: string;
@@ -22,6 +23,9 @@ interface Message {
   link_description?: string;
   link_image?: string;
 }
+
+// Message validation schema (max 2000 characters to match DB constraint)
+const messageSchema = z.string().trim().min(1, "Message cannot be empty").max(2000, "Message too long (max 2000 characters)");
 
 export const CommunityChat = () => {
   const navigate = useNavigate();
@@ -314,6 +318,16 @@ export const CommunityChat = () => {
     if ((!message.trim() && !selectedImage) || !currentUser) return;
 
     const messageText = message.trim();
+    
+    // Validate message with Zod schema if text is present
+    if (messageText) {
+      const validation = messageSchema.safeParse(messageText);
+      if (!validation.success) {
+        toast.error(validation.error.errors[0].message);
+        return;
+      }
+    }
+    
     const username = currentUser.email.split("@")[0];
 
     setIsUploadingImage(true);
