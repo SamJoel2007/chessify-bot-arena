@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Crown, Trophy, Coins } from "lucide-react";
+import { ArrowLeft, Crown, Trophy, Coins, Camera, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { getAvatarIcon } from "@/lib/avatarUtils";
 import { toast } from "sonner";
@@ -13,6 +13,8 @@ const MyProfile = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -44,6 +46,69 @@ const MyProfile = () => {
 
     loadProfile();
   }, [navigate]);
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      // Delete old profile picture if exists
+      if (profile?.profile_picture_url) {
+        const oldPath = profile.profile_picture_url.split('/').pop();
+        if (oldPath) {
+          await supabase.storage
+            .from('profile-pictures')
+            .remove([`${user.id}/${oldPath}`]);
+        }
+      }
+
+      // Upload new image
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('profile-pictures')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(filePath);
+
+      // Update profile with new image URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ profile_picture_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile({ ...profile, profile_picture_url: publicUrl });
+      toast.success("Profile picture updated!");
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error(error.message || "Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const getRankColor = (rank: string) => {
     switch (rank) {
@@ -102,12 +167,38 @@ const MyProfile = () => {
           {/* Profile Card */}
           <Card className="p-8 bg-gradient-card border-border/50 mb-8">
             <div className="flex flex-col md:flex-row items-center gap-8">
-              {/* Avatar */}
-              <Avatar className="w-32 h-32 border-4 border-primary">
-                <AvatarFallback className="bg-gradient-primary text-6xl">
-                  {getAvatarIcon(profile?.current_avatar)}
-                </AvatarFallback>
-              </Avatar>
+              {/* Avatar with Upload */}
+              <div className="relative group">
+                <Avatar className="w-32 h-32 border-4 border-primary">
+                  {profile?.profile_picture_url ? (
+                    <AvatarImage src={profile.profile_picture_url} alt="Profile" />
+                  ) : (
+                    <AvatarFallback className="bg-gradient-primary text-6xl">
+                      {getAvatarIcon(profile?.current_avatar)}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="absolute bottom-0 right-0 rounded-full w-10 h-10 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Camera className="w-5 h-5" />
+                  )}
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+              </div>
 
               {/* User Info */}
               <div className="flex-1 text-center md:text-left">
