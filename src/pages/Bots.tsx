@@ -7,6 +7,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { shopBots } from "@/lib/botUtils";
+import shopRookieRachel from "@/assets/shop/rookie-rachel.jpg";
+import shopStarterSam from "@/assets/shop/starter-sam.jpg";
+import shopNoviceNick from "@/assets/shop/novice-nick.jpg";
+import shopTacticalTom from "@/assets/shop/tactical-tom.jpg";
+import shopStrategicSteve from "@/assets/shop/strategic-steve.jpg";
+import shopPositionalPaul from "@/assets/shop/positional-paul.jpg";
+import shopMasterMarcus from "@/assets/shop/master-marcus.jpg";
+import shopExpertEmma from "@/assets/shop/expert-emma.jpg";
+import shopAdvancedAlex from "@/assets/shop/advanced-alex.jpg";
+import shopGeniusGrace from "@/assets/shop/genius-grace.jpg";
+import shopProdigyPeter from "@/assets/shop/prodigy-peter.jpg";
+import shopEliteEva from "@/assets/shop/elite-eva.jpg";
+import shopGrandmasterGary from "@/assets/shop/grandmaster-gary.jpg";
+import shopSupremeSarah from "@/assets/shop/supreme-sarah.jpg";
+import shopLegendaryLeo from "@/assets/shop/legendary-leo.jpg";
+import shopMythicMaya from "@/assets/shop/mythic-maya.jpg";
 import botBeginner from "@/assets/bot-beginner.jpg";
 import botIntermediate from "@/assets/bot-intermediate.jpg";
 import botAdvanced from "@/assets/bot-advanced.jpg";
@@ -644,8 +660,25 @@ const Bots = () => {
         const category = categoryKey as keyof typeof updatedCategories;
         
         if (category && updatedCategories[category]) {
-          // Find matching shop bot to get image if not in purchase data
-          const matchingShopBot = shopBots.find(sb => sb.id === pb.item_id);
+          // Map bot IDs to their imported images
+          const botImageMap: Record<string, string> = {
+            "shop-bot-b1": shopRookieRachel,
+            "shop-bot-b2": shopStarterSam,
+            "shop-bot-b3": shopNoviceNick,
+            "shop-bot-i1": shopTacticalTom,
+            "shop-bot-i2": shopStrategicSteve,
+            "shop-bot-i3": shopPositionalPaul,
+            "shop-bot-a1": shopMasterMarcus,
+            "shop-bot-a2": shopExpertEmma,
+            "shop-bot-a3": shopAdvancedAlex,
+            "shop-bot-e1": shopGeniusGrace,
+            "shop-bot-e2": shopProdigyPeter,
+            "shop-bot-e3": shopEliteEva,
+            "shop-bot-m1": shopGrandmasterGary,
+            "shop-bot-m2": shopSupremeSarah,
+            "shop-bot-g1": shopLegendaryLeo,
+            "shop-bot-g2": shopMythicMaya,
+          };
           
           const newBot: Bot = {
             id: pb.item_id,
@@ -653,7 +686,7 @@ const Bots = () => {
             rating: botData.rating || 1000,
             description: botData.description || "Purchased chess bot",
             difficulty: categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1),
-            image: botData.image || matchingShopBot?.image || undefined,
+            image: botData.image || botImageMap[pb.item_id],
             isPurchased: true,
           };
           
