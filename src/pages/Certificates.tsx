@@ -30,6 +30,7 @@ const Certificates = () => {
         setUser(session.user);
         fetchCertificates(session.user.id);
       } else {
+        toast.error("Please sign in to view certificates");
         navigate("/auth");
       }
     });

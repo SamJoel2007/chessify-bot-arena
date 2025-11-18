@@ -27,6 +27,12 @@ export default function Notifications() {
         navigate('/auth');
         return;
       }
+      // Redirect anonymous users to auth to convert account
+      if (session.user.is_anonymous) {
+        toast.error("Please sign up to access notifications");
+        navigate('/auth');
+        return;
+      }
       setUser(session.user);
       loadNotifications(session.user.id);
     });

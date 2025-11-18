@@ -21,8 +21,11 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [isGuest, setIsGuest] = useState(false);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsGuest(session?.user?.is_anonymous || false);
       // Redirect only if user has a registered account (not anonymous)
       if (session && !session.user.is_anonymous) {
         navigate("/");
@@ -30,6 +33,7 @@ const Auth = () => {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsGuest(session?.user?.is_anonymous || false);
       // Redirect only if user has a registered account (not anonymous)
       if (session && !session.user.is_anonymous) {
         navigate("/");
@@ -46,17 +50,25 @@ const Auth = () => {
       authSchema.parse({ email, password });
       setLoading(true);
 
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-        },
-      });
-
-      if (error) throw error;
-
-      toast.success("Account created successfully!");
+      // If guest user, convert to permanent account
+      if (isGuest) {
+        const { error } = await supabase.auth.updateUser({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast.success("Guest account converted! Your progress has been saved.");
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+          },
+        });
+        if (error) throw error;
+        toast.success("Account created successfully!");
+      }
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -126,6 +138,17 @@ const Auth = () => {
           </Button>
         </div>
       </header>
+
+      {/* Guest Banner */}
+      {isGuest && (
+        <div className="bg-primary/10 border-b border-primary/20">
+          <div className="container mx-auto px-4 py-3">
+            <p className="text-center text-sm text-foreground">
+              🎮 <strong>You're browsing as a guest.</strong> Sign up to save your progress, coins, and achievements!
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Auth Form Section */}
       <div className="flex items-center justify-center p-4 py-16 bg-gradient-card">

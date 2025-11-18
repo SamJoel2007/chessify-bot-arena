@@ -70,6 +70,19 @@ export default function TournamentLobby() {
       navigate("/auth");
       return;
     }
+    
+    // Check if user is anonymous and redirect to sign up
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user.is_anonymous) {
+      toast({
+        title: "Please sign up",
+        description: "You must create an account to participate in tournaments",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+    
     setUserId(user.id);
     fetchTournamentData(user.id);
   };

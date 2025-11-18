@@ -53,6 +53,7 @@ export const CommunityChat = () => {
         return;
       }
 
+      // Allow guests to use community chat
       setCurrentUser({
         id: session.user.id,
         email: session.user.email || "Anonymous",
