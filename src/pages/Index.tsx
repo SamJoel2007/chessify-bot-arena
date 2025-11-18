@@ -42,16 +42,35 @@ const Index = () => {
         fetchUserProfile(session.user.id);
       } else {
         // Automatically sign in as anonymous guest
+        console.log("No session found, signing in anonymously...");
         const { data, error } = await supabase.auth.signInAnonymously();
-        if (data?.user && !error) {
+        
+        if (error) {
+          console.error("Error signing in anonymously:", error);
+          toast.error("Failed to create guest session");
+          return;
+        }
+        
+        if (data?.user) {
+          console.log("Anonymous user created:", data.user.id);
           setUser(data.user);
-          // Create profile for anonymous user
+          
+          // Create profile for anonymous user using upsert
           const randomNum = Math.floor(Math.random() * 10000);
-          await supabase.from('profiles').insert({
-            id: data.user.id,
-            username: `Guest_${randomNum}`,
-            coins: 1000,
-          });
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: data.user.id,
+              username: `Guest_${randomNum}`,
+              coins: 1000,
+            }, {
+              onConflict: 'id'
+            });
+          
+          if (profileError) {
+            console.error("Error creating profile:", profileError);
+          }
+          
           fetchUserProfile(data.user.id);
         }
       }
