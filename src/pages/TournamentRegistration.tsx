@@ -45,6 +45,13 @@ export default function TournamentRegistration() {
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
+      // Check if user is anonymous
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user.is_anonymous) {
+        // Don't set userId for anonymous users - they can view but not register
+        return;
+      }
+      
       setUserId(user.id);
       const { data: profile } = await supabase
         .from("profiles")

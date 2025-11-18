@@ -64,6 +64,7 @@ export default function Coach() {
       toast.error("Please log in to access AI Coach");
       navigate("/auth");
     }
+    // Allow guests to use AI Coach
   };
 
   const loadConversation = async () => {

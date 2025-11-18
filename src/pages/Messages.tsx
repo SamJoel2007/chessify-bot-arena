@@ -41,6 +41,12 @@ export default function Messages() {
         navigate('/auth');
         return;
       }
+      // Redirect anonymous users to auth to convert account
+      if (session.user.is_anonymous) {
+        toast.error("Please sign up to access messaging");
+        navigate('/auth');
+        return;
+      }
       setUser(session.user);
       loadFriends(session.user.id);
     });

@@ -43,6 +43,12 @@ export default function Friends() {
         navigate('/auth');
         return;
       }
+      // Redirect anonymous users to auth to convert account
+      if (session.user.is_anonymous) {
+        toast.error("Please sign up to access friends features");
+        navigate('/auth');
+        return;
+      }
       setUser(session.user);
       loadFriendRequests(session.user.id);
     });

@@ -40,8 +40,21 @@ const Index = () => {
       if (session?.user) {
         setUser(session.user);
         fetchUserProfile(session.user.id);
+      } else {
+        // Automatically sign in as anonymous guest
+        const { data, error } = await supabase.auth.signInAnonymously();
+        if (data?.user && !error) {
+          setUser(data.user);
+          // Create profile for anonymous user
+          const randomNum = Math.floor(Math.random() * 10000);
+          await supabase.from('profiles').insert({
+            id: data.user.id,
+            username: `Guest_${randomNum}`,
+            coins: 1000,
+          });
+          fetchUserProfile(data.user.id);
+        }
       }
-      // Allow users to stay as guests without automatic sign-in
     };
 
     initAuth();
@@ -191,6 +204,11 @@ const Index = () => {
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
+            {user?.is_anonymous && (
+              <div className="hidden md:flex items-center gap-2 bg-primary/10 px-3 py-1 rounded-full border border-primary/30">
+                <span className="text-xs text-muted-foreground">🎮 Guest User</span>
+              </div>
+            )}
             <Button
               variant="outline"
               className="gap-1 md:gap-2 px-2 md:px-4"
@@ -209,7 +227,11 @@ const Index = () => {
               <Coins className="w-4 h-4 md:w-5 md:h-5 text-gold" />
               <span className="font-bold text-gold text-xs md:text-sm">{coins}</span>
             </Button>
-            {!user ? (
+            {user?.is_anonymous ? (
+              <Button variant="default" onClick={() => navigate("/auth")} size="sm" className="px-2 md:px-4 text-xs md:text-sm">
+                Sign Up
+              </Button>
+            ) : !user ? (
               <Button variant="default" onClick={() => navigate("/auth")} size="sm" className="px-2 md:px-4 text-xs md:text-sm">
                 Sign In
               </Button>

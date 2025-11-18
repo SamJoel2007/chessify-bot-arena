@@ -26,6 +26,7 @@ const MyProfile = () => {
         return;
       }
 
+      // Allow guests to view profile but with limited features
       setUser(session.user);
 
       const { data, error } = await supabase
