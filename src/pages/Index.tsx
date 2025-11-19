@@ -272,11 +272,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Daily Quests Section */}
-      <section className="container mx-auto px-4 pt-8">
-        <DailyQuests userId={user?.id} />
-      </section>
-
       {/* Hero Section */}
       <section className="border-b border-border/60 bg-gradient-card py-20 shadow-glow-secondary">
         <div className="container mx-auto px-4 text-center">
@@ -338,6 +333,11 @@ const Index = () => {
             username={user?.email?.split('@')[0]}
             currentAvatar={currentAvatar || undefined}
           />
+        </section>
+
+        {/* Daily Quests Section */}
+        <section className="mb-16">
+          <DailyQuests userId={user?.id} />
         </section>
 
         {/* Bots Section */}
