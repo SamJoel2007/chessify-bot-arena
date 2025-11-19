@@ -11,6 +11,7 @@ import { getAvatarIcon } from "@/lib/avatarUtils";
 import { playMoveSound, playCaptureSound } from "@/lib/soundUtils";
 import { VoiceChat } from "@/components/VoiceChat";
 import { GameChat } from "@/components/GameChat";
+import { updateQuestProgress } from "@/lib/questUtils";
 import {
   Dialog,
   DialogContent,
@@ -324,7 +325,7 @@ export default function OnlineGame() {
     };
   };
 
-  const handleGameEnd = (data: any) => {
+  const handleGameEnd = async (data: any) => {
     console.log("=== GAME END DEBUG ===");
     const currentUserId = userIdRef.current || userId; // Use ref first, fall back to state
     console.log("Winner ID from DB:", data.winner_id);
@@ -366,6 +367,16 @@ export default function OnlineGame() {
     }
     
     setShowResultDialog(true);
+    
+    // Track quest progress for online games
+    if (currentUserId) {
+      await updateQuestProgress(currentUserId, 'play_online');
+      
+      // Check if it's a bullet game (60 seconds = 1 minute)
+      if (data.white_time_remaining === 60 || data.black_time_remaining === 60) {
+        await updateQuestProgress(currentUserId, 'play_bullet');
+      }
+    }
   };
 
   const handleResign = async () => {

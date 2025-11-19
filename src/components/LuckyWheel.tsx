@@ -5,6 +5,7 @@ import { Sparkles, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { updateQuestProgress } from "@/lib/questUtils";
 
 interface Prize {
   id: string;
@@ -185,6 +186,9 @@ export const LuckyWheel = ({ onPrizeWon }: LuckyWheelProps) => {
           .from("user_spins")
           .insert({ user_id: user.id, last_spin_at: new Date().toISOString() });
       }
+
+      // Track quest progress for spinning the wheel
+      await updateQuestProgress(user.id, 'spin_wheel');
 
       setCanSpin(false);
     }, 10000);
