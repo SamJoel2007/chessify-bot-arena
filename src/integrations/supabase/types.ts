@@ -110,6 +110,39 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_quests: {
+        Row: {
+          created_at: string | null
+          description: string
+          icon: string
+          id: string
+          quest_type: string
+          reward_coins: number
+          target_count: number
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          icon: string
+          id?: string
+          quest_type: string
+          reward_coins: number
+          target_count: number
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          quest_type?: string
+          reward_coins?: number
+          target_count?: number
+          title?: string
+        }
+        Relationships: []
+      }
       direct_messages: {
         Row: {
           created_at: string
@@ -994,6 +1027,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_quest_progress: {
+        Row: {
+          completed: boolean | null
+          created_at: string | null
+          current_count: number | null
+          id: string
+          last_reset_date: string | null
+          quest_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string | null
+          current_count?: number | null
+          id?: string
+          last_reset_date?: string | null
+          quest_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string | null
+          current_count?: number | null
+          id?: string
+          last_reset_date?: string | null
+          quest_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

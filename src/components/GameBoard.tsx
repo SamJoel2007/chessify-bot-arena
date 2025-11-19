@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { playMoveSound, playCaptureSound } from "@/lib/soundUtils";
 import { supabase } from "@/integrations/supabase/client";
 import FriendChallengeDialog from "@/components/FriendChallengeDialog";
+import { updateQuestProgress } from "@/lib/questUtils";
 
 interface GameBoardProps {
   selectedBot?: any;
@@ -910,6 +911,11 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           } else {
             setGameResult("win");
             setShowGameEndModal(true);
+            
+            // Track quest progress for bot games
+            if (userId) {
+              updateQuestProgress(userId, 'play_bot');
+            }
           }
         } else if (gameCopy.isCheck()) {
           toast("Check!");

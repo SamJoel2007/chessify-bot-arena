@@ -15,6 +15,7 @@ import { AdminPostCreator } from "@/components/AdminPostCreator";
 import { OnlineMatchmaking } from "@/components/OnlineMatchmaking";
 import { HoverSidebar } from "@/components/HoverSidebar";
 import { FindPeople } from "@/components/FindPeople";
+import { DailyQuests } from "@/components/DailyQuests";
 import winterArcImage from "@/assets/winter-arc-hero.jpg";
 import puzzleBeginner from "@/assets/puzzles/puzzle-beginner.jpg";
 import puzzleIntermediate from "@/assets/puzzles/puzzle-intermediate.jpg";
@@ -270,6 +271,11 @@ const Index = () => {
           </div>
         </div>
       </header>
+
+      {/* Daily Quests Section */}
+      <section className="container mx-auto px-4 pt-8">
+        <DailyQuests userId={user?.id} />
+      </section>
 
       {/* Hero Section */}
       <section className="border-b border-border/60 bg-gradient-card py-20 shadow-glow-secondary">
