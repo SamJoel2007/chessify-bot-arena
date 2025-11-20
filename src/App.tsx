@@ -30,6 +30,7 @@ import TournamentLobby from "./pages/TournamentLobby";
 import JoinGame from "./pages/JoinGame";
 import GameLobby from "./pages/GameLobby";
 import Feed from "./pages/Feed";
+import GameHistory from "./pages/GameHistory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ const App = () => (
           <Route path="/join/:inviteCode" element={<JoinGame />} />
           <Route path="/lobby/:inviteCode" element={<GameLobby />} />
           <Route path="/feed" element={<Feed />} />
+          <Route path="/game-history" element={<GameHistory />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

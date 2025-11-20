@@ -272,41 +272,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="border-b border-border/60 bg-gradient-card py-20 shadow-glow-secondary">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-5xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            Master Your Chess Game
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Play against friends, challenge AI bots, and join a thriving community of chess enthusiasts
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <Card className="p-6 bg-card/60 border-primary/30 flex items-center gap-3 hover:border-primary/50 hover:shadow-glow transition-all">
-              <Trophy className="w-8 h-8 text-primary" />
-              <div className="text-left">
-                <p className="text-2xl font-bold">10K+</p>
-                <p className="text-sm text-muted-foreground">Active Players</p>
-              </div>
-            </Card>
-            <Card className="p-6 bg-card/60 border-secondary/30 flex items-center gap-3 hover:border-secondary/50 hover:shadow-glow-secondary transition-all">
-              <Zap className="w-8 h-8 text-secondary" />
-              <div className="text-left">
-                <p className="text-2xl font-bold">50+</p>
-                <p className="text-sm text-muted-foreground">Chess Bots</p>
-              </div>
-            </Card>
-            <Card className="p-6 bg-card/60 border-accent/30 flex items-center gap-3 hover:border-accent/50 hover:shadow-glow transition-all">
-              <Users className="w-8 h-8 text-accent" />
-              <div className="text-left">
-                <p className="text-2xl font-bold">24/7</p>
-                <p className="text-sm text-muted-foreground">Community</p>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* Avatar Selector Modal */}
       <AvatarSelector
         isOpen={showAvatarSelector}
