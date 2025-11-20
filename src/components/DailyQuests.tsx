@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Coins } from "lucide-react";
+import { QuestCoinReward } from "./QuestCoinReward";
 
 interface Quest {
   id: string;
@@ -24,6 +25,7 @@ interface QuestProgress {
 export const DailyQuests = ({ userId }: { userId: string | undefined }) => {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [progress, setProgress] = useState<Map<string, QuestProgress>>(new Map());
+  const [showReward, setShowReward] = useState<{ amount: number; title: string } | null>(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -74,8 +76,16 @@ export const DailyQuests = ({ userId }: { userId: string | undefined }) => {
       )
       .subscribe();
 
+    // Listen for quest completion events
+    const handleQuestComplete = (event: any) => {
+      setShowReward({ amount: event.detail.amount, title: event.detail.title });
+    };
+
+    window.addEventListener('questComplete', handleQuestComplete);
+
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener('questComplete', handleQuestComplete);
     };
   }, [userId]);
 
@@ -88,7 +98,14 @@ export const DailyQuests = ({ userId }: { userId: string | undefined }) => {
   if (!userId) return null;
 
   return (
-    <Card className="bg-gradient-to-br from-primary/5 to-background border-primary/20">
+    <>
+      {showReward && (
+        <QuestCoinReward
+          amount={showReward.amount}
+          onComplete={() => setShowReward(null)}
+        />
+      )}
+      <Card className="bg-gradient-to-br from-primary/5 to-background border-primary/20">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-2xl font-bold flex items-center gap-2">
@@ -159,5 +176,6 @@ export const DailyQuests = ({ userId }: { userId: string | undefined }) => {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 };
