@@ -1,5 +1,42 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import confetti from "canvas-confetti";
+import { playQuestCompleteSound } from "./soundUtils";
+
+export const triggerQuestCompleteCelebration = () => {
+  // Play celebration sound
+  playQuestCompleteSound();
+  
+  // Trigger confetti
+  const duration = 3000;
+  const animationEnd = Date.now() + duration;
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+  const randomInRange = (min: number, max: number) => {
+    return Math.random() * (max - min) + min;
+  };
+
+  const interval: any = setInterval(() => {
+    const timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval);
+    }
+
+    const particleCount = 50 * (timeLeft / duration);
+    
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+    });
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+    });
+  }, 250);
+};
 
 export const updateQuestProgress = async (
   userId: string,
@@ -70,10 +107,13 @@ export const updateQuestProgress = async (
           .update({ coins: profile.coins + quest.reward_coins })
           .eq('id', userId);
 
-        toast({
-          title: "🎉 Quest Complete!",
-          description: `${quest.title} - +${quest.reward_coins} coins earned!`,
-        });
+        // Trigger celebration
+        triggerQuestCompleteCelebration();
+
+        // Dispatch custom event with reward amount
+        window.dispatchEvent(new CustomEvent('questComplete', { 
+          detail: { amount: quest.reward_coins, title: quest.title }
+        }));
       }
     }
   } catch (error) {
