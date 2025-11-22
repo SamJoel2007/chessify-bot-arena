@@ -193,6 +193,14 @@ const Community = () => {
         <section className="max-w-5xl mx-auto">
           <CommunityChat />
         </section>
+
+        {/* Native Banner Ad */}
+        <div className="mt-12 flex justify-center">
+          <div>
+            <script async data-cfasync="false" src="//pl28024731.effectivegatecpm.com/c0a3bb06ff6c9c340ac35aeec05bc748/invoke.js"></script>
+            <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
+          </div>
+        </div>
       </main>
     </div>
   );
