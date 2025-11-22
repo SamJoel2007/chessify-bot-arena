@@ -809,6 +809,14 @@ const Bots = () => {
         </Tabs>
       </main>
 
+      {/* Native Banner Ad */}
+      <div className="container mx-auto px-4 py-12 flex justify-center">
+        <div>
+          <script async data-cfasync="false" src="//pl28024731.effectivegatecpm.com/c0a3bb06ff6c9c340ac35aeec05bc748/invoke.js"></script>
+          <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
+        </div>
+      </div>
+
       {/* Footer */}
       <footer className="border-t border-border bg-card/30 py-12">
         <div className="container mx-auto px-4">
