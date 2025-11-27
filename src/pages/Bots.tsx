@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { shopBots } from "@/lib/botUtils";
+import { NativeBannerAd } from "@/components/NativeBannerAd";
 import shopRookieRachel from "@/assets/shop/rookie-rachel.jpg";
 import shopStarterSam from "@/assets/shop/starter-sam.jpg";
 import shopNoviceNick from "@/assets/shop/novice-nick.jpg";
@@ -810,11 +811,8 @@ const Bots = () => {
       </main>
 
       {/* Native Banner Ad */}
-      <div className="container mx-auto px-4 py-12 flex justify-center">
-        <div>
-          <script async data-cfasync="false" src="//pl28024731.effectivegatecpm.com/c0a3bb06ff6c9c340ac35aeec05bc748/invoke.js"></script>
-          <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
-        </div>
+      <div className="container mx-auto px-4 py-12">
+        <NativeBannerAd />
       </div>
 
       {/* Footer */}

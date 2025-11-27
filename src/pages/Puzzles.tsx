@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Crown, ArrowLeft, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { NativeBannerAd } from "@/components/NativeBannerAd";
 import puzzleBeginner from "@/assets/puzzles/puzzle-beginner.jpg";
 import puzzleIntermediate from "@/assets/puzzles/puzzle-intermediate.jpg";
 import puzzleAdvanced from "@/assets/puzzles/puzzle-advanced.jpg";
@@ -171,11 +172,8 @@ const Puzzles = () => {
       </main>
 
       {/* Native Banner Ad */}
-      <div className="container mx-auto px-4 py-12 flex justify-center">
-        <div>
-          <script async data-cfasync="false" src="//pl28024731.effectivegatecpm.com/c0a3bb06ff6c9c340ac35aeec05bc748/invoke.js"></script>
-          <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
-        </div>
+      <div className="container mx-auto px-4 py-12">
+        <NativeBannerAd />
       </div>
 
       {/* Footer */}

@@ -15,6 +15,7 @@ import { AdminPostCreator } from "@/components/AdminPostCreator";
 import { OnlineMatchmaking } from "@/components/OnlineMatchmaking";
 import { HoverSidebar } from "@/components/HoverSidebar";
 import { FindPeople } from "@/components/FindPeople";
+import { NativeBannerAd } from "@/components/NativeBannerAd";
 import { DailyQuests } from "@/components/DailyQuests";
 import winterArcImage from "@/assets/winter-arc-hero.jpg";
 import puzzleBeginner from "@/assets/puzzles/puzzle-beginner.jpg";
@@ -593,12 +594,7 @@ const Index = () => {
           <FindPeople userId={user?.id || null} />
           
           {/* Native Banner Ad */}
-          <div className="mt-12 flex justify-center">
-            <div>
-              <script async data-cfasync="false" src="//pl28024731.effectivegatecpm.com/c0a3bb06ff6c9c340ac35aeec05bc748/invoke.js"></script>
-              <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
-            </div>
-          </div>
+          <NativeBannerAd />
         </section>
       </main>
 
