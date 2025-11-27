@@ -43,7 +43,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
   const [capturedByBlack, setCapturedByBlack] = useState<string[]>([]);
 
   // Function to award certificate for special bot wins
-  const awardCertificate = async () => {
+  const awardCertificate = async (botId: string, botName: string, eventName: string) => {
     if (!userId || !username) return;
 
     try {
@@ -52,7 +52,7 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         .from("certificates")
         .select("id")
         .eq("user_id", userId)
-        .eq("bot_defeated", "Ayanokoji")
+        .eq("bot_defeated", botName)
         .maybeSingle();
 
       const isFirstWin = !existing;
@@ -63,11 +63,11 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
           .from("certificates")
           .insert({
             user_id: userId,
-            certificate_name: "Winter ARC Chess Champion",
-            bot_defeated: "Ayanokoji",
+            certificate_name: `${eventName} Champion`,
+            bot_defeated: botName,
             bot_rating: 2500,
             certificate_data: {
-              achievement: "Defeated the legendary Ayanokoji",
+              achievement: `Defeated ${botName}`,
               date: new Date().toISOString()
             }
           });
@@ -99,8 +99,8 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
       navigate("/victory-showcase", {
         state: {
           username,
-          eventName: "Winter ARC Chess",
-          botName: "Ayanokoji",
+          eventName,
+          botName,
           botRating: 2500,
           isFirstWin,
         },
@@ -895,15 +895,16 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
         }
         
         if (gameCopy.isCheckmate()) {
-          // Check if this is the special Ayanokoji bot
-          if (selectedBot?.isSpecialEvent && selectedBot?.id === "special-ayanokoji" && userId && username) {
+          // Check if this is a special event bot
+          if (selectedBot?.isSpecialEvent && userId && username) {
+            const eventName = selectedBot?.id === "special-santa" ? "Christmas Eve Event" : "Winter ARC Chess";
             // Award certificate in background
-            awardCertificate();
+            awardCertificate(selectedBot.id, selectedBot.name, eventName);
             // Navigate to victory showcase page
             navigate("/victory", {
               state: {
                 username: username,
-                eventName: "Winter ARC Chess Challenge",
+                eventName: eventName,
                 botName: selectedBot.name,
                 botRating: selectedBot.rating
               }
