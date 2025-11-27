@@ -34,6 +34,7 @@ const Index = () => {
   const [showShop, setShowShop] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [eventData, setEventData] = useState<any>(null);
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     const initAuth = async () => {
@@ -132,6 +133,34 @@ const Index = () => {
     return () => {
       supabase.removeChannel(channel);
     };
+  }, []);
+
+  useEffect(() => {
+    // Countdown timer for Christmas Day
+    const calculateCountdown = () => {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const christmas = new Date(currentYear, 11, 25); // December 25th
+      
+      // If Christmas has passed this year, count down to next year
+      if (now > christmas) {
+        christmas.setFullYear(currentYear + 1);
+      }
+      
+      const diff = christmas.getTime() - now.getTime();
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setCountdown({ days, hours, minutes, seconds });
+    };
+
+    calculateCountdown();
+    const interval = setInterval(calculateCountdown, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handlePlaySanta = () => {
@@ -330,6 +359,30 @@ const Index = () => {
                     Christmas Eve Event
                   </h2>
                 </div>
+                
+                {/* Countdown Timer */}
+                <div className="mb-6 p-4 rounded-lg bg-primary/10 border border-primary/30">
+                  <p className="text-xs text-muted-foreground text-center mb-2">Event ends in</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-primary">{countdown.days}</div>
+                      <div className="text-xs text-muted-foreground">Days</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-primary">{countdown.hours}</div>
+                      <div className="text-xs text-muted-foreground">Hours</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-primary">{countdown.minutes}</div>
+                      <div className="text-xs text-muted-foreground">Min</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-primary">{countdown.seconds}</div>
+                      <div className="text-xs text-muted-foreground">Sec</div>
+                    </div>
+                  </div>
+                </div>
+                
                 <p className="text-muted-foreground text-lg mb-6">
                   Challenge Santa Claus to a festive chess match! This jolly grandmaster from the North Pole has a 2500 ELO rating. 
                   Defeat Santa to earn an exclusive Christmas Eve Champion certificate and 1000 bonus coins. 
