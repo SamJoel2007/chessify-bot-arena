@@ -17,7 +17,7 @@ import { HoverSidebar } from "@/components/HoverSidebar";
 import { FindPeople } from "@/components/FindPeople";
 import { NativeBannerAd } from "@/components/NativeBannerAd";
 import { DailyQuests } from "@/components/DailyQuests";
-import winterArcImage from "@/assets/winter-arc-hero.jpg";
+import santaClausImage from "@/assets/santa-claus-chess.jpg";
 import puzzleBeginner from "@/assets/puzzles/puzzle-beginner.jpg";
 import puzzleIntermediate from "@/assets/puzzles/puzzle-intermediate.jpg";
 import puzzleAdvanced from "@/assets/puzzles/puzzle-advanced.jpg";
@@ -111,7 +111,7 @@ const Index = () => {
       const { data } = await supabase
         .from("events")
         .select("*")
-        .eq("name", "Winter ARC Chess")
+        .eq("name", "Christmas Eve Event")
         .single();
 
       setEventData(data);
@@ -134,18 +134,18 @@ const Index = () => {
     };
   }, []);
 
-  const handlePlayAyanokoji = () => {
-    const ayanokojiBot = {
-      id: "special-ayanokoji",
-      name: "Ayanokoji",
+  const handlePlaySanta = () => {
+    const santaBot = {
+      id: "special-santa",
+      name: "Santa Claus",
       rating: 2500,
-      description: "A chess prodigy with unmatched strategic thinking",
+      description: "The jolly chess master from the North Pole",
       difficulty: "Elite",
       image: null,
       isSpecialEvent: true
     };
 
-    navigate('/game', { state: { selectedBot: ayanokojiBot } });
+    navigate('/game', { state: { selectedBot: santaBot } });
   };
 
   const handleSignOut = async () => {
@@ -319,7 +319,7 @@ const Index = () => {
           <BotSelection coins={coins} onCoinsUpdate={() => user && fetchUserProfile(user.id)} />
         </section>
 
-        {/* Winter ARC Chess Event Section */}
+        {/* Christmas Eve Event Section */}
         <section id="tournament" className="mb-16">
           <Card className="overflow-hidden bg-gradient-card border-primary/30 shadow-glow hover:border-primary/50 transition-all">
             <div className="grid md:grid-cols-2 gap-8 items-center">
@@ -327,13 +327,13 @@ const Index = () => {
                 <div className="flex items-center gap-2 mb-4">
                   <Trophy className="w-8 h-8 text-gold" />
                   <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                    Winter ARC Chess
+                    Christmas Eve Event
                   </h2>
                 </div>
                 <p className="text-muted-foreground text-lg mb-6">
-                  Face the ultimate challenge against Ayanokoji, a legendary chess prodigy with a 2500 ELO rating. 
-                  Defeat this formidable opponent to earn an exclusive Winter ARC Chess certificate and 1000 bonus coins. 
-                  Only the most skilled players will prevail in this elite battle of wits and strategy!
+                  Challenge Santa Claus to a festive chess match! This jolly grandmaster from the North Pole has a 2500 ELO rating. 
+                  Defeat Santa to earn an exclusive Christmas Eve Champion certificate and 1000 bonus coins. 
+                  Do you have what it takes to outsmart the most magical chess player in the world?
                 </p>
                 <div className="flex gap-4 mb-6">
                   <div className="text-center">
@@ -348,7 +348,7 @@ const Index = () => {
                 <Button 
                   size="lg" 
                   className="gap-2 shadow-glow hover:shadow-glow-secondary transition-all w-full"
-                  onClick={handlePlayAyanokoji}
+                  onClick={handlePlaySanta}
                 >
                   <Zap className="w-5 h-5" />
                   Play Now
@@ -356,8 +356,8 @@ const Index = () => {
               </div>
               <div className="h-full min-h-[400px]">
                 <img 
-                  src={winterArcImage} 
-                  alt="Winter ARC Chess Challenge" 
+                  src={santaClausImage} 
+                  alt="Christmas Eve Chess Challenge" 
                   className="w-full h-full object-cover"
                 />
               </div>
