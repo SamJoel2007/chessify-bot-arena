@@ -8,6 +8,7 @@ import { CommunityChat } from "@/components/CommunityChat";
 import { HoverSidebar } from "@/components/HoverSidebar";
 import { AvatarSelector } from "@/components/AvatarSelector";
 import { ShopModal } from "@/components/ShopModal";
+import { NativeBannerAd } from "@/components/NativeBannerAd";
 import { getAvatarIcon } from "@/lib/avatarUtils";
 import { toast } from "sonner";
 
@@ -195,12 +196,7 @@ const Community = () => {
         </section>
 
         {/* Native Banner Ad */}
-        <div className="mt-12 flex justify-center">
-          <div>
-            <script async data-cfasync="false" src="//pl28024731.effectivegatecpm.com/c0a3bb06ff6c9c340ac35aeec05bc748/invoke.js"></script>
-            <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
-          </div>
-        </div>
+        <NativeBannerAd />
       </main>
     </div>
   );
