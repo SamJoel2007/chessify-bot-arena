@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from "react-helmet-async";
 import { Crown, Menu, Store, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -61,8 +62,14 @@ const Community = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Chess Community - Chat & Connect with Players | Chessify</title>
+        <meta name="description" content="Join the Chessify chess community. Chat with players worldwide, discuss strategies, share games, make chess friends, and connect with fellow chess enthusiasts in our active community forum." />
+        <meta name="keywords" content="chess community, chess chat, chess forums, chess social, meet chess players, chess friends, chess discussion, chess players online, chess community chat, connect with chess players, chess social network" />
+        <link rel="canonical" href="https://chessify.lovable.app/community" />
+      </Helmet>
       {/* Hover Sidebar */}
-      <HoverSidebar 
+      <HoverSidebar
         user={user} 
         currentAvatar={currentAvatar}
         isOpen={showSidebar}

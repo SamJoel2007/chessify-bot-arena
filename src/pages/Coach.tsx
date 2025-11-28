@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -612,6 +613,12 @@ export default function Coach() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <Helmet>
+        <title>AI Chess Coach - Learn Chess Online | Chessify</title>
+        <meta name="description" content="Get personalized chess coaching from our AI chess coach. Learn chess openings, endgames, tactics, and strategy. Improve your chess skills with expert guidance, chess lessons, and training tailored to your level." />
+        <meta name="keywords" content="AI chess coach, learn chess online, chess lessons, chess tutorial, chess training, chess coaching, improve chess skills, chess openings, chess endgames, chess strategy, chess tactics training, personalized chess coaching, online chess tutor" />
+        <link rel="canonical" href="https://chessify.lovable.app/coach" />
+      </Helmet>
       <div className="container max-w-6xl mx-auto p-4 h-screen flex flex-col">
         {/* Header */}
         <Card className="mb-4 p-6 border-primary/20 bg-card/80 backdrop-blur">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -219,6 +220,12 @@ export default function Friends() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Chess Friends - Play with Friends Online | Chessify</title>
+        <meta name="description" content="Connect with chess friends on Chessify. Add friends, send friend requests, play chess with friends online, and challenge your friends to exciting chess matches." />
+        <meta name="keywords" content="chess friends, play chess with friends, add chess friends, chess friend requests, invite friends chess, play with friends online, chess social, chess multiplayer friends" />
+        <link rel="canonical" href="https://chessify.lovable.app/friends" />
+      </Helmet>
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/')}>

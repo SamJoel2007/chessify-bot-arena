@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -91,6 +92,12 @@ export default function GameHistory() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Game History - Your Chess Match Records | Chessify</title>
+        <meta name="description" content="View your complete chess game history. Review past chess games, match records, wins, losses, and draws. Track your chess progress and analyze your gameplay over time." />
+        <meta name="keywords" content="chess game history, past chess games, chess match records, chess game results, chess wins and losses, chess game tracking, review chess games, chess gameplay history" />
+        <link rel="canonical" href="https://chessify.lovable.app/game-history" />
+      </Helmet>
       <header className="border-b border-border/60 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">

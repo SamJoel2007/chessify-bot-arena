@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from "react-helmet-async";
 import { Crown, Coins, Trophy, Users, Zap, Shield, Megaphone, Puzzle, Store, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -184,8 +185,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Chessify - Play Chess Online Free | Chess Puzzles, AI Bots & Tournaments</title>
+        <meta name="description" content="Play chess online with friends, challenge AI bots from beginner to grandmaster, solve chess puzzles, join daily quests, and compete in tournaments. Master your chess skills with Chessify - 100% free!" />
+        <meta name="keywords" content="play chess online free, chess game, online chess, chess multiplayer, chess with friends, chess AI bot, daily chess quests, chess rewards, chess achievements, Christmas chess event, bullet chess, blitz chess, 10-minute chess, chess community, chess tournaments, free chess game, no download chess, instant chess, web chess, browser chess" />
+        <link rel="canonical" href="https://chessify.lovable.app/" />
+      </Helmet>
       {/* Hover Sidebar */}
-      <HoverSidebar 
+      <HoverSidebar
         user={user} 
         currentAvatar={currentAvatar}
         isOpen={showSidebar}

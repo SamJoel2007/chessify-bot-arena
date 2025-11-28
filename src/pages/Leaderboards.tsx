@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -69,6 +70,12 @@ export default function Leaderboards() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Chess Leaderboards - Top Players Rankings | Chessify</title>
+        <meta name="description" content="View the Chessify chess leaderboards. See top chess players, rankings, points, and achievements. Compete with players worldwide and climb the ranks to become a chess champion." />
+        <meta name="keywords" content="chess leaderboards, chess rankings, top chess players, chess leaderboard, chess ratings, chess points, chess champions, competitive chess, chess rank, chess standings" />
+        <link rel="canonical" href="https://chessify.lovable.app/leaderboards" />
+      </Helmet>
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
