@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Crown, ArrowLeft, Shield } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { NativeBannerAd } from "@/components/NativeBannerAd";
@@ -87,6 +88,12 @@ const Puzzles = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Chess Puzzles - Improve Your Tactics | Chessify</title>
+        <meta name="description" content="Solve chess puzzles from beginner to expert level. Practice mate in 1, mate in 2, and mate in 3 puzzles. Improve your chess tactics, pattern recognition, and calculation skills with our chess puzzle trainer." />
+        <meta name="keywords" content="chess puzzles, mate in 1, mate in 2, mate in 3, chess tactics, chess tactics trainer, puzzle difficulty levels, improve chess tactics, chess pattern recognition, chess training puzzles, beginner chess puzzles, intermediate chess puzzles, advanced chess puzzles, expert chess puzzles, chess puzzle solver" />
+        <link rel="canonical" href="https://chessify.lovable.app/puzzles" />
+      </Helmet>
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
