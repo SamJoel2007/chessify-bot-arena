@@ -96,6 +96,10 @@ const BlogPost = () => {
     );
   }
 
+  // Calculate reading time (average 200 words per minute)
+  const wordCount = post.content.split(/\s+/).length;
+  const readingTime = Math.ceil(wordCount / 200);
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
@@ -107,6 +111,9 @@ const BlogPost = () => {
         <meta property="og:description" content={post.excerpt} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://chessify.lovable.app/blog/${post.slug}`} />
+        {post.featured_image_url && (
+          <meta property="og:image" content={post.featured_image_url} />
+        )}
         <meta property="article:published_time" content={post.published_at} />
         <meta property="article:author" content={post.author_name} />
         <meta property="article:section" content={post.category} />
@@ -129,9 +136,9 @@ const BlogPost = () => {
         {/* Article Header */}
         <header className="mb-8">
           <Badge className="mb-4">{post.category}</Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{post.title}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">{post.title}</h1>
           
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
             <span>By {post.author_name}</span>
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
@@ -141,9 +148,10 @@ const BlogPost = () => {
               <Eye className="h-4 w-4" />
               {post.view_count} views
             </span>
+            <span>{readingTime} min read</span>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-6">
             {post.tags.map((tag, idx) => (
               <Badge key={idx} variant="secondary">
                 {tag}
@@ -152,8 +160,24 @@ const BlogPost = () => {
           </div>
         </header>
 
+        {/* Featured Image */}
+        {post.featured_image_url && (
+          <div className="mb-8 rounded-lg overflow-hidden">
+            <img 
+              src={post.featured_image_url} 
+              alt={post.title}
+              className="w-full h-auto object-cover"
+            />
+          </div>
+        )}
+
+        {/* Article Excerpt */}
+        <div className="mb-8 p-6 bg-muted/50 rounded-lg border-l-4 border-primary">
+          <p className="text-lg text-foreground/90 italic">{post.excerpt}</p>
+        </div>
+
         {/* Article Content */}
-        <div className="prose prose-lg dark:prose-invert max-w-none">
+        <div className="prose prose-lg max-w-none">
           <ReactMarkdown>{post.content}</ReactMarkdown>
         </div>
 
