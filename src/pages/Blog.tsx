@@ -30,7 +30,13 @@ const Blog = () => {
 
   useEffect(() => {
     fetchPosts();
+    checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsAuthenticated(!!user);
+  };
 
   const fetchPosts = async () => {
     try {
@@ -155,6 +161,19 @@ const Blog = () => {
           <p>Improve your chess skills with expert tips, strategies, and analysis.</p>
         </footer>
       </div>
+
+      {/* Blog Creator Dialog */}
+      <Dialog open={showCreator} onOpenChange={setShowCreator}>
+        <DialogContent className="max-w-[95vw] h-[95vh] overflow-y-auto p-0">
+          <BlogPostCreator
+            onSuccess={() => {
+              setShowCreator(false);
+              fetchPosts();
+            }}
+            onCancel={() => setShowCreator(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
