@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Eye, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
+import { NativeBannerAd } from "@/components/NativeBannerAd";
 
 interface BlogPost {
   id: string;
@@ -144,6 +145,15 @@ const Blog = () => {
             ))}
           </div>
         )}
+
+        {/* Native Banner Ad */}
+        <NativeBannerAd />
+
+        {/* Footer */}
+        <footer className="mt-16 pt-8 border-t text-center text-sm text-muted-foreground">
+          <p className="mb-2">© 2024 Chessify. All rights reserved.</p>
+          <p>Improve your chess skills with expert tips, strategies, and analysis.</p>
+        </footer>
       </div>
     </div>
   );
