@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Eye, ArrowRight } from "lucide-react";
+import { Calendar, Eye, ArrowRight, PenSquare } from "lucide-react";
 import { format } from "date-fns";
 import { NativeBannerAd } from "@/components/NativeBannerAd";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { BlogPostCreator } from "@/components/BlogPostCreator";
 
 interface BlogPost {
   id: string;
@@ -27,6 +29,8 @@ const Blog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [showCreator, setShowCreator] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -72,13 +76,19 @@ const Blog = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            Chess Mastery Blog
-          </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Expert tips, strategies, and analysis to elevate your chess game
-          </p>
+        <div className="flex items-center justify-between mb-12">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Chess Blog</h1>
+            <p className="text-lg text-muted-foreground">
+              Expert tips, strategies, and insights to improve your chess game
+            </p>
+          </div>
+          {isAuthenticated && (
+            <Button onClick={() => setShowCreator(true)} size="lg" className="gap-2">
+              <PenSquare className="h-5 w-5" />
+              Write Article
+            </Button>
+          )}
         </div>
 
         {/* Category Filter */}
