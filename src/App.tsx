@@ -32,6 +32,8 @@ import JoinGame from "./pages/JoinGame";
 import GameLobby from "./pages/GameLobby";
 import Feed from "./pages/Feed";
 import GameHistory from "./pages/GameHistory";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +74,8 @@ const App = () => (
           <Route path="/lobby/:inviteCode" element={<GameLobby />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="/game-history" element={<GameHistory />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
