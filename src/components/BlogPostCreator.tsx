@@ -137,7 +137,7 @@ export const BlogPostCreator = ({ onSuccess, onCancel }: BlogPostCreatorProps) =
     }, 0);
   };
 
-  const handleSubmit = async (status: "draft" | "published") => {
+  const handleSubmit = async (status: "draft" | "pending_review") => {
     if (!title || !category || !excerpt || !content) {
       toast.error("Please fill in all required fields");
       return;
@@ -192,7 +192,7 @@ export const BlogPostCreator = ({ onSuccess, onCancel }: BlogPostCreatorProps) =
       toast.success(
         status === "draft"
           ? "Draft saved successfully!"
-          : "Article submitted for review!"
+          : "Article submitted for review successfully!"
       );
       onSuccess();
     } catch (error) {
@@ -466,7 +466,7 @@ export const BlogPostCreator = ({ onSuccess, onCancel }: BlogPostCreatorProps) =
         >
           Save as Draft
         </Button>
-        <Button onClick={() => handleSubmit("published")} disabled={isSubmitting}>
+        <Button onClick={() => handleSubmit("pending_review")} disabled={isSubmitting}>
           Submit for Review
         </Button>
       </div>
