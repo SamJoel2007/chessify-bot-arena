@@ -7,10 +7,18 @@ export const NativeBannerAd = () => {
   useEffect(() => {
     if (scriptLoaded.current || !containerRef.current) return;
     
+    // Set ad options globally
+    (window as any).atOptions = {
+      'key': '573b1fcdddbf208751c3334f41fd5509',
+      'format': 'iframe',
+      'height': 90,
+      'width': 728,
+      'params': {}
+    };
+    
     const script = document.createElement("script");
-    script.async = true;
-    script.setAttribute("data-cfasync", "false");
-    script.src = "//pl28024731.effectivegatecpm.com/c0a3bb06ff6c9c340ac35aeec05bc748/invoke.js";
+    script.type = "text/javascript";
+    script.src = "//www.highperformanceformat.com/573b1fcdddbf208751c3334f41fd5509/invoke.js";
     
     containerRef.current.appendChild(script);
     scriptLoaded.current = true;
@@ -24,9 +32,7 @@ export const NativeBannerAd = () => {
 
   return (
     <div className="mt-12 flex justify-center">
-      <div ref={containerRef}>
-        <div id="container-c0a3bb06ff6c9c340ac35aeec05bc748"></div>
-      </div>
+      <div ref={containerRef} />
     </div>
   );
 };
