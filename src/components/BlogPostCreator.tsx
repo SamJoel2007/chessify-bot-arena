@@ -30,7 +30,7 @@ export const BlogPostCreator = ({ onSuccess, onCancel }: BlogPostCreatorProps) =
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
-  const [metaKeywords, setMetaKeywords] = useState("");
+  const [metaKeywords, setMetaKeywords] = useState("best chess openings for beginners, best chess openings for white, chess openings for beginners, best chess openings for black, chess openings for black");
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
