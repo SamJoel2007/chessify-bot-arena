@@ -692,6 +692,7 @@ const Index = () => {
             <div>
               <h3 className="font-bold mb-3">Resources</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="/about" className="hover:text-primary transition-colors">About</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Learn Chess</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Strategy Guide</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">FAQ</a></li>
