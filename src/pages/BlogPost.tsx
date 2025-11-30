@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, Eye } from "lucide-react";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
+import { NativeBannerAd } from "@/components/NativeBannerAd";
 
 interface BlogPost {
   id: string;
@@ -180,6 +181,9 @@ const BlogPost = () => {
         <div className="prose prose-lg max-w-none">
           <ReactMarkdown>{post.content}</ReactMarkdown>
         </div>
+
+        {/* Ad Section */}
+        <NativeBannerAd />
 
         {/* Article Footer */}
         <footer className="mt-12 pt-8 border-t">
