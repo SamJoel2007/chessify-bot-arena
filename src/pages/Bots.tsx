@@ -782,11 +782,15 @@ const Bots = () => {
                         Shop Bot
                       </Badge>
                     )}
-                    <div className="aspect-square w-full overflow-hidden bg-gradient-card">
+                    <div className="aspect-square w-full overflow-hidden bg-gradient-card group">
                       {bot.image ? (
-                        <img src={bot.image} alt={bot.name} className="w-full h-full object-cover" />
+                        <img 
+                          src={bot.image} 
+                          alt={bot.name} 
+                          className="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:rotate-2" 
+                        />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-8xl">
+                        <div className="w-full h-full flex items-center justify-center text-8xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
                           ♟️
                         </div>
                       )}
