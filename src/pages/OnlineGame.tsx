@@ -5,7 +5,7 @@ import { Chess, Square } from "chess.js";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Trophy, X } from "lucide-react";
+import { ArrowLeft, Clock, Trophy, X, Maximize2, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
 import { getAvatarIcon } from "@/lib/avatarUtils";
 import { playMoveSound, playCaptureSound } from "@/lib/soundUtils";
@@ -57,6 +57,10 @@ export default function OnlineGame() {
   // Captured pieces tracking
   const [capturedByWhite, setCapturedByWhite] = useState<string[]>([]);
   const [capturedByBlack, setCapturedByBlack] = useState<string[]>([]);
+  
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const gameContainerRef = useRef<HTMLDivElement>(null);
   
   // Bot names used for detection - must match OnlineMatchmaking bot pools
   const botNames = [
@@ -178,6 +182,16 @@ export default function OnlineGame() {
     
     return () => clearInterval(checkAfk);
   }, [gameData, isGameOver, isPlayingBot, lastMoveTime, playerColor, afkWarning, game]);
+  
+  // Fullscreen change listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const loadGame = async () => {
     try {
@@ -1061,6 +1075,18 @@ export default function OnlineGame() {
     }
   };
 
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await gameContainerRef.current?.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.error("Fullscreen error:", error);
+    }
+  };
+
   const calculateSquarePosition = (square: Square): { x: number; y: number } => {
     const file = square.charCodeAt(0) - 97; // a=0, b=1, ..., h=7
     const rank = 8 - parseInt(square[1]); // 8=0, 7=1, ..., 1=7
@@ -1097,12 +1123,12 @@ export default function OnlineGame() {
             onDrop={(e) => handleDrop(square, e)}
             onClick={() => handleSquareClick(square)}
             className={`
-              aspect-square flex items-center justify-center text-5xl font-bold 
+              aspect-square flex items-center justify-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold 
               transition-all duration-300 ease-in-out relative
               ${isLight ? "bg-[#EEEED2]" : "bg-[#769656]"}
               ${isSelected ? "ring-4 ring-primary ring-inset" : ""}
               hover:brightness-95
-              ${piece?.color === 'w' ? 'text-[#F0D9B5] drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]' : 'text-[#1a1a1a] drop-shadow-[0_3px_6px_rgba(255,255,255,0.4)] [text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]'}
+              ${piece?.color === 'w' ? 'text-[#F0D9B5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] sm:drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] lg:drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] [text-shadow:_-0.5px_-0.5px_0_#000,_0.5px_-0.5px_0_#000,_-0.5px_0.5px_0_#000,_0.5px_0.5px_0_#000] sm:[text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]' : 'text-[#1a1a1a] drop-shadow-[0_1px_2px_rgba(255,255,255,0.4)] sm:drop-shadow-[0_2px_4px_rgba(255,255,255,0.4)] lg:drop-shadow-[0_3px_6px_rgba(255,255,255,0.4)] [text-shadow:_-0.5px_-0.5px_0_#fff,_0.5px_-0.5px_0_#fff,_-0.5px_0.5px_0_#fff,_0.5px_0.5px_0_#fff] sm:[text-shadow:_-1px_-1px_0_#fff,_1px_-1px_0_#fff,_-1px_1px_0_#fff,_1px_1px_0_#fff]'}
             `}
             style={{
               backgroundColor: hasLegalMove ? hasLegalMove.background : undefined,
@@ -1119,10 +1145,10 @@ export default function OnlineGame() {
               </span>
             )}
             {hasLegalMove && !piece && (
-              <span className="absolute w-3 h-3 rounded-full bg-green-500/80 animate-pulse" />
+              <div className="absolute w-2 h-2 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 rounded-full bg-black/40 border border-black/60 sm:border-2 animate-pulse" />
             )}
             {hasLegalMove && piece && moveFrom !== square && (
-              <span className="absolute inset-0 ring-4 ring-red-500/60 ring-inset rounded animate-pulse" />
+              <span className="absolute inset-0 ring-2 sm:ring-3 md:ring-4 ring-red-500/60 ring-inset rounded animate-pulse" />
             )}
           </button>
         );
@@ -1202,45 +1228,53 @@ export default function OnlineGame() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-2xl font-bold">10 Min Match</h1>
-          <div className="w-10" />
+          <h1 className="text-xl sm:text-2xl font-bold">10 Min Match</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleFullscreen}
+            className="md:hidden"
+          >
+            {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+          </Button>
+          <div className="w-10 hidden md:block" />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-[1fr,300px] gap-6">
+          <div ref={gameContainerRef} className={`grid grid-cols-1 md:grid-cols-[1fr,300px] gap-4 md:gap-6 ${isFullscreen ? 'bg-background p-4 flex flex-col justify-center min-h-screen' : ''}`}>
             <div>
-              <Card className="p-4 mb-4 bg-gradient-card">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
+              <Card className="p-2 sm:p-4 mb-2 sm:mb-4 bg-gradient-card">
+                <div className="flex items-center justify-between mb-1 sm:mb-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     {BlackAvatar && (
-                      <div className="w-8 h-8 flex items-center justify-center text-2xl">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-lg sm:text-2xl">
                         {BlackAvatar}
                       </div>
                     )}
                     {!BlackAvatar && (playerColor === 'w' ? gameData.black_player_type === 'guest' : isGuest) && (
-                      <div className="w-8 h-8 flex items-center justify-center text-2xl">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-lg sm:text-2xl">
                         👤
                       </div>
                     )}
-                    <span className="font-bold">{gameData.black_username}</span>
+                    <span className="font-bold text-sm sm:text-base">{gameData.black_username}</span>
                     {(playerColor === 'w' ? gameData.black_player_type === 'guest' : isGuest) && (
                       <Badge variant="secondary" className="text-xs">Guest</Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    <span className={`font-mono ${blackTime < 60 ? "text-destructive" : ""}`}>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className={`font-mono text-sm sm:text-base ${blackTime < 60 ? "text-destructive" : ""}`}>
                       {formatTime(blackTime)}
                     </span>
                   </div>
                 </div>
                 
                 {/* Captured pieces by black player */}
-                <div className="flex items-center gap-1 flex-wrap min-h-[24px] mt-2">
+                <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap min-h-[20px] sm:min-h-[24px] mt-1 sm:mt-2">
                   {capturedByBlack.map((piece, index) => (
-                    <span key={index} className="text-lg">
+                    <span key={index} className="text-base sm:text-lg">
                       {getPieceSymbol(piece, 'w')}
                     </span>
                   ))}
@@ -1248,7 +1282,7 @@ export default function OnlineGame() {
               </Card>
 
               <div 
-                className="grid grid-cols-8 border-4 border-border rounded-lg overflow-hidden shadow-glow max-w-[600px] mx-auto relative"
+                className="grid grid-cols-8 border border-border md:border-2 lg:border-4 rounded-md md:rounded-lg overflow-hidden shadow-glow max-w-[min(100vh-120px,700px,calc(100vw-1rem))] mx-auto relative"
                 style={{ aspectRatio: "1/1" }}
               >
                 {renderBoard()}
@@ -1267,7 +1301,7 @@ export default function OnlineGame() {
                       
                       return (
                         <div
-                          className="absolute text-5xl font-bold animate-piece-slide"
+                          className="absolute text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold animate-piece-slide"
                           style={{
                             left: `${fromPos.x * 12.5}%`,
                             top: `${fromPos.y * 12.5}%`,
@@ -1282,11 +1316,11 @@ export default function OnlineGame() {
                             '--tw-slide-to-y': `${deltaY}%`,
                             color: movingPiece.color === 'w' ? '#F0D9B5' : '#1a1a1a',
                             filter: movingPiece.color === 'w' 
-                              ? 'drop-shadow(0 3px 6px rgba(0,0,0,0.9))' 
-                              : 'drop-shadow(0 3px 6px rgba(255,255,255,0.4))',
+                              ? 'drop-shadow(0 1px 2px rgba(0,0,0,0.9))' 
+                              : 'drop-shadow(0 1px 2px rgba(255,255,255,0.4))',
                             textShadow: movingPiece.color === 'w'
-                              ? '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
-                              : '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff',
+                              ? '-0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0.5px 0.5px 0 #000'
+                              : '-0.5px -0.5px 0 #fff, 0.5px -0.5px 0 #fff, -0.5px 0.5px 0 #fff, 0.5px 0.5px 0 #fff',
                           } as React.CSSProperties}
                         >
                           {getPieceSymbol(movingPiece.piece, movingPiece.color)}
@@ -1297,36 +1331,36 @@ export default function OnlineGame() {
                 )}
               </div>
 
-              <Card className="p-4 mt-4 bg-gradient-card">
+              <Card className="p-2 sm:p-4 mt-2 sm:mt-4 bg-gradient-card">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     {WhiteAvatar && (
-                      <div className="w-8 h-8 flex items-center justify-center text-2xl">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-lg sm:text-2xl">
                         {WhiteAvatar}
                       </div>
                     )}
                     {!WhiteAvatar && (playerColor === 'b' ? gameData.white_player_type === 'guest' : isGuest) && (
-                      <div className="w-8 h-8 flex items-center justify-center text-2xl">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-lg sm:text-2xl">
                         👤
                       </div>
                     )}
-                    <span className="font-bold">{gameData.white_username}</span>
+                    <span className="font-bold text-sm sm:text-base">{gameData.white_username}</span>
                     {(playerColor === 'b' ? gameData.white_player_type === 'guest' : isGuest) && (
                       <Badge variant="secondary" className="text-xs">Guest</Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    <span className={`font-mono ${whiteTime < 60 ? "text-destructive" : ""}`}>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className={`font-mono text-sm sm:text-base ${whiteTime < 60 ? "text-destructive" : ""}`}>
                       {formatTime(whiteTime)}
                     </span>
                   </div>
                 </div>
                 
                 {/* Captured pieces by white player */}
-                <div className="flex items-center gap-1 flex-wrap min-h-[24px] mt-2">
+                <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap min-h-[20px] sm:min-h-[24px] mt-1 sm:mt-2">
                   {capturedByWhite.map((piece, index) => (
-                    <span key={index} className="text-lg">
+                    <span key={index} className="text-base sm:text-lg">
                       {getPieceSymbol(piece, 'b')}
                     </span>
                   ))}
@@ -1334,8 +1368,8 @@ export default function OnlineGame() {
               </Card>
             </div>
 
-            <div className="space-y-4">
-              <Card className="p-6 bg-gradient-card">
+            <div className={`space-y-4 ${isFullscreen ? 'hidden' : ''}`}>
+              <Card className="p-4 sm:p-6 bg-gradient-card">
                 <h3 className="font-bold mb-4">Game Info</h3>
                 {isGuest && (
                   <div className="mb-4 p-3 bg-muted rounded-lg text-sm">
