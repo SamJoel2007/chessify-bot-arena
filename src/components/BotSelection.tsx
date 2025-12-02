@@ -111,15 +111,15 @@ export const BotSelection = ({ coins, onCoinsUpdate }: BotSelectionProps) => {
               key={bot.id}
               className="p-6 bg-gradient-card border-border/50 hover:border-primary/50 transition-all hover:shadow-glow"
             >
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-4 group">
                 {bot.image ? (
                   <img 
                     src={bot.image} 
                     alt={bot.name}
-                    className="w-20 h-20 rounded-full object-cover border-2 border-primary/30"
+                    className="w-20 h-20 rounded-full object-cover border-2 border-primary/30 transition-all duration-500 ease-out group-hover:scale-110 group-hover:-rotate-3"
                   />
                 ) : (
-                  <div className="w-20 h-20 rounded-full bg-gradient-card border-2 border-primary/30 flex items-center justify-center text-4xl">
+                  <div className="w-20 h-20 rounded-full bg-gradient-card border-2 border-primary/30 flex items-center justify-center text-4xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
                     ♟️
                   </div>
                 )}
