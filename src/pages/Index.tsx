@@ -188,7 +188,7 @@ const Index = () => {
       <Helmet>
         <title>Chessify - Play Chess Online Free | Chess Puzzles, AI Bots & Tournaments</title>
         <meta name="description" content="Play chess online with friends, challenge AI bots from beginner to grandmaster, solve chess puzzles, join daily quests, and compete in tournaments. Master your chess skills with Chessify - 100% free!" />
-        <meta name="keywords" content="play chess online free, chess game, online chess, chess multiplayer, chess with friends, chess AI bot, daily chess quests, chess rewards, chess achievements, Christmas chess event, bullet chess, blitz chess, 10-minute chess, chess community, chess tournaments, free chess game, no download chess, instant chess, web chess, browser chess" />
+        <meta name="keywords" content="play chess online free, chess game, online chess, chess multiplayer, chess with friends, chess AI bot, daily chess quests, chess rewards, chess achievements, Christmas chess event, bullet chess, blitz chess, 10-minute chess, chess community, chess tournaments, free chess game, no download chess, instant chess, web chess, browser chess, chess openings database, chess endgame trainer, play chess with AI, chess move analyzer, chess position evaluator, chess practice online, chess rating calculator, best chess moves, chess game analysis, how to play chess, chess for beginners, advanced chess strategies" />
         <link rel="canonical" href="https://chessify.lovable.app/" />
       </Helmet>
       {/* Hover Sidebar */}
