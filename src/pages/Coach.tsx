@@ -616,7 +616,7 @@ export default function Coach() {
       <Helmet>
         <title>AI Chess Coach - Learn Chess Online | Chessify</title>
         <meta name="description" content="Get personalized chess coaching from our AI chess coach. Learn chess openings, endgames, tactics, and strategy. Improve your chess skills with expert guidance, chess lessons, and training tailored to your level." />
-        <meta name="keywords" content="AI chess coach, learn chess online, chess lessons, chess tutorial, chess training, chess coaching, improve chess skills, chess openings, chess endgames, chess strategy, chess tactics training, personalized chess coaching, online chess tutor" />
+        <meta name="keywords" content="AI chess coach, learn chess online, chess lessons, chess tutorial, chess training, chess coaching, improve chess skills, chess openings, chess endgames, chess strategy, chess tactics training, personalized chess coaching, online chess tutor, chess for beginners, advanced chess training, chess move analysis, chess position evaluation, chess mentor" />
         <link rel="canonical" href="https://chessify.lovable.app/coach" />
       </Helmet>
       <div className="container max-w-6xl mx-auto p-4 h-screen flex flex-col">

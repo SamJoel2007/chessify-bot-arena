@@ -73,7 +73,7 @@ export default function Leaderboards() {
       <Helmet>
         <title>Chess Leaderboards - Top Players Rankings | Chessify</title>
         <meta name="description" content="View the Chessify chess leaderboards. See top chess players, rankings, points, and achievements. Compete with players worldwide and climb the ranks to become a chess champion." />
-        <meta name="keywords" content="chess leaderboards, chess rankings, top chess players, chess leaderboard, chess ratings, chess points, chess champions, competitive chess, chess rank, chess standings" />
+        <meta name="keywords" content="chess leaderboards, chess rankings, top chess players, chess leaderboard, chess ratings, chess points, chess champions, competitive chess, chess rank, chess standings, chess elo rankings, best chess players online, chess rating system, chess player stats, chess competition rankings" />
         <link rel="canonical" href="https://chessify.lovable.app/leaderboards" />
       </Helmet>
       {/* Header */}

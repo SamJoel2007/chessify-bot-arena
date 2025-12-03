@@ -91,7 +91,7 @@ const Puzzles = () => {
       <Helmet>
         <title>Chess Puzzles - Improve Your Tactics | Chessify</title>
         <meta name="description" content="Solve chess puzzles from beginner to expert level. Practice mate in 1, mate in 2, and mate in 3 puzzles. Improve your chess tactics, pattern recognition, and calculation skills with our chess puzzle trainer." />
-        <meta name="keywords" content="chess puzzles, mate in 1, mate in 2, mate in 3, chess tactics, chess tactics trainer, puzzle difficulty levels, improve chess tactics, chess pattern recognition, chess training puzzles, beginner chess puzzles, intermediate chess puzzles, advanced chess puzzles, expert chess puzzles, chess puzzle solver" />
+        <meta name="keywords" content="chess puzzles, mate in 1, mate in 2, mate in 3, chess tactics, chess tactics trainer, puzzle difficulty levels, improve chess tactics, chess pattern recognition, chess training puzzles, beginner chess puzzles, intermediate chess puzzles, advanced chess puzzles, expert chess puzzles, chess puzzle solver, daily chess puzzle, chess checkmate patterns, chess calculation practice, chess brain teasers, tactical chess exercises, chess problem solving" />
         <link rel="canonical" href="https://chessify.lovable.app/puzzles" />
       </Helmet>
       {/* Header */}

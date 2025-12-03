@@ -70,7 +70,7 @@ const Blog = () => {
       <Helmet>
         <title>Chess Blog - Tips, Strategies & Game Analysis | Chessify</title>
         <meta name="description" content="Read expert chess articles covering openings, tactics, endgames, and strategy. Improve your chess skills with in-depth guides, game analysis, and tips from masters." />
-        <meta name="keywords" content="chess blog, chess tips, chess strategy, chess articles, learn chess, chess guides, chess openings guide, chess tactics tutorial, chess endgame tips, chess improvement, master chess" />
+        <meta name="keywords" content="chess blog, chess tips, chess strategy, chess articles, learn chess, chess guides, chess openings guide, chess tactics tutorial, chess endgame tips, chess improvement, master chess, chess game analysis articles, chess news, chess lessons online, chess training tips, chess strategy guides, chess opening theory" />
         <link rel="canonical" href="https://chessify.lovable.app/blog" />
       </Helmet>
 

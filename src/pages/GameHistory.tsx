@@ -95,7 +95,7 @@ export default function GameHistory() {
       <Helmet>
         <title>Game History - Your Chess Match Records | Chessify</title>
         <meta name="description" content="View your complete chess game history. Review past chess games, match records, wins, losses, and draws. Track your chess progress and analyze your gameplay over time." />
-        <meta name="keywords" content="chess game history, past chess games, chess match records, chess game results, chess wins and losses, chess game tracking, review chess games, chess gameplay history" />
+        <meta name="keywords" content="chess game history, past chess games, chess match records, chess game results, chess wins and losses, chess game tracking, review chess games, chess gameplay history, chess game archive, chess match analysis, chess performance tracker, chess statistics" />
         <link rel="canonical" href="https://chessify.lovable.app/game-history" />
       </Helmet>
       <header className="border-b border-border/60 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
