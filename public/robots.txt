@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://chessify.lovable.app/sitemap.xml
+Sitemap: https://qmxuisekohvhybydzbvo.supabase.co/functions/v1/sitemap
