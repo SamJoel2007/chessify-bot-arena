@@ -158,16 +158,16 @@ export const BlogPostCreator = ({ onSuccess, onCancel }: BlogPostCreatorProps) =
       let imageUrl = null;
       if (featuredImage) {
         const fileExt = featuredImage.name.split(".").pop();
-        const fileName = `${slug}-${Date.now()}.${fileExt}`;
+        const filePath = `${user.id}/${slug}-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
-          .from("profile-pictures")
-          .upload(`blog/${fileName}`, featuredImage);
+          .from("blog-images")
+          .upload(filePath, featuredImage);
 
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
-          .from("profile-pictures")
-          .getPublicUrl(`blog/${fileName}`);
+          .from("blog-images")
+          .getPublicUrl(filePath);
 
         imageUrl = publicUrl;
       }
