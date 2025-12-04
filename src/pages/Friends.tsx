@@ -223,7 +223,7 @@ export default function Friends() {
       <Helmet>
         <title>Chess Friends - Play with Friends Online | Chessify</title>
         <meta name="description" content="Connect with chess friends on Chessify. Add friends, send friend requests, play chess with friends online, and challenge your friends to exciting chess matches." />
-        <meta name="keywords" content="chess friends, play chess with friends, add chess friends, chess friend requests, invite friends chess, play with friends online, chess social, chess multiplayer friends, challenge friends chess, chess buddy, chess partner online, online chess with friends" />
+        <meta name="keywords" content="chess, chess board, chess online, chess board setup, online chess, chess game, chess pie, how to play chess, chess friends, play chess with friends, add chess friends, chess friend requests, invite friends chess, play with friends online, chess social, chess multiplayer friends, challenge friends chess, chess buddy, chess partner online, online chess with friends" />
         <link rel="canonical" href="https://chessify.lovable.app/friends" />
       </Helmet>
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
