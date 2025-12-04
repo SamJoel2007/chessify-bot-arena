@@ -724,6 +724,39 @@ export type Database = {
         }
         Relationships: []
       }
+      page_seo_settings: {
+        Row: {
+          created_at: string
+          id: string
+          keywords: string[] | null
+          meta_description: string | null
+          meta_title: string | null
+          page_name: string
+          page_path: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          keywords?: string[] | null
+          meta_description?: string | null
+          meta_title?: string | null
+          page_name: string
+          page_path: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          keywords?: string[] | null
+          meta_description?: string | null
+          meta_title?: string | null
+          page_name?: string
+          page_path?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string

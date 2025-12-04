@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, MessageSquare, FileText, LogOut, Calendar, Trophy } from "lucide-react";
+import { LayoutDashboard, Users, MessageSquare, FileText, LogOut, Calendar, Trophy, Search } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
     { title: "Users", url: "/admin/users", icon: Users },
     { title: "Event", url: "/admin/event", icon: Calendar },
     { title: "Tournaments", url: "/admin/tournaments", icon: Trophy },
+    { title: "SEO", url: "/admin/seo", icon: Search },
     { title: "Chat Messages", url: "/admin/chat", icon: MessageSquare },
     { title: "Posts", url: "/admin/posts", icon: FileText },
   ];
