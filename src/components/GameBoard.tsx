@@ -12,6 +12,7 @@ import { playMoveSound, playCaptureSound } from "@/lib/soundUtils";
 import { supabase } from "@/integrations/supabase/client";
 import FriendChallengeDialog from "@/components/FriendChallengeDialog";
 import { updateQuestProgress } from "@/lib/questUtils";
+import { NativeBannerAd } from "@/components/NativeBannerAd";
 
 interface GameBoardProps {
   selectedBot?: any;
@@ -1292,6 +1293,11 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
               </div>
             </div>
           )}
+          
+          {/* Banner Ad below game board */}
+          <div className="mt-4">
+            <NativeBannerAd />
+          </div>
         </div>
       </Card>
 
