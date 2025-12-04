@@ -716,7 +716,7 @@ const Bots = () => {
       <Helmet>
         <title>Chess AI Bots - Play Against Computer | Chessify</title>
         <meta name="description" content="Challenge AI chess bots from beginner to grandmaster level. Practice against computer opponents with various ELO ratings: beginner (400-800), intermediate (900-1400), advanced (1500-2000), expert (2100-2400), master (2500-2800), and grandmaster (2900+) difficulty levels." />
-        <meta name="keywords" content="chess AI, chess bot, play chess against computer, chess difficulty levels, ELO rated chess bots, beginner chess bot, intermediate chess bot, advanced chess bot, expert chess bot, master chess bot, grandmaster chess bot, chess practice, chess vs AI, chess vs computer, computer chess opponents, play chess with AI, chess AI difficulty, chess engine practice, chess skill levels, train against chess bots" />
+        <meta name="keywords" content="chess, chess board, chess online, chess board setup, online chess, chess game, chess pie, how to play chess, chess AI, chess bot, play chess against computer, chess difficulty levels, ELO rated chess bots, beginner chess bot, intermediate chess bot, advanced chess bot, expert chess bot, master chess bot, grandmaster chess bot, chess practice, chess vs AI, chess vs computer, computer chess opponents, play chess with AI, chess AI difficulty, chess engine practice, chess skill levels, train against chess bots" />
         <link rel="canonical" href="https://chessify.lovable.app/bots" />
       </Helmet>
       {/* Header */}

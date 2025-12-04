@@ -65,7 +65,7 @@ const Community = () => {
       <Helmet>
         <title>Chess Community - Chat & Connect with Players | Chessify</title>
         <meta name="description" content="Join the Chessify chess community. Chat with players worldwide, discuss strategies, share games, make chess friends, and connect with fellow chess enthusiasts in our active community forum." />
-        <meta name="keywords" content="chess community, chess chat, chess forums, chess social, meet chess players, chess friends, chess discussion, chess players online, chess community chat, connect with chess players, chess social network, chess club online, chess enthusiasts, chess talk, chess strategy discussion, chess tips sharing" />
+        <meta name="keywords" content="chess, chess board, chess online, chess board setup, online chess, chess game, chess pie, how to play chess, chess community, chess chat, chess forums, chess social, meet chess players, chess friends, chess discussion, chess players online, chess community chat, connect with chess players, chess social network, chess club online, chess enthusiasts, chess talk, chess strategy discussion, chess tips sharing" />
         <link rel="canonical" href="https://chessify.lovable.app/community" />
       </Helmet>
       {/* Hover Sidebar */}
