@@ -12,6 +12,7 @@ import { playMoveSound, playCaptureSound } from "@/lib/soundUtils";
 import { VoiceChat } from "@/components/VoiceChat";
 import { GameChat } from "@/components/GameChat";
 import { updateQuestProgress } from "@/lib/questUtils";
+import { NativeBannerAd } from "@/components/NativeBannerAd";
 import {
   Dialog,
   DialogContent,
@@ -1366,6 +1367,11 @@ export default function OnlineGame() {
                   ))}
                 </div>
               </Card>
+              
+              {/* Banner Ad below game board */}
+              <div className="mt-4">
+                <NativeBannerAd />
+              </div>
             </div>
 
             <div className={`space-y-4 ${isFullscreen ? 'hidden' : ''}`}>
