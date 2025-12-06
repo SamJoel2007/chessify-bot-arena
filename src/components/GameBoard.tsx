@@ -1294,10 +1294,12 @@ export const GameBoard = ({ selectedBot, onBotChange, userId, username, currentA
             </div>
           )}
           
-          {/* Banner Ad below game board */}
-          <div className="mt-4">
-            <NativeBannerAd />
-          </div>
+          {/* Banner Ad below game board - only during gameplay */}
+          {gameMode && (
+            <div className="mt-4">
+              <NativeBannerAd />
+            </div>
+          )}
         </div>
       </Card>
 
