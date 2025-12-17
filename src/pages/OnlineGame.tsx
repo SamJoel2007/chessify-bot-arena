@@ -196,48 +196,103 @@ export default function OnlineGame() {
 
   const loadGame = async () => {
     try {
-      const playerInfo = await getPlayerInfo();
-      if (!playerInfo) {
-        navigate("/auth");
-        return;
-      }
-      
-      const currentUserId = playerInfo.id;
-      console.log("Loading game with user ID:", currentUserId);
-      setUserId(currentUserId);
-      userIdRef.current = currentUserId; // Store in ref immediately for synchronous access
-      setUsername(playerInfo.username);
-      setIsGuest(playerInfo.type === 'guest');
-
+      // Load the game row first (needed to decide whether we should act as a guest or as an authenticated user)
       const { data, error } = await supabase
         .from("games")
         .select("*")
         .eq("id", gameId)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error || !data) {
+        throw error || new Error("Game not found");
+      }
+
+      // Candidate: guest session (from invite links)
+      const guestToken = localStorage.getItem("guest_session_token");
+      const guestId = localStorage.getItem("guest_player_id");
+      const guestName = localStorage.getItem("guest_display_name");
+
+      let guestInfo: { type: "guest"; id: string; username: string } | null = null;
+      if (guestToken && guestId) {
+        const { data: guestRow } = await supabase
+          .from("guest_players")
+          .select("*")
+          .eq("id", guestId)
+          .eq("session_token", guestToken)
+          .maybeSingle();
+
+        if (guestRow && new Date(guestRow.expires_at) > new Date()) {
+          guestInfo = {
+            type: "guest",
+            id: guestRow.id,
+            username: guestName || guestRow.display_name,
+          };
+        }
+      }
+
+      // Candidate: authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+      let authInfo: { type: "user"; id: string; username: string } | null = null;
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        authInfo = {
+          type: "user",
+          id: user.id,
+          username: profile?.username || "Player",
+        };
+      }
+
+      const guestMatchesGame =
+        !!guestInfo &&
+        ((data.white_player_type === "guest" && normalizeId(data.white_player_id) === normalizeId(guestInfo.id)) ||
+          (data.black_player_type === "guest" && normalizeId(data.black_player_id) === normalizeId(guestInfo.id)));
+
+      const authMatchesGame =
+        !!authInfo &&
+        (normalizeId(data.white_player_id) === normalizeId(authInfo.id) ||
+          normalizeId(data.black_player_id) === normalizeId(authInfo.id));
+
+      const playerInfo = guestMatchesGame ? guestInfo : authMatchesGame ? authInfo : null;
+
+      if (!playerInfo) {
+        toast.error("You are not part of this game");
+        navigate("/");
+        return;
+      }
+
+      const currentUserId = playerInfo.id;
+      console.log("Loading game with user ID:", currentUserId);
+      setUserId(currentUserId);
+      userIdRef.current = currentUserId;
+      setUsername(playerInfo.username);
+      setIsGuest(playerInfo.type === "guest");
 
       console.log("Game loaded:", {
         gameId: data.id,
         whitePlayerId: data.white_player_id,
         blackPlayerId: data.black_player_id,
         currentUserId: currentUserId,
-        winnerId: data.winner_id
+        winnerId: data.winner_id,
       });
 
       setGameData(data);
       setWhiteTime(data.white_time_remaining);
       setBlackTime(data.black_time_remaining);
-      
+
       const chess = new Chess(data.current_fen);
       setGame(chess);
 
-      setPlayerColor(data.white_player_id === playerInfo.id ? "w" : "b");
+      const isWhitePlayer = normalizeId(data.white_player_id) === normalizeId(playerInfo.id);
+      setPlayerColor(isWhitePlayer ? "w" : "b");
 
       // Check if opponent is guest
-      const isWhitePlayer = data.white_player_id === playerInfo.id;
       const opponentType = isWhitePlayer ? data.black_player_type : data.white_player_type;
-      setOpponentIsGuest(opponentType === 'guest');
+      setOpponentIsGuest(opponentType === "guest");
 
       // Check if playing against a bot by checking opponent's username
       const opponentUsername = isWhitePlayer ? data.black_username : data.white_username;
@@ -245,7 +300,7 @@ export default function OnlineGame() {
       console.log("[BOT] Bot detection:", {
         opponentUsername,
         isBot: playingBot,
-        botNames: botNames.slice(0, 5) + '... (total: ' + botNames.length + ')'
+        botNames: botNames.slice(0, 5) + "... (total: " + botNames.length + ")",
       });
       setIsPlayingBot(playingBot);
 
