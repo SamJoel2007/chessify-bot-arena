@@ -21,10 +21,42 @@ const GameLobby = () => {
   useEffect(() => {
     loadLobby();
     const channel = setupRealtimeSubscription();
+    
+    // Polling fallback - check every 2 seconds if guest joined
+    const pollInterval = setInterval(async () => {
+      const { data: invite } = await supabase
+        .from("game_invites")
+        .select("*")
+        .eq("invite_code", inviteCode)
+        .single();
+      
+      if (invite?.status === "started" && invite?.game_id) {
+        navigate(`/online-game/${invite.game_id}`);
+      } else if (invite?.status === "joined" && invite?.guest_player_id && !guestData) {
+        const { data: guest } = await supabase
+          .from("guest_players")
+          .select("*")
+          .eq("id", invite.guest_player_id)
+          .single();
+        if (guest) {
+          setGuestData(guest);
+          setInviteData(invite);
+        }
+      }
+    }, 2000);
+    
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, [inviteCode]);
+
+  // Auto-start when guest data is detected and user is host
+  useEffect(() => {
+    if (isHost && guestData && inviteData && !starting && inviteData.status === "joined") {
+      autoStartGame(inviteData, guestData);
+    }
+  }, [isHost, guestData, inviteData, starting]);
 
   const loadLobby = async () => {
     try {
@@ -339,6 +371,17 @@ const GameLobby = () => {
                 </Button>
               </div>
             </div>
+          )}
+
+          {/* Start Game Button (fallback for host when guest joined) */}
+          {isHost && guestData && !starting && (
+            <Button
+              onClick={() => autoStartGame(inviteData, guestData)}
+              className="w-full"
+              size="lg"
+            >
+              Start Game
+            </Button>
           )}
 
           {/* Auto-starting message */}
