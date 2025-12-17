@@ -80,7 +80,7 @@ const GameLobby = () => {
           table: "game_invites",
           filter: `invite_code=eq.${inviteCode}`,
         },
-        (payload) => {
+        async (payload) => {
           console.log("Invite updated:", payload);
           const updatedInvite = payload.new;
           setInviteData(updatedInvite);
@@ -94,9 +94,21 @@ const GameLobby = () => {
             navigate(`/online-game/${updatedInvite.game_id}`);
           }
 
-          // If guest joined, load guest data
-          if (updatedInvite.status === "joined" && updatedInvite.guest_player_id && !guestData) {
-            loadGuestData(updatedInvite.guest_player_id);
+          // If guest joined, auto-start the game (for host)
+          if (updatedInvite.status === "joined" && updatedInvite.guest_player_id) {
+            const { data: guest } = await supabase
+              .from("guest_players")
+              .select("*")
+              .eq("id", updatedInvite.guest_player_id)
+              .single();
+            
+            if (guest) {
+              // Check if current user is host and auto-start
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user && user.id === updatedInvite.host_user_id) {
+                autoStartGame(updatedInvite, guest);
+              }
+            }
           }
         }
       )
@@ -105,18 +117,46 @@ const GameLobby = () => {
     return channel;
   };
 
-  const loadGuestData = async (guestId: string) => {
-    const { data } = await supabase
-      .from("guest_players")
-      .select("*")
-      .eq("id", guestId)
-      .single();
-    if (data) {
-      setGuestData(data);
-      toast({
-        title: "Guest joined!",
-        description: `${data.display_name} is ready to play`,
-      });
+  const autoStartGame = async (invite: any, guest: any) => {
+    setStarting(true);
+    try {
+      const isHostWhite = Math.random() < 0.5;
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: hostProfile } = await supabase
+        .from("profiles")
+        .select("username, current_avatar")
+        .eq("id", user!.id)
+        .single();
+
+      const { data: game, error: gameError } = await supabase
+        .from("games")
+        .insert({
+          white_player_id: isHostWhite ? user!.id : guest.id,
+          black_player_id: isHostWhite ? guest.id : user!.id,
+          white_player_type: isHostWhite ? "user" : "guest",
+          black_player_type: isHostWhite ? "guest" : "user",
+          white_username: isHostWhite ? hostProfile?.username : guest.display_name,
+          black_username: isHostWhite ? guest.display_name : hostProfile?.username,
+          white_avatar: isHostWhite ? hostProfile?.current_avatar : null,
+          black_avatar: isHostWhite ? null : hostProfile?.current_avatar,
+          invite_code: inviteCode,
+          white_time_remaining: invite.time_control,
+          black_time_remaining: invite.time_control,
+        })
+        .select()
+        .single();
+
+      if (gameError) throw gameError;
+
+      await supabase
+        .from("game_invites")
+        .update({ status: "started", game_id: game.id })
+        .eq("id", invite.id);
+
+      navigate(`/online-game/${game.id}`);
+    } catch (err) {
+      console.error("Error auto-starting game:", err);
+      setStarting(false);
     }
   };
 
@@ -285,36 +325,20 @@ const GameLobby = () => {
             </div>
           )}
 
-          {/* Start Game Button (for host) */}
-          {isHost && (
-            <Button
-              onClick={startGame}
-              disabled={!guestData || starting}
-              className="w-full"
-              size="lg"
-            >
-              {starting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Starting...
-                </>
-              ) : guestData ? (
-                "Start Game"
-              ) : (
-                "Waiting for Opponent..."
-              )}
-            </Button>
-          )}
-
-          {/* Guest waiting message */}
-          {!isHost && (
+          {/* Auto-starting message */}
+          {starting ? (
+            <div className="text-center p-4 bg-muted rounded-lg">
+              <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+              <p className="text-sm text-muted-foreground">Starting game...</p>
+            </div>
+          ) : !isHost ? (
             <div className="text-center p-4 bg-muted rounded-lg">
               <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
               <p className="text-sm text-muted-foreground">
-                Waiting for {inviteData?.host_username} to start the game...
+                Game will start automatically...
               </p>
             </div>
-          )}
+          ) : null}
 
           <div className="text-center">
             <Button variant="ghost" onClick={() => navigate("/")}>
