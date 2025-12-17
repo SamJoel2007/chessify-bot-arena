@@ -44,22 +44,38 @@ const GameLobby = () => {
         return;
       }
 
+      // If game already started, navigate directly
+      if (invite.status === "started" && invite.game_id) {
+        navigate(`/online-game/${invite.game_id}`);
+        return;
+      }
+
       setInviteData(invite);
 
       // Check if current user is host
       const { data: { user } } = await supabase.auth.getUser();
-      if (user && user.id === invite.host_user_id) {
+      const userIsHost = user && user.id === invite.host_user_id;
+      if (userIsHost) {
         setIsHost(true);
       }
 
-      // If guest, load guest player data
-      if (invite.guest_player_id) {
+      // If guest already joined, auto-start the game (for host)
+      if (invite.status === "joined" && invite.guest_player_id) {
         const { data: guest } = await supabase
           .from("guest_players")
           .select("*")
           .eq("id", invite.guest_player_id)
           .single();
-        setGuestData(guest);
+        
+        if (guest) {
+          setGuestData(guest);
+          if (userIsHost) {
+            // Auto-start immediately
+            setLoading(false);
+            autoStartGame(invite, guest);
+            return;
+          }
+        }
       }
 
       setLoading(false);
