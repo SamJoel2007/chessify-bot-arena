@@ -348,10 +348,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "friend_requests_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "friend_requests_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friend_requests_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1119,6 +1133,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_quest_progress: {
@@ -1198,7 +1219,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          created_at: string | null
+          current_avatar: string | null
+          id: string | null
+          points: number | null
+          profile_picture_url: string | null
+          rank: Database["public"]["Enums"]["user_rank"] | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_avatar?: string | null
+          id?: string | null
+          points?: number | null
+          profile_picture_url?: string | null
+          rank?: Database["public"]["Enums"]["user_rank"] | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_avatar?: string | null
+          id?: string | null
+          points?: number | null
+          profile_picture_url?: string | null
+          rank?: Database["public"]["Enums"]["user_rank"] | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_expired_otps: { Args: never; Returns: undefined }
@@ -1212,6 +1262,17 @@ export type Database = {
           p_username: string
         }
         Returns: Json
+      }
+      get_public_profile: {
+        Args: { target_user_id: string }
+        Returns: {
+          current_avatar: string
+          id: string
+          points: number
+          profile_picture_url: string
+          rank: Database["public"]["Enums"]["user_rank"]
+          username: string
+        }[]
       }
       get_user_role: {
         Args: { target_user_id: string }

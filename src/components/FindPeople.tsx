@@ -37,12 +37,11 @@ export const FindPeople = ({ userId }: FindPeopleProps) => {
 
     setLoading(true);
     try {
-      // Build query based on search
+      // Use the public_profiles view which excludes email for privacy
       let query = supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("id, username, current_avatar")
-        .neq("id", userId)
-        .not("email", "is", null); // Filter out guest accounts
+        .neq("id", userId);
 
       // Add search filter if search query exists
       if (searchQuery.trim()) {
